@@ -14,6 +14,7 @@ html, body {
 
 .navrow {
     justify-content: space-between;
+    row-gap: 10px;
 }
 
 .redbutton {
@@ -23,11 +24,23 @@ html, body {
     margin-bottom: 0;
 }
 
+.redbutton:hover {
+    background-color: rgb(220,53,69);
+    border-color: rgb(220,53,69);
+    color: black;
+}
+
 .yellowbutton {
     background-color: rgb(255,192,8);
     border-color: rgb(255,192,8);
     color: black;
     margin-bottom: 0;
+}
+
+.yellowbutton:hover {
+    background-color: rgb(255,192,8);
+    border-color: rgb(255,192,8);
+    color: white;
 }
 
 .leftnav {
@@ -119,3 +132,138 @@ html, body {
 .centertext{
     text-align: center;
 }
+
+/* login and sign up pages */
+
+.formrow {
+    justify-content: center;
+}
+
+.logsigncontainer {
+    border: thin solid rgb(224, 225, 225);
+    max-width: 50%;
+    border-radius: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.loginformfield:focus {
+    border-color: rgb(220,53,69) !important;
+    /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
+    box-shadow: 0px 0px 3px 2px rgb(220,53,69);
+}
+
+.signformfield:focus {
+    border-color: rgb(255,192,8) !important;
+    /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
+    box-shadow: 0px 0px 3px 2px rgb(255,192,8);
+}
+
+.fullwidth {
+    width: 100%;
+}
+
+/* footer */
+.footercontainer {
+    width: 100%;
+    max-width: 100%;
+    background-color: rgb(48, 48, 48);
+    color: white;
+    margin-top: 20px;
+}
+
+.footerlinks {
+    justify-content: flex-end;
+    column-gap: 20px;
+}
+
+.footerlink{
+    color: white;
+}
+
+.footerimg {
+    justify-content: center;
+}
+
+.footercol {
+    display: flex !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    max-width: 100% !important;
+    width: 100%;
+}
+
+/* items for footer positioning https://css-tricks.com/couple-takes-sticky-footer/ */
+body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  footer {
+    flex-shrink: 0;
+    flex-grow: 1;
+}
+/* end of reference */
+
+/* browse page */
+.browsecontainer {
+    margin-top: 20px;
+}
+
+.browsecol {
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center;
+}
+
+.card {
+    border: thin solid rgb(224, 225, 225);
+    border-radius: 15px;
+    padding: 5px;
+    background-color: white;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.cardlink {
+    color: black;
+}
+
+@media (max-width: 40rem) {
+    .formrow {
+        flex-direction: row;
+    }
+
+    .logincontainer{
+        border: none;
+        max-width: 100%;
+    }
+
+    .footercopy {
+        justify-content: center;
+    }
+
+    .footerlinks {
+        justify-content: center;
+    }
+
+    .leftnav {
+        justify-content: center;
+    }
+
+    .rightnav {
+        justify-content: center;
+    }
+
+    .card{
+        width: 70%;
+    }
+}
+

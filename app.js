@@ -14,6 +14,21 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
+// login
+app.get("/login", (req, res) => {
+    res.render("login");
+});
+
+// register
+app.get("/register", (req, res) => {
+    res.render("register");
+});
+
+// browse
+app.get("/browse", (req, res) => {
+    res.render("browse");
+});
+
 app.listen(PORT, () => {
     console.log(`server listening on //localhost:${PORT}`);
 })

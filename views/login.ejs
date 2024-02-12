@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+    <form action="" class="container logsigncontainer">
+
+        <div class="row formrow">
+            <div class="column formcolumn centertext">
+                <img src="images/pokeball_straight.png" alt="" width="72">
+            </div>
+        </div>
+
+        <div class="row formrow centertext">
+            <div class="column formcolumn">
+                <h3>Please Sign In</h1>
+            </div>
+        </div>
+        
+
+        <div class="row formrow">
+            <div class="column formcolumn">
+                    <input type="email" placeholder="email" id="exampleEmailInput" class="loginformfield">
+            </div>
+        </div>
+
+        <div class="row formrow">
+            <div class="column formcolumn">
+                <!--  lines adapted from skeleton doc-->
+                    <input type="password" placeholder="password" id="exampleEmailInput" class="loginformfield">
+            </div>
+        </div>
+
+        <div class="row formrow centertext">
+            <div class="column formcolumn">
+                <a href="" class="redbutton button fullwidth">Log in</a>            
+            </div>
+        </div>
+
+    </form>
+    <%- include("partials/footer")  %>
+</body>
+</html>
