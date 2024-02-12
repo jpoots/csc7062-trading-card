@@ -71,6 +71,9 @@ html, body {
     background-color: rgb(48, 48, 48);
     color: white;
     margin-bottom: 40px;
+    margin-top: 40px;
+    padding-bottom: 40px;
+    padding-top: 40px;
 }
 
 .homepagebuttons {
@@ -188,10 +191,16 @@ html, body {
 
 .footercol {
     display: flex !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+    padding-top: 30px !important;
+    padding-bottom: 30px !important;
     max-width: 100% !important;
     width: 100%;
+}
+
+.tandc{
+    color: grey;
+    padding-top: 10px;
+    font-size: 12px;
 }
 
 /* items for footer positioning https://css-tricks.com/couple-takes-sticky-footer/ */
@@ -234,6 +243,15 @@ body {
 
 .cardlink {
     color: black;
+}
+
+.browsetitle{
+    font-weight: bold;
+}
+
+/* single card page */
+.pokecardcontainer{
+    margin-top: 20px;
 }
 
 @media (max-width: 40rem) {

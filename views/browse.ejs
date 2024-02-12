@@ -6,53 +6,21 @@
 <body>
     <%- include("partials/navbar") %>
     <div class="container browsecontainer">
-        <div class="row browserow">
-            <div class="column browsecol">
-                <div class="card">
-                    <a href="card" class="cardlink">
-                        <img src="https://assets.tcgdex.net/en/swsh/swsh1/2/high.webp" alt="" width="100%" class="cardimg">
-                        <h6 class="centertext">Pokename</h6>
-                    </a>
-                </div>
-            </div>
 
-            <div class="column browsecol">
-                <div class="card">
-                    <a href="card" class="cardlink">
-                        <img src="https://assets.tcgdex.net/en/swsh/swsh1/2/high.webp" alt="" width="100%" class="cardimg">
-                        <h6 class="centertext">Pokename</h6>
-                    </a>
-                </div>
+        <% cards.forEach(row => { %>
+            <div class="row browserow">
+                <% row.forEach(card => { %>
+                    <div class="column browsecol">
+                        <div class="card">
+                            <a href="card" class="cardlink">
+                                <img src="<%= card.image %>" alt="" width="100%" class="cardimg">
+                                <h6 class="centertext browsetitle"><%= card.name %></h6>
+                            </a>
+                        </div>
+                    </div>
+                <% }) %>
             </div>
-
-            <div class="column browsecol">
-                <div class="card">
-                    <a href="card" class="cardlink">
-                        <img src="https://assets.tcgdex.net/en/swsh/swsh1/2/high.webp" alt="" width="100%" class="cardimg">
-                        <h6 class="centertext">Pokename</h6>
-                    </a>
-                </div>
-            </div>
-
-            <div class="column browsecol">
-                <div class="card">
-                    <a href="card" class="cardlink">
-                        <img src="https://assets.tcgdex.net/en/swsh/swsh1/2/high.webp" alt="" width="100%" class="cardimg">
-                        <h6 class="centertext">Pokename</h6>
-                    </a>
-                </div>
-            </div>
-
-            <div class="column browsecol">
-                <div class="card">
-                    <a href="card" class="cardlink">
-                        <img src="https://assets.tcgdex.net/en/swsh/swsh1/2/high.webp" alt="" width="100%" class="cardimg">
-                        <h6 class="centertext">Pokename</h6>
-                    </a>
-                </div>
-            </div>
-
-        </div>
+        <% }) %>
     </div>
     <%- include("partials/footer") %>
 </body>
