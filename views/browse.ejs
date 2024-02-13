@@ -7,13 +7,21 @@
     <%- include("partials/navbar") %>
     <div class="container browsecontainer">
 
+        <!-- form from milligram docs -->
+        <form action="/browse" method="get">
+            <fieldset>
+              <input type="text" placeholder="Search" id="nameField" class="searchbar">
+              <input class="button-primary bluebutton" type="submit" value="Search">
+            </fieldset>
+          </form>
+
         <% cards.forEach(row => { %>
             <div class="row browserow">
                 <% row.forEach(card => { %>
                     <div class="column browsecol">
                         <div class="card">
-                            <a href="card" class="cardlink">
-                                <img src="<%= card.image %>" alt="" width="100%" class="cardimg">
+                            <a href="card/<%= card.card_id %>" class="cardlink">
+                                <img src="<%= card.image_url %>" alt="" width="" class="cardimg">
                                 <h6 class="centertext browsetitle"><%= card.name %></h6>
                             </a>
                         </div>

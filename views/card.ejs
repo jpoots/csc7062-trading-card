@@ -7,18 +7,79 @@
     <%- include("partials/navbar") %>
 
     <div class="container pokecardcontainer">
-        <div class="row">
+        <div class="row cardimgrow">
 
-            <div class="column column-25">
-                <img class="cardpageimg" src="https://assets.tcgdex.net/en/swsh/swsh1/2/high.webp" alt="">
+            <div class="column column-25 cardimgcol">
+                <img class="cardpageimg" src="<%= card.image %>" alt="">
+                <a href="<%= card.priceURL %>" class="button bluebutton">€<%= card.price %></a>
             </div>
 
+            
             <div class="column">
-                <p>a coumn</p>
-            </div>
 
-            <div class="column">
-                <p>another coumn</p>
+                <div class="container">
+                    <div class="row carddetailsrow">
+                        <div class="column">
+                            <h2 class="mbottom2"><%= card.name %></h2>
+                        </div>
+
+                        <div class="column alignright">
+                            <span>HP <%= card.hp %> </span>
+                            <img src="<%= card.type %>" height="30" alt="">
+                        </div>
+                    </div>
+
+                    <div class="row carddetailsrow">
+                        <div class="column">
+                            <%= card.category %>
+                        </div>
+
+                        <div class="column alignright">
+                            <div><%= card.stage %></div>
+                        </div>
+                    </div>
+
+                    <% cardData.attack.forEach(attack => { %>
+                        <div class="row carddetailsrow attacktop">
+                            <div class="column">
+                                <h5 class="mbottom2"><%= attack.name %></h5>
+                            </div>
+
+                            <div class="column">
+                                <p class="alignright"><%= attack.damage %></p>
+                            </div>
+                        </div>
+
+                        <div class="row carddetailsrow attackbottom">
+
+                                <div class="column">
+                                    <div><%= attack.effect %></div>
+                                </div>
+
+                        </div>
+                    <% }) %>
+
+                    <div class="row">
+                        <div class="column">
+
+                            <table>
+                                <thead>
+                                    <th>Set</th>
+                                    <th>Expansion</th>
+                                    <th>Illustrator</th>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><%= card.set %></td>
+                                        <td><%= card.expansion %></td>
+                                        <td><%= card.illustrator %></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
