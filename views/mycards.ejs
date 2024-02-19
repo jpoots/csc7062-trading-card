@@ -10,13 +10,20 @@
     <div class="container mtop10">
         <form action="/browse" method="get" class="mbottom0">
             <fieldset class="mbottom0">
-                <input type="text" placeholder="Search" id="nameField" class="searchbar mbottom0">
+                ><select id="ageRangeField">
+                    <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
+                    <option value="none" selected disabled hidden>-</option>
+                    <% collections.forEach(element => { %>
+                        <option value="24+"><%= element.collection_name  %></option>
+                    <% }) %>
+                </select>
                 <input class="button-primary bluebutton" type="submit" value="Search">
             </fieldset>
         </form>
     </div>
-    
+
     <%- include("partials/cards") %>
+
     <%- include("partials/footer") %>
 </body>
 </html>

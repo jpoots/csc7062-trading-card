@@ -1,0 +1,16 @@
+<div class="container browsecontainer">
+    <% cards.forEach(row => { %>
+        <div class="row browserow">
+            <% row.forEach(card => { %>
+                <div class="column browsecol">
+                    <div class="card">
+                        <a href="card/<%= card.card_id %>" class="cardlink">
+                            <img src="<%= card.image_url %>" alt="" width="" class="cardimg">
+                            <h6 class="centertext browsetitle"><%= card.name %></h6>
+                        </a>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% }) %>
+</div>

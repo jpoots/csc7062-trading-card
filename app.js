@@ -1,7 +1,9 @@
 const express = require("express");
 const path = require("path");
 const mysql = require("mysql2");
-const pokemon = require("pokemontcgsdk");
+const dotenv = require("dotenv").config(); // https://www.npmjs.com/package/dotenv#-install
+const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
+
 
 // set up app
 const app = express();
@@ -24,6 +26,9 @@ db.connect((err)=> {
     if(err) throw err;
     console.log('database connected successfully');
 });
+
+// setup pokemon api
+pokemon.configure({apiKey: process.env.TCG_KEY});
 
 // homepage
 app.get("/", (req, res) => {
@@ -49,7 +54,7 @@ app.get("/browse", (req, res) => {
     db.query(read,(err, result) => {
         if(err) throw err;
 
-        // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d
+        // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d breaks cards into arrays of length rowSize
         for (let i = 0; i < result.length; i += rowSize) {
             const chunk = result.slice(i, i + rowSize);
             data.push(chunk);
@@ -62,11 +67,68 @@ app.get("/browse", (req, res) => {
 
 });
 
+// mycards
+app.get("/mycards", async (req, res) => {
+    const rowSize = 5;
+    let cards = [];
+    // default collection
+    let collection = "all cards";
+    let user_id = 1;
+    let queryp = req.query.c;
+
+    // if query parameter set collection = queryp
+    if (queryp){
+        collection = queryp;
+    }
+
+    // get collections to poulate drop down
+    let collQ = 
+    `SELECT collection_name FROM collection 
+    INNER JOIN user_collection
+    ON collection.collection_id = user_collection.collection_id
+    WHERE user_collection.user_id = ${user_id}`;
+
+    // get cards in current collection
+    let cardQ = 
+    `SELECT name, image_url FROM card 
+    INNER JOIN collection_card
+    ON collection_card.card_id = card.card_id
+    INNER JOIN collection
+    ON collection.collection_id = collection_card.collection_id
+    INNER JOIN user_collection
+    ON user_collection.collection_id = collection.collection_id
+    WHERE user_collection.user_id = 1 AND collection.collection_name = "${collection}"`;
+
+    let collections = await db.promise().query(collQ);
+    collections = collections[0]
+
+    db.query(cardQ,(err, result) => {
+        if(err) throw err;
+
+        // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d
+        for (let i = 0; i < result.length; i += rowSize) {
+            const chunk = result.slice(i, i + rowSize);
+            cards.push(chunk);
+        }
+        // end of reference
+
+        res.render("mycards", {
+            cards: cards,
+            collections: collections});
+    });
+
+
+});
+
 // card
 app.get("/card/:cardId", (req, res) => {
+
+
     // get card id from the req
     let cardID = req.params.cardId;
     let read = `SELECT * FROM card WHERE card_id = ${cardID}`;
+
+
 
     // get card data from 
     db.query(read, async (err, result) => {
@@ -76,10 +138,11 @@ app.get("/card/:cardId", (req, res) => {
 
         // format card data and get price data
         let card = result[0]
-        let response = await fetch(`https://api.pokemontcg.io/v2/cards/${card.tcg_id}`);
-        response = await response.json();
-        let price = response.data.cardmarket.prices.trendPrice;;
-        let priceURL = response.data.cardmarket.url
+        let response = await pokemon.card.find(card.tcg_id);
+
+        // to fixed from https://www.tutorialspoint.com/How-to-format-a-number-with-two-decimals-in-JavaScript
+        let price = response.cardmarket.prices.trendPrice.toFixed(2);
+        let priceURL = response.cardmarket.url
 
         // prepare card data for rendering
         cardData = {

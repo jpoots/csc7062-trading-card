@@ -278,6 +278,11 @@ fieldset {
     box-shadow: 0px 0px 3px 2px rgb(52, 102, 175);
 }
 
+.searchcontainer {
+    display: flex;
+    justify-content: flex-end;
+}
+
 /* single card page */
 .pokecardcontainer{
     margin-top: 20px;
@@ -316,9 +321,7 @@ td, th {
     border-bottom: thin solid rgb(220,53,69);
 }
 
-.mbottom2{
-    margin-bottom: 2px;
-}
+
 
 .alignright{
     display: flex !important;
@@ -337,6 +340,20 @@ td, th {
 
 .price {
     text-align: center;
+}
+
+/* utility */
+
+.mtop10{
+    margin-top: 10px;
+}
+
+.mbottom2{
+    margin-bottom: 2px;
+}
+
+.mbottom0{
+    margin-bottom: 0;
 }
 
 @media (max-width: 40rem) {
