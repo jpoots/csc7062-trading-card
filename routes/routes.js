@@ -13,7 +13,7 @@ const db = mysql.createConnection({
     host: "localhost",
     user: "root",         
     password: "root",         
-    database: "trademon",
+    database: "40259713",
     port: "8889"
 });
 
@@ -21,6 +21,25 @@ db.connect((err)=> {
     if(err) throw err;
     console.log('database connected successfully');
 });
+
+// define global row size
+const rowSize = 5;
+
+// perform a db query, slice and return
+const cardsSearch = async (query) => {
+    let cardResult = await db.promise().query(query);
+    cardResult = cardResult[0];
+    let sliced = [];
+
+    // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d breaks cards into arrays of length rowSize
+    for (let i = 0; i < cardResult.length; i += rowSize) {
+        const chunk = cardResult.slice(i, i + rowSize);
+        sliced.push(chunk);
+    }
+    // end of reference
+    return sliced;
+}
+
 
 // home page
 router.get("/", (req, res) => {
@@ -38,65 +57,46 @@ router.get("/register", (req, res) => {
 });
 
 // browse
-router.get("/browse", (req, res) => {
-    const rowSize = 5;
+router.get("/browse", async (req, res) => {
     let data = [];
 
     let read = "SELECT card_id, name, image_url FROM card";
-    db.query(read,(err, result) => {
-        if(err) throw err;
-
-        // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d breaks cards into arrays of length rowSize
-        for (let i = 0; i < result.length; i += rowSize) {
-            const chunk = result.slice(i, i + rowSize);
-            data.push(chunk);
-        }
-        // end of reference
-
-        res.render("browse", {cards: data});
-    });
+    let cards = await cardsSearch(read);
+    res.render("browse", {cards: cards});
 });
 
-router.post("/browse", (req, res) => {
-    const rowSize = 5;
-    let data = [];
+router.post("/browse", async (req, res) => {
     let searchName = `%${req.body.search}%`
+    
+    // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
+    let read = `SELECT card_id, name, image_url FROM card 
+                WHERE name 
+                LIKE '${searchName}' 
+                ORDER BY
+                CASE
+                    WHEN name LIKE '${searchName}' THEN 1
+                    WHEN name LIKE '${searchName}%' THEN 2
+                    WHEN name LIKE '%${searchName}' THEN 4
+                    ELSE 3
+                END`;
 
-    let read = `SELECT card_id, name, image_url FROM card WHERE name LIKE '${searchName}'`;
-    db.query(read,(err, result) => {
-        if(err) throw err;
+    let cards = await cardsSearch(read);
 
-        // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d breaks cards into arrays of length rowSize
-        for (let i = 0; i < result.length; i += rowSize) {
-            const chunk = result.slice(i, i + rowSize);
-            data.push(chunk);
-        }
-        // end of reference
-
-        res.render("browse", {cards: data});
-    });
+    res.render("browse", {cards: cards});
 });
 
 // mycards
 router.get("/mycards", async (req, res) => {
     const rowSize = 5;
-    let cards = [];
-    // default collection
-    let collection = "all cards";
     let user_id = 1;
-    let queryp = req.query.c;
 
-    // if query parameter set collection = queryp
-    if (queryp){
-        collection = queryp;
-    }
-
-    // get collections to poulate drop down
+    // get collections to populate drop down
     let collQ = 
-    `SELECT collection_name FROM collection 
+    `SELECT collection.collection_id, collection_name FROM collection 
     INNER JOIN user_collection
     ON collection.collection_id = user_collection.collection_id
-    WHERE user_collection.user_id = ${user_id}`;
+    WHERE user_collection.user_id = ${user_id}
+    ORDER BY collection_name`;
 
     // get cards in current collection
     let cardQ = 
@@ -107,25 +107,47 @@ router.get("/mycards", async (req, res) => {
     ON collection.collection_id = collection_card.collection_id
     INNER JOIN user_collection
     ON user_collection.collection_id = collection.collection_id
-    WHERE user_collection.user_id = 1 AND collection.collection_name = "${collection}"`;
+    WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"`;
 
     let collections = await db.promise().query(collQ);
     collections = collections[0]
 
-    db.query(cardQ,(err, result) => {
-        if(err) throw err;
+    let cards = await cardsSearch(cardQ);
 
-        // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d
-        for (let i = 0; i < result.length; i += rowSize) {
-            const chunk = result.slice(i, i + rowSize);
-            cards.push(chunk);
-        }
-        // end of reference
+    res.render("mycards", {
+        cards: cards,
+        collections: collections});
 
-        res.render("mycards", {
-            cards: cards,
-            collections: collections});
-    });
+});
+
+router.post("/mycards", async (req, res) => {
+    const rowSize = 5;
+    let user_id = 1;
+    let collectionID = req.body.collid;
+
+    // get collections to populate drop down
+    let collQ = 
+    `SELECT collection.collection_id, collection_name FROM collection 
+    INNER JOIN user_collection
+    ON collection.collection_id = user_collection.collection_id
+    WHERE user_collection.user_id = ${user_id}
+    ORDER BY collection_name`;
+
+    // get cards in current collection
+    let cardQ = 
+    `SELECT name, image_url FROM card 
+    INNER JOIN collection_card
+    ON collection_card.card_id = card.card_id
+    WHERE collection_card.collection_id = ${collectionID}`;
+
+    let collections = await db.promise().query(collQ);
+    collections = collections[0]
+
+    let cards = await cardsSearch(cardQ);
+
+    res.render("mycards", {
+        cards: cards,
+        collections: collections});
 
 });
 

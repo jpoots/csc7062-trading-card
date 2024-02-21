@@ -8,18 +8,20 @@
 
     <!-- form from milligram docs -->
     <div class="container mtop10">
-        <form action="/mycards" method="get" class="mbottom0">
+
+        <form action="/mycards" method="post" class="mbottom0">
             <fieldset class="mbottom0">
-                <select id="ageRangeField">
+                <select id="collection" name="collid">
                     <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
-                    <option value="none" selected disabled hidden>-</option>
+                    <option value="none" selected disabled hidden>all cards</option>
                     <% collections.forEach(element => { %>
-                        <option value=<%= element.collection_name  %>><%= element.collection_name  %></option>
+                        <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
                     <% }) %>
                 </select>
                 <input class="button-primary bluebutton" type="submit" value="Search">
             </fieldset>
         </form>
+
     </div>
 
     <%- include("partials/cards") %>
