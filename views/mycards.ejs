@@ -7,10 +7,10 @@
     <%- include("partials/navbar") %>
 
     <!-- form from milligram docs -->
-    <div class="container mtop10">
+    <div class="container mt10">
 
-        <form action="/mycards" method="post" class="mbottom0">
-            <fieldset class="mbottom0">
+        <form action="/mycards" method="post" class="mb0">
+            <fieldset class="talright mb0">
                 <select id="collection" name="collid">
                     <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
                     <option value="none" selected disabled hidden>all cards</option>
@@ -18,7 +18,7 @@
                         <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
                     <% }) %>
                 </select>
-                <input class="button-primary bluebutton" type="submit" value="Search">
+                <input class="button-primary bluebutton textwhite mb0" type="submit" value="Search">
             </fieldset>
         </form>
 

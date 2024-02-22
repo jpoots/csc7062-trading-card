@@ -6,24 +6,24 @@
 <body>
     <%- include("partials/navbar") %>
 
-    <div class="container pokecardcontainer">
+    <div class="container mt20">
         <div class="row cardimgrow">
 
-            <div class="column column-25 cardimgcol">
+            <div class="column column-25 cardimgcol dflex fdcol alitemscenter">
                 <img class="cardpageimg" src="<%= card.image %>" alt="">
                 <a href="<%= card.priceURL %>" class="button bluebutton">€<%= card.price %></a>
             </div>
 
             
-            <div class="column">
+            <div class="column carddetails">
 
-                <div class="container">
+                <div class="container detailscontainer dflex fdcol">
                     <div class="row carddetailsrow">
                         <div class="column">
-                            <h2 class="mbottom2"><%= card.name %></h2>
+                            <h2 class="mb2"><%= card.name %></h2>
                         </div>
 
-                        <div class="column alignright">
+                        <div class="column cardinfocol dflex alitemscenter mb0">
                             <span>HP <%= card.hp %> </span>
                             <img src="<%= card.type %>" height="30" alt="">
                         </div>
@@ -34,7 +34,7 @@
                             <%= card.category %>
                         </div>
 
-                        <div class="column alignright">
+                        <div class="column cardinfocol dflex alitemscenter">
                             <div><%= card.stage %></div>
                         </div>
                     </div>
@@ -42,11 +42,11 @@
                     <% cardData.attack.forEach(attack => { %>
                         <div class="row carddetailsrow attacktop">
                             <div class="column">
-                                <h5 class="mbottom2"><%= attack.name %></h5>
+                                <h5 class="mb2"><%= attack.name %></h5>
                             </div>
 
                             <div class="column">
-                                <p class="alignright"><%= attack.damage %></p>
+                                <p class="cardinfocol dflex"><%= attack.damage %></p>
                             </div>
                         </div>
 

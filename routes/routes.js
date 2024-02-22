@@ -60,7 +60,7 @@ router.get("/register", (req, res) => {
 router.get("/browse", async (req, res) => {
     let data = [];
 
-    let read = "SELECT card_id, name, image_url FROM card";
+    let read = "SELECT card_id, name, image_url FROM card ORDER BY card.name";
     let cards = await cardsSearch(read);
     res.render("browse", {cards: cards});
 });
@@ -107,7 +107,8 @@ router.get("/mycards", async (req, res) => {
     ON collection.collection_id = collection_card.collection_id
     INNER JOIN user_collection
     ON user_collection.collection_id = collection.collection_id
-    WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"`;
+    WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"
+    ORDER BY card.name`;
 
     let collections = await db.promise().query(collQ);
     collections = collections[0]
@@ -138,7 +139,8 @@ router.post("/mycards", async (req, res) => {
     `SELECT name, image_url FROM card 
     INNER JOIN collection_card
     ON collection_card.card_id = card.card_id
-    WHERE collection_card.collection_id = ${collectionID}`;
+    WHERE collection_card.collection_id = ${collectionID}
+    ORDER BY card.name`;
 
     let collections = await db.promise().query(collQ);
     collections = collections[0]

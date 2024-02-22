@@ -7,9 +7,7 @@ html, body {
 /* navbar */
 
 .navcontainer {
-    width: 100%;
     background-color: rgb(248,249,250);
-
 }
 
 .navrow {
@@ -20,8 +18,7 @@ html, body {
 .redbutton {
     background-color: rgb(220,53,69);
     border-color: rgb(220,53,69);
-    color: white;
-    margin-bottom: 0;
+
 }
 
 .redbutton:hover {
@@ -33,8 +30,6 @@ html, body {
 .yellowbutton {
     background-color: rgb(255,192,8);
     border-color: rgb(255,192,8);
-    color: black;
-    margin-bottom: 0;
 }
 
 .yellowbutton:hover {
@@ -46,44 +41,27 @@ html, body {
 .bluebutton {
     background-color: rgb(52, 102, 175) !important;
     border-color: rgb(52, 102, 175) !important;
-    color: white;
-    margin-bottom: 0;
 }
 
 .bluebutton:hover {
     background-color: rgb(52, 102, 175);
     border-color: rgb(52, 102, 175);
     color: black !important;
-    margin-bottom: 0;
 }
 
-.leftnav {
-    display: flex;
-    align-items: center;
+.navsection {
     column-gap: 10px;
-}
-
-.rightnav {
- display: flex;
- align-items: center;
- column-gap: 10px;
 }
 
 .navlink {
     text-decoration: none;
-    color: black;
     padding-top: 10px;
     padding-bottom: 10px;
 }
 
 /* homepage header */
 .homehead {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
     background-color: rgb(48, 48, 48);
-    color: white;
     margin-bottom: 40px;
     margin-top: 40px;
     padding-bottom: 40px;
@@ -91,7 +69,6 @@ html, body {
 }
 
 .homepagebuttons {
-    display: flex;
     column-gap: 10px;
 }
 
@@ -121,20 +98,15 @@ html, body {
 
 .lefthomepage {
     background-color: rgb(220,53,69);
-    color: white;
     border-color: rgb(216, 36, 54);
 }
 
 .righthomepage {
     background-color: rgb(248,249,250);
-    color: black;
     border-color: rgb(224, 225, 225);
 }
 
 .homepagebox {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 20px;
     border-radius: 15px;
     border-width: 1px;
@@ -146,21 +118,12 @@ html, body {
     row-gap: 20px;
 }
 
-.centertext{
-    text-align: center;
-}
-
 /* login and sign up pages */
-
-.formrow {
-    justify-content: center;
-}
 
 .logsigncontainer {
     border: thin solid rgb(224, 225, 225);
     max-width: 50%;
     border-radius: 15px;
-    margin-top: 20px;
     padding-top: 20px;
     padding-bottom: 20px;
 }
@@ -177,17 +140,11 @@ html, body {
     box-shadow: 0px 0px 3px 2px rgb(255,192,8);
 }
 
-.fullwidth {
-    width: 100%;
-}
 
 /* footer */
 .footercontainer {
-    width: 100%;
     max-width: 100%;
     background-color: rgb(48, 48, 48);
-    color: white;
-    margin-top: 20px;
 }
 
 .footerlinks {
@@ -195,20 +152,10 @@ html, body {
     column-gap: 20px;
 }
 
-.footerlink{
-    color: white;
-}
-
-.footerimg {
-    justify-content: center;
-}
-
 .footercol {
-    display: flex !important;
     padding-top: 30px !important;
     padding-bottom: 30px !important;
     max-width: 100% !important;
-    width: 100%;
 }
 
 .tandc{
@@ -221,23 +168,18 @@ html, body {
 body {
     display: flex;
     flex-direction: column;
-  }
+}
   
-  footer {
+footer {
     flex-shrink: 0;
     flex-grow: 1;
 }
 /* end of reference */
 
 /* browse page */
-.browsecontainer {
-    margin-top: 20px;
-}
 
 .browsecol {
     padding: 0 !important;
-    display: flex !important;
-    justify-content: center;
     max-width: 20% !important;
 }
 
@@ -246,30 +188,14 @@ body {
     border-radius: 15px;
     padding: 5px;
     background-color: white;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
 .card:hover {
     transform: scale(1.05);
 }
 
-.cardlink {
-    color: black;
-}
-
 .browsetitle{
     font-weight: bold;
-}
-
-fieldset {
-    text-align: right;
-}
-
-.searchbar {
-    width: auto !important;
 }
 
 .searchbar:focus {
@@ -278,32 +204,15 @@ fieldset {
     box-shadow: 0px 0px 3px 2px rgb(52, 102, 175);
 }
 
-.searchcontainer {
-    display: flex;
-    justify-content: flex-end;
-}
-
 /* single card page */
-.pokecardcontainer{
-    margin-top: 20px;
-}
-
 .carddetails{
     border: thin solid rgb(224, 225, 225);
     border-radius: 15px;
     padding: 10px !important;
 }
 
-.detailsright {
-    display: flex;
-    flex-direction: column;
-    column-gap: 10px;
-}
-
-.detailsheader {
-    display: flex !important;
-    justify-content: space-between;
-    flex-wrap: wrap;
+.detailscontainer {
+    row-gap: 10px;
 }
 
 td, th {
@@ -321,45 +230,79 @@ td, th {
     border-bottom: thin solid rgb(220,53,69);
 }
 
-
-
-.alignright{
-    display: flex !important;
-    align-items: center;
+.cardinfocol{
     justify-content: flex-end;
     column-gap: 5px;
-    margin-bottom: 0;
 }
 
 .cardimgcol{
-    display: flex !important;
-    align-items: center;
-    flex-direction: column;
     row-gap: 10px;
-}
-
-.price {
-    text-align: center;
 }
 
 /* utility */
 
-.mtop10{
+/* margins */
+.mt20{
+    margin-top: 20px;
+}
+
+.mt10{
     margin-top: 10px;
 }
 
-.mbottom2{
+.mb2{
     margin-bottom: 2px;
 }
 
-.mbottom0{
+.mb0{
     margin-bottom: 0;
 }
 
+/* flex settings */
+.dflex{
+    display: flex !important;
+}
+
+.fdcol {
+    flex-direction: column !important;
+}
+
+.alitemscenter{
+    align-items: center !important;
+}
+
+.centertext{
+    text-align: center;
+}
+
+.jcontcenter {
+    justify-content: center;
+}
+
+/* text  */
+.textwhite {
+    color: white !important;
+}
+
+.textblack {
+    color: black !important;
+}
+
+.talright {
+    text-align: right;
+}
+
+/* width */
+.w100 {
+    width: 100%;
+}
+
+.wauto{
+    width: auto;
+}
+
+/* responsive design */
 @media (max-width: 40rem) {
-    .formrow {
-        flex-direction: row;
-    }
 
     .logincontainer{
         border: none;
@@ -374,11 +317,7 @@ td, th {
         justify-content: center;
     }
 
-    .leftnav {
-        justify-content: center;
-    }
-
-    .rightnav {
+    .navsection {
         justify-content: center;
     }
 
