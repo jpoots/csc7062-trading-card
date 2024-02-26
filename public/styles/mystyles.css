@@ -8,6 +8,7 @@ html, body {
 
 .navcontainer {
     background-color: rgb(248,249,250);
+    margin-bottom: 40px;
 }
 
 .navrow {
@@ -63,7 +64,6 @@ html, body {
 .homehead {
     background-color: rgb(48, 48, 48);
     margin-bottom: 40px;
-    margin-top: 40px;
     padding-bottom: 40px;
     padding-top: 40px;
 }
@@ -183,6 +183,13 @@ footer {
     max-width: 20% !important;
 }
 
+.browsecontainer{
+    border: thin solid rgb(224, 225, 225);
+    border-radius: 15px;
+    background-color: white;
+    padding: 15px;
+}
+
 .card {
     border: thin solid rgb(224, 225, 225);
     border-radius: 15px;
@@ -277,6 +284,14 @@ td, th {
 
 .jcontcenter {
     justify-content: center;
+}
+
+.rowgap5{
+    row-gap: 5px;
+}
+
+.colgap {
+    column-gap: 5px;
 }
 
 /* text  */

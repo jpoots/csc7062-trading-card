@@ -10,10 +10,10 @@
     <div class="container mt10">
 
         <form action="/mycards" method="post" class="mb0">
-            <fieldset class="talright mb0">
+            <fieldset class="talright mb0 dflex">
                 <select id="collection" name="collid">
                     <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
-                    <option value="none" selected disabled hidden>all cards</option>
+                    <option value="none" selected disabled hidden>Select Collection</option>
                     <% collections.forEach(element => { %>
                         <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
                     <% }) %>

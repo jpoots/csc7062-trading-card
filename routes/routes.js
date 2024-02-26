@@ -1,12 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const mysql = require("mysql2");
+const sessions = require("express-session");
 const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
-
-// setup dotenv and pokemon api
-dotenv.config();
-pokemon.configure({apiKey: process.env.TCG_KEY});
 
 // establish db connection
 const db = mysql.createConnection({
@@ -26,8 +23,8 @@ db.connect((err)=> {
 const rowSize = 5;
 
 // perform a db query, slice and return
-const cardsSearch = async (query) => {
-    let cardResult = await db.promise().query(query);
+const cardsSearch = async (query, params) => {
+    let cardResult = await db.promise().query(query, params);
     cardResult = cardResult[0];
     let sliced = [];
 
@@ -58,30 +55,38 @@ router.get("/register", (req, res) => {
 
 // browse
 router.get("/browse", async (req, res) => {
-    let data = [];
-
-    let read = "SELECT card_id, name, image_url FROM card ORDER BY card.name";
+    let read = "SELECT card_id, name, image_url FROM card";
     let cards = await cardsSearch(read);
     res.render("browse", {cards: cards});
 });
 
 router.post("/browse", async (req, res) => {
-    let searchName = `%${req.body.search}%`
+    let searchName = `${req.body.search}`
     
     // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
     let read = `SELECT card_id, name, image_url FROM card 
                 WHERE name 
-                LIKE '${searchName}' 
+                LIKE ?
                 ORDER BY
                 CASE
-                    WHEN name LIKE '${searchName}' THEN 1
-                    WHEN name LIKE '${searchName}%' THEN 2
-                    WHEN name LIKE '%${searchName}' THEN 4
+                    WHEN name LIKE ? THEN 1
+                    WHEN name LIKE ? THEN 2
+                    WHEN name LIKE ? THEN 4
                     ELSE 3
                 END`;
 
-    let cards = await cardsSearch(read);
+    let cards = await cardsSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
 
+    res.render("browse", {cards: cards});
+});
+
+router.get("/browse/:expansionId", async (req, res) => {
+    let expansionID = req.params.expansionId;
+    let read = `SELECT card_id, name, image_url FROM card
+                INNER JOIN expansion
+                ON expansion.expansion_id = card.expansion_id
+                WHERE card.expansion_id = ?;`;
+    let cards = await cardsSearch(read, [expansionID]);
     res.render("browse", {cards: cards});
 });
 
@@ -107,8 +112,7 @@ router.get("/mycards", async (req, res) => {
     ON collection.collection_id = collection_card.collection_id
     INNER JOIN user_collection
     ON user_collection.collection_id = collection.collection_id
-    WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"
-    ORDER BY card.name`;
+    WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"`;
 
     let collections = await db.promise().query(collQ);
     collections = collections[0]
@@ -122,8 +126,7 @@ router.get("/mycards", async (req, res) => {
 });
 
 router.post("/mycards", async (req, res) => {
-    const rowSize = 5;
-    let user_id = 1;
+    let userId = 1;
     let collectionID = req.body.collid;
 
     // get collections to populate drop down
@@ -131,7 +134,7 @@ router.post("/mycards", async (req, res) => {
     `SELECT collection.collection_id, collection_name FROM collection 
     INNER JOIN user_collection
     ON collection.collection_id = user_collection.collection_id
-    WHERE user_collection.user_id = ${user_id}
+    WHERE user_collection.user_id = ?
     ORDER BY collection_name`;
 
     // get cards in current collection
@@ -139,13 +142,12 @@ router.post("/mycards", async (req, res) => {
     `SELECT name, image_url FROM card 
     INNER JOIN collection_card
     ON collection_card.card_id = card.card_id
-    WHERE collection_card.collection_id = ${collectionID}
-    ORDER BY card.name`;
+    WHERE collection_card.collection_id = ?`;
 
-    let collections = await db.promise().query(collQ);
+    let collections = await db.promise().query(collQ, [userId]);
     collections = collections[0]
 
-    let cards = await cardsSearch(cardQ);
+    let cards = await cardsSearch(cardQ, [collectionID]);
 
     res.render("mycards", {
         cards: cards,
@@ -158,10 +160,10 @@ router.get("/card/:cardId", (req, res) => {
 
     // get card id from the req
     let cardID = req.params.cardId;
-    let read = `SELECT * FROM card WHERE card_id = ${cardID}`;
+    let read = `SELECT * FROM card WHERE card_id = ?`;
 
     // get card data from 
-    db.query(read, async (err, result) => {
+    db.query(read, [cardID], async (err, result) => {
         // error checking
         if(err) throw err;
         if (result.length === 0) return res.redirect("/browse");
@@ -199,6 +201,12 @@ router.get("/card/:cardId", (req, res) => {
 
         res.render("card", {card : cardData});
     });
+});
+
+router.get("/expansions", async (req, res) => {
+    let query = "SELECT * FROM expansion"
+    let expansions = await cardsSearch(query)
+    res.render("expansions", {expansions: expansions});
 });
 
 module.exports = router;

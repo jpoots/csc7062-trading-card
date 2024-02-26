@@ -11,7 +11,7 @@
 
             <div class="column">
                 <form action="/browse" method="post" class="mb0">
-                    <fieldset class="talright mb0">
+                    <fieldset class="talright mb0 dflex">
                         <select id="filter" name="filter">
                             <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
                             <option value="none" selected disabled hidden>Filter</option>
@@ -25,17 +25,21 @@
             <div class="column">
                 <!-- form from milligram docs -->
                 <div class="container mt10">
-                    <form action="/browse" method="post" class="mb0">
-                        <fieldset class="talright mb0">
+                    <form action="/browse" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                        <fieldset class="talright mb0 dflex">
                             <input type="text" placeholder="Search" name="search" id="searchField" class="wauto mb0">
                             <input class="button-primary bluebutton textwhite mb0" type="submit" value="Search">
                         </fieldset>
-                        <select id="filter" name="filter">
-                            <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
-                            <option value="none" selected disabled hidden>Search</option>
-                            <option value="filt">All cards</option>
-                            <option value="filt">Collections</option>                       
-                        </select>
+
+                        <fieldset class="talright mb0 dflex rowgap5">
+                            <select id="filter" name="filter">
+                                <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
+                                <option value="none" selected disabled hidden>Search</option>
+                                <option value="filt">All cards</option>
+                                <option value="filt">Collections</option>                       
+                            </select>
+                        </fieldset>
+
                     </form>
                 </div>
             </div>

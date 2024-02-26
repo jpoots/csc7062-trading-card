@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+
+    <div class="container browsecontainer">
+        <% expansions.forEach(row => { %>
+            <div class="row mt20">
+                <% row.forEach(expansion => { %>
+                    <div class="column browsecol dflex jcontcenter">
+                        <div class="card dflex fdcol w100 jcontcenter">
+                            <a href="/browse/<%= expansion.expansion_id %>" class="textblack centertext">
+                                <img src="<%= expansion.logo_url %>" alt="" width="" class="cardimg">
+                                <h6 class="centertext browsetitle"><%= expansion.name %></h6>
+                            </a>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% }) %>
+    </div>
+
+    <%- include("partials/footer") %>
+</body>
+</html>
