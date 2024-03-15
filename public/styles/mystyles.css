@@ -17,8 +17,8 @@ html, body {
 }
 
 .redbutton {
-    background-color: rgb(220,53,69);
-    border-color: rgb(220,53,69);
+    background-color: rgb(220,53,69) !important;
+    border-color: rgb(220,53,69) !important;
 
 }
 
@@ -29,8 +29,8 @@ html, body {
 }
 
 .yellowbutton {
-    background-color: rgb(255,192,8);
-    border-color: rgb(255,192,8);
+    background-color: rgb(255,192,8) !important;
+    border-color: rgb(255,192,8) !important;
 }
 
 .yellowbutton:hover {
@@ -303,6 +303,10 @@ td, th {
     color: black !important;
 }
 
+.textred {
+    color: red !important;
+}
+
 .talright {
     text-align: right;
 }
@@ -315,6 +319,7 @@ td, th {
 .wauto{
     width: auto;
 }
+
 
 /* responsive design */
 @media (max-width: 40rem) {

@@ -9,7 +9,6 @@ const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokem
 // set up app
 const app = express();
 app.set('view engine', 'ejs');
-const PORT = 3000;
 
 const halfDay = 1000 * 60 * 60 * 12;
 app.use(sessions ({
@@ -22,6 +21,7 @@ app.use(sessions ({
 // setup dotenv and pokemon api
 dotenv.config();
 pokemon.configure({apiKey: process.env.TCG_KEY});
+const PORT = process.env.APP_PORT;
 
 // middleware and routes
 app.use(express.static(path.join(__dirname, "./public")));

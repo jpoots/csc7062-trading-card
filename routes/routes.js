@@ -4,30 +4,35 @@ const mysql = require("mysql2");
 const sessions = require("express-session");
 const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
+const bcrypt = require("bcrypt");
 
 // establish db connection
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",         
-    password: "root",         
-    database: "40259713",
-    port: "8889"
+const db = mysql.createPool({
+    connectionLimit: 10,
+    host: 'localhost',
+    user: 'root',
+    password: 'root',
+    database: '40259713',
+    port: '8889',
+    multipleStatements: true,
+    waitForConnections: true,
+    queueLimit: 10
 });
 
-db.connect((err)=> {
-    if(err) throw err;
-    console.log('database connected successfully');
+db.getConnection((err) => {
+    if (err) return console.log(err.message);
+    console.log("connected to db using createPool");
 });
 
 // define global row size
 const rowSize = 5;
+const saltRounds = 5;
 
 // perform a db query, slice and return
-const cardsSearch = async (query, params) => {
+const slicedSearch = async (query, params) => {
     let cardResult = await db.promise().query(query, params);
     cardResult = cardResult[0];
     let sliced = [];
-
     // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d breaks cards into arrays of length rowSize
     for (let i = 0; i < cardResult.length; i += rowSize) {
         const chunk = cardResult.slice(i, i + rowSize);
@@ -48,15 +53,76 @@ router.get("/login", (req, res) => {
     res.render("login");
 });
 
+// login
+router.post("/login", async (req, res) => {
+    // https://www.npmjs.com/package/bcrypt?activeTab=readme
+    let email = req.body.email;
+    let password = req.body.pass;
+    let read = `SELECT * FROM user WHERE email_address = ?`;
+
+    let user = await db.promise().query(read, [email]);
+    user = user[0];
+
+    if (user.length === 1){
+        const match = await bcrypt.compare(password, user[0].password_hash);
+        if (match) {
+            res.render("index")
+        }
+    } else {
+        res.render("login");
+    }
+});
+
 // register
 router.get("/register", (req, res) => {
     res.render("register");
 });
 
+router.post("/register", async (req, res) => {
+        // https://www.npmjs.com/package/bcrypt?activeTab=readme
+        let email = req.body.email.trim();
+        let display = req.body.displayname.trim();
+        let password = req.body.password.trim();
+
+        let message = "";
+
+        if (!display || !email || !password || display.length === 0 || email.length === 0 || password.length === 0){
+            message = "Please enter all fields";
+            res.render("register", {
+                message
+            });
+        } else if (!email.includes("@")){
+            message = "Invalid email";
+            res.render("register", {
+                message
+            });
+        } else {
+            let read = `SELECT * FROM user WHERE email_address = ?`;
+            let insert = `INSERT INTO user (email_address, password_hash, display_name) VALUES (?, ?, ?)`;
+        
+            let user = await db.promise().query(read, [email]);
+            user = user[0];
+        
+            if (user.length === 1){
+                message = "Email already in use";
+                res.render("register", {
+                    message
+                });
+            } else {    
+                bcrypt.hash(password, saltRounds, async (err, hash) => {
+                    await db.promise().query(insert, [email, hash, display]);
+                    res.render("register");            
+                });
+            }
+        }
+});
+
 // browse
 router.get("/browse", async (req, res) => {
     let read = "SELECT card_id, name, image_url FROM card";
-    let cards = await cardsSearch(read);
+    
+    let cards = await slicedSearch(read);
+
     res.render("browse", {cards: cards});
 });
 
@@ -75,7 +141,7 @@ router.post("/browse", async (req, res) => {
                     ELSE 3
                 END`;
 
-    let cards = await cardsSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
+    let cards = await slicedSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
 
     res.render("browse", {cards: cards});
 });
@@ -86,7 +152,7 @@ router.get("/browse/:expansionId", async (req, res) => {
                 INNER JOIN expansion
                 ON expansion.expansion_id = card.expansion_id
                 WHERE card.expansion_id = ?;`;
-    let cards = await cardsSearch(read, [expansionID]);
+    let cards = await slicedSearch(read, [expansionID]);
     res.render("browse", {cards: cards});
 });
 
@@ -117,7 +183,7 @@ router.get("/mycards", async (req, res) => {
     let collections = await db.promise().query(collQ);
     collections = collections[0]
 
-    let cards = await cardsSearch(cardQ);
+    let cards = await slicedSearch(cardQ);
 
     res.render("mycards", {
         cards: cards,
@@ -147,7 +213,7 @@ router.post("/mycards", async (req, res) => {
     let collections = await db.promise().query(collQ, [userId]);
     collections = collections[0]
 
-    let cards = await cardsSearch(cardQ, [collectionID]);
+    let cards = await slicedSearch(cardQ, [collectionID]);
 
     res.render("mycards", {
         cards: cards,
@@ -205,7 +271,7 @@ router.get("/card/:cardId", (req, res) => {
 
 router.get("/expansions", async (req, res) => {
     let query = "SELECT * FROM expansion"
-    let expansions = await cardsSearch(query)
+    let expansions = await slicedSearch(query)
     res.render("expansions", {expansions: expansions});
 });
 

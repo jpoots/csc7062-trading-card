@@ -5,7 +5,7 @@
 </head>
 <body>
     <%- include("partials/navbar") %>
-    <form action="" class="container logsigncontainer mt20">
+    <form action="/login" method="post" class="container logsigncontainer mt20">
 
         <div class="row jcontcenter">
             <div class="column formcolumn centertext">
@@ -22,20 +22,20 @@
 
         <div class="row jcontcenter">
             <div class="column formcolumn">
-                    <input type="email" placeholder="email" id="exampleEmailInput" class="loginformfield">
+                    <input type="email" placeholder="email" name="email" class="loginformfield">
             </div>
         </div>
 
         <div class="row jcontcenter">
             <div class="column formcolumn">
                 <!--  lines adapted from skeleton doc-->
-                    <input type="password" placeholder="password" id="exampleEmailInput" class="loginformfield">
+                    <input type="password" placeholder="password" name="pass" class="loginformfield">
             </div>
         </div>
 
         <div class="row jcontcenter centertext">
             <div class="column formcolumn">
-                <a href="" class="redbutton button w100">Log in</a>            
+                <input class="redbutton button w100" type="submit" value="Log In">      
             </div>
         </div>
 
