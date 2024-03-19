@@ -45,10 +45,9 @@ const slicedSearch = async (query, params) => {
 
 // home page
 router.get("/", (req, res) => {
-    res.render("index");
+    res.render("index")
 });
 
-// login
 router.get("/login", (req, res) => {
     res.render("login");
 });
@@ -66,10 +65,14 @@ router.post("/login", async (req, res) => {
     if (user.length === 1){
         const match = await bcrypt.compare(password, user[0].password_hash);
         if (match) {
-            res.render("index")
+            req.session.auth = true;
+            req.session.userid = user[0].user_id;
+            res.redirect("/")
         }
     } else {
-        res.render("login");
+        res.render("login", {
+            message: "Issue with usernme or password"
+        });
     }
 });
 
@@ -79,14 +82,17 @@ router.get("/register", (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
+    // TODO: look at how i might improve security here (e.g can I call tolowercase on  undefined?)
         // https://www.npmjs.com/package/bcrypt?activeTab=readme
-        let email = req.body.email.trim();
-        let display = req.body.displayname.trim();
-        let password = req.body.password.trim();
+        const email = req.body.email.trim().toLowerCase();
+        const display = req.body.displayname.trim();
+        const password = req.body.password;
+        const confirmPassword = req.body.confirmpassword;
+        const avatarURL = `https://ui-avatars.com/api/?name=${display}`
 
         let message = "";
 
-        if (!display || !email || !password || display.length === 0 || email.length === 0 || password.length === 0){
+        if (!display || !email || !password || !confirmPassword || display.length === 0 || email.length === 0 || password.trim().length === 0 || confirmPassword.trim().length === 0){
             message = "Please enter all fields";
             res.render("register", {
                 message
@@ -96,25 +102,65 @@ router.post("/register", async (req, res) => {
             res.render("register", {
                 message
             });
+        } else if (password !== confirmPassword){
+            message = "Passwords do not match";
+            res.render("register", {
+                message
+            });
         } else {
-            let read = `SELECT * FROM user WHERE email_address = ?`;
-            let insert = `INSERT INTO user (email_address, password_hash, display_name) VALUES (?, ?, ?)`;
+            let emailSearch = `SELECT * FROM user WHERE email_address = ?`;
+            let displaySearch = `SELECT * FROM user WHERE display_name = ?`;
+            let insert = `INSERT INTO user (email_address, password_hash, display_name, avatar_url) VALUES (?, ?, ?, ?)`;
         
-            let user = await db.promise().query(read, [email]);
-            user = user[0];
+            let emailUser = await db.promise().query(emailSearch, [email]);
+            emailUser = emailUser[0];
+
+            let displayUser = await db.promise().query(displaySearch, [display]);
+            displayUser = displayUser[0];
         
-            if (user.length === 1){
+            if (emailUser.length != 0){
                 message = "Email already in use";
                 res.render("register", {
                     message
                 });
-            } else {    
+            } else if (displayUser.length != 0) {
+                message = "Display name already in use";
+                res.render("register", {
+                    message
+                });
+            } else {
                 bcrypt.hash(password, saltRounds, async (err, hash) => {
-                    await db.promise().query(insert, [email, hash, display]);
-                    res.render("register");            
+                    let insertResult = await db.promise().query(insert, [email, hash, display, avatarURL]);
+                    req.session.auth = true;
+                    req.session.userid = insertResult[0].insertId;
+                    res.redirect("/");            
                 });
             }
         }
+});
+
+// logout 
+router.get("/logout", (req, res) => {
+    req.session.auth = false; 
+    res.redirect("/");
+});
+
+router.get("/account", async (req, res) => {
+
+    if (!req.session.auth){
+        res.redirect("/");
+    } else {
+        const read = "SELECT * FROM user WHERE user_id = ?";
+        let userData = await db.promise().query(read, [req.session.userid]);
+
+        userData = userData[0][0];
+        
+        res.render("account", {
+            email: userData["email_address"],
+            displayName: userData["display_name"],
+            avatar: userData["avatar_url"]
+        });
+    }
 });
 
 // browse
@@ -158,41 +204,47 @@ router.get("/browse/:expansionId", async (req, res) => {
 
 // mycards
 router.get("/mycards", async (req, res) => {
-    const rowSize = 5;
-    let user_id = 1;
-
-    // get collections to populate drop down
-    let collQ = 
-    `SELECT collection.collection_id, collection_name FROM collection 
-    INNER JOIN user_collection
-    ON collection.collection_id = user_collection.collection_id
-    WHERE user_collection.user_id = ${user_id}
-    ORDER BY collection_name`;
-
-    // get cards in current collection
-    let cardQ = 
-    `SELECT name, image_url FROM card 
-    INNER JOIN collection_card
-    ON collection_card.card_id = card.card_id
-    INNER JOIN collection
-    ON collection.collection_id = collection_card.collection_id
-    INNER JOIN user_collection
-    ON user_collection.collection_id = collection.collection_id
-    WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"`;
-
-    let collections = await db.promise().query(collQ);
-    collections = collections[0]
-
-    let cards = await slicedSearch(cardQ);
-
-    res.render("mycards", {
-        cards: cards,
-        collections: collections});
+    if (!req.session.auth){
+        res.redirect("/login")
+    } else {
+        const rowSize = 5;
+        let user_id = req.session.userid;
+    
+        // get collections to populate drop down
+        let collQ = 
+        `SELECT collection.collection_id, collection_name FROM collection 
+        INNER JOIN user_collection
+        ON collection.collection_id = user_collection.collection_id
+        WHERE user_collection.user_id = ${user_id}
+        ORDER BY collection_name`;
+    
+        // get cards in current collection
+        let cardQ = 
+        `SELECT name, image_url FROM card 
+        INNER JOIN collection_card
+        ON collection_card.card_id = card.card_id
+        INNER JOIN collection
+        ON collection.collection_id = collection_card.collection_id
+        INNER JOIN user_collection
+        ON user_collection.collection_id = collection.collection_id
+        WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"`;
+    
+        let collections = await db.promise().query(collQ);
+        collections = collections[0]
+    
+        let cards = await slicedSearch(cardQ);
+    
+        res.render("mycards", {
+            cards: cards,
+            collections: collections
+        });
+    }
+  
 
 });
 
 router.post("/mycards", async (req, res) => {
-    let userId = 1;
+    let userId = req.session.userid;
     let collectionID = req.body.collid;
 
     // get collections to populate drop down

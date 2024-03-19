@@ -246,6 +246,11 @@ td, th {
     row-gap: 10px;
 }
 
+/* account */
+.avatar {
+    border-radius: 50%;
+}
+
 /* utility */
 
 /* margins */

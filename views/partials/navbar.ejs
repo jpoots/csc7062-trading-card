@@ -13,10 +13,17 @@
       <a href="/expansions" class="navlink textblack"> Expansions </a>
     </div>
 
-    <div class="column-50 navsection dflex alitemscenter">
-      <a href="/login" class="button redbutton mb0">Log in</a>
-      <a href="/register" class="button yellowbutton mb0 textblack">Sign up</a>
-    </div>
+    <% if (typeof auth === "undefined" || !auth) { %>
+      <div class="column-50 navsection dflex alitemscenter">
+        <a href="/login" class="button redbutton mb0">Log in</a>
+        <a href="/register" class="button yellowbutton mb0 textblack">Sign up</a>
+      </div>
+    <% } else { %>
+      <div class="column-50 navsection dflex alitemscenter">
+        <a href="/account" class="button yellowbutton mb0 textblack">Account</a>
+        <a href="/logout" class="button redbutton mb0">Log Out</a>
+      </div>
+    <% } %>
 
   </div>
 

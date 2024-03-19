@@ -6,6 +6,7 @@
 <body>
     <%- include("partials/navbar") %>
 
+
     <form action="/register" method="post" class="container logsigncontainer mt20">
 
         <div class="row formrow">
@@ -16,28 +17,27 @@
             </div>
         </div>
 
-        <div class="row formrow">
-            <div class="column formcolumn centertext">
-                <img src="images/pokeball_straight.png" alt="" width="72">
-            </div>
-        </div>
-
         <div class="row formrow centertext">
             <div class="column formcolumn">
-                <h3>Please Sign In</h1>
-            </div>
-        </div>
-        
-
-        <div class="row formrow">
-            <div class="column formcolumn">
-                    <input type="email" placeholder="email" name="email" class="signformfield">
+                <h3>My Account</h1>
             </div>
         </div>
 
         <div class="row formrow">
+            <div class="column formcolumn centertext">
+                <img src="<%= avatar  %>" alt="" width="72" class="avatar">
+            </div>
+        </div>
+
+        <div class="row formrow">
             <div class="column formcolumn">
-                    <input type="text" placeholder="display name" name="displayname" class="signformfield">
+                    <input type="email" placeholder="Email" value="<%= email %>" name="email" class="signformfield">
+            </div>
+        </div>
+
+        <div class="row formrow">
+            <div class="column formcolumn">
+                    <input type="text" placeholder="Display Name" value="<%= displayName %>" name="displayname" class="signformfield">
             </div>
         </div>
 
@@ -57,12 +57,12 @@
 
         <div class="row jcontcenter centertext">
             <div class="column formcolumn">
-                <input class="yellowbutton button w100 textblack" type="submit" value="Sign Up">      
+                <input class="yellowbutton button w100 textblack" type="submit" value="Update Account">      
             </div>
         </div>
         
 
     </form>
-    <%- include("partials/footer")  %>
+
+    <%- include("partials/footer") %>
 </body>
-</html>
