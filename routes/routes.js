@@ -168,7 +168,6 @@ router.get("/browse", async (req, res) => {
     let read = "SELECT card_id, name, image_url FROM card";
     
     let cards = await slicedSearch(read);
-
     res.render("browse", {cards: cards});
 });
 
@@ -192,6 +191,92 @@ router.post("/browse", async (req, res) => {
     res.render("browse", {cards: cards});
 });
 
+router.get("/collections", async (req, res) => {
+    let searchName = `${req.body.search}`
+
+    let read = `SELECT collection.collection_id, collection_name, display_name, avatar_url FROM collection 
+    INNER JOIN user
+    ON user.user_id = collection.user_id;`;
+
+    let collections = await slicedSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
+    res.render("collections", {collections: collections});
+});
+
+router.post("/collections", async (req, res) => {
+    let searchName = `${req.body.search}`
+
+    // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
+    let read = `SELECT collection.collection_id, collection_name, display_name, avatar_url FROM collection 
+                INNER JOIN user
+                ON user.user_id = collection.user_id
+                WHERE collection_name
+                LIKE ?
+                ORDER BY
+                CASE
+                    WHEN collection_name LIKE ? THEN 1
+                    WHEN collection_name LIKE ? THEN 2
+                    WHEN collection_name LIKE ? THEN 4
+                    ELSE 3
+                END`;
+    
+    let collections = await slicedSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
+    res.render("collections", {collections: collections});
+
+});
+
+router.get("/collections/:collectionId", async (req, res) => {
+    let collectionID = req.params.collectionId;
+    let owner = false;
+    let collections = [];
+    
+    let cardQuery = `SELECT * FROM collection_card
+    INNER JOIN card
+    ON collection_card.card_id = card.card_id
+    WHERE collection_card.collection_id = ?;`;
+    let cards = await slicedSearch(cardQuery, [collectionID]);
+
+    let ownerQuery = `SELECT user_id FROM collection
+    WHERE collection_id = ?;`
+
+    let ownerId = await db.promise().query(ownerQuery, [collectionID]);
+    ownerId = ownerId[0][0].user_id;
+
+    if (ownerId === req.session.userid){
+        owner = true;
+
+        let collQ = 
+        `SELECT collection.collection_id, collection_name FROM collection 
+        WHERE collection.user_id = ?
+        ORDER BY collection_name`;
+        
+        collections = await db.promise().query(collQ, [ownerId]);
+        collections = collections[0]
+    }
+    res.render("collection", {
+        cards: cards,
+        owner: owner,
+        collections: collections
+    });
+
+});
+
+router.post("/createcol", async (req, res) => {
+    let user_id = req.session.userid;
+
+    if (user_id) {
+        let colName = `${req.body.colName}`;
+
+        let insertQuery = `INSERT INTO collection (collection_name, user_id) 
+        VALUES (?, ?);`
+
+        let insertResult = await db.promise().query(insertQuery, [colName, user_id]);
+
+        res.redirect("/mycards");
+    } else {
+        res.redirect("/login");
+    }
+});
+
 router.get("/browse/:expansionId", async (req, res) => {
     let expansionID = req.params.expansionId;
     let read = `SELECT card_id, name, image_url FROM card
@@ -213,10 +298,13 @@ router.get("/mycards", async (req, res) => {
         // get collections to populate drop down
         let collQ = 
         `SELECT collection.collection_id, collection_name FROM collection 
-        INNER JOIN user_collection
-        ON collection.collection_id = user_collection.collection_id
-        WHERE user_collection.user_id = ${user_id}
+        WHERE collection.user_id = ${user_id}
         ORDER BY collection_name`;
+
+        let collections = await db.promise().query(collQ);
+        collections = collections[0]
+
+        let currentCollection = collections[0];
     
         // get cards in current collection
         let cardQ = 
@@ -225,18 +313,14 @@ router.get("/mycards", async (req, res) => {
         ON collection_card.card_id = card.card_id
         INNER JOIN collection
         ON collection.collection_id = collection_card.collection_id
-        INNER JOIN user_collection
-        ON user_collection.collection_id = collection.collection_id
-        WHERE user_collection.user_id = ${user_id} AND collection.collection_name = "all cards"`;
+        WHERE collection.collection_id = ?`;
     
-        let collections = await db.promise().query(collQ);
-        collections = collections[0]
-    
-        let cards = await slicedSearch(cardQ);
+        let cards = await slicedSearch(cardQ, [currentCollection.collection_id]);
     
         res.render("mycards", {
             cards: cards,
-            collections: collections
+            collections: collections,
+            collection: currentCollection.collection_name
         });
     }
   
@@ -250,14 +334,12 @@ router.post("/mycards", async (req, res) => {
     // get collections to populate drop down
     let collQ = 
     `SELECT collection.collection_id, collection_name FROM collection 
-    INNER JOIN user_collection
-    ON collection.collection_id = user_collection.collection_id
-    WHERE user_collection.user_id = ?
+    WHERE collection.user_id = ?
     ORDER BY collection_name`;
 
     // get cards in current collection
     let cardQ = 
-    `SELECT name, image_url FROM card 
+    `SELECT card.card_id, name, image_url FROM card 
     INNER JOIN collection_card
     ON collection_card.card_id = card.card_id
     WHERE collection_card.collection_id = ?`;
@@ -265,20 +347,43 @@ router.post("/mycards", async (req, res) => {
     let collections = await db.promise().query(collQ, [userId]);
     collections = collections[0]
 
+    let collNameQ= 
+    `
+    SELECT collection_name FROM collection
+    WHERE collection_id = ?
+    `
+
+    let collName = await db.promise().query(collNameQ, [collectionID]);
+    collName = collName[0][0].collection_name;
+
     let cards = await slicedSearch(cardQ, [collectionID]);
 
     res.render("mycards", {
         cards: cards,
-        collections: collections});
+        collections: collections,
+        collection: collName
+    });
 
 });
 
 // card
-router.get("/card/:cardId", (req, res) => {
+router.get("/card/:cardId", async (req, res) => {
 
     // get card id from the req
     let cardID = req.params.cardId;
     let read = `SELECT * FROM card WHERE card_id = ?`;
+    let collections = [];
+
+    if (req.session.userid){
+        let collectionQuery = `
+        SELECT * FROM collection
+        WHERE user_id = ?;
+        `
+
+        collections = await db.promise().query(collectionQuery, [req.session.userid]);
+        collections = collections[0];
+    }
+
 
     // get card data from 
     db.query(read, [cardID], async (err, result) => {
@@ -317,7 +422,10 @@ router.get("/card/:cardId", (req, res) => {
             priceURL: priceURL
         }
 
-        res.render("card", {card : cardData});
+        res.render("card", {
+            card : cardData,
+            collections: collections
+        });
     });
 });
 

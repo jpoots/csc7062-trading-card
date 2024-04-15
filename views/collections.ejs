@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+    <div class="container">
+
+        <div class="row">
+            <div class="column">
+                <!-- form from milligram docs -->
+                <div class="container mt10">
+                    <form action="/collections" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                        <fieldset class="talright mb0 dflex">
+                            <input type="text" placeholder="Search" name="search" id="searchField" class="wauto mb0">
+                            <input class="button-primary bluebutton textwhite mb0" type="submit" value="Search">
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <% collections.forEach(collection => { %>
+            <div class="row mt20">
+                <% collection.forEach(collection => { %>
+                    <div class="column browsecol dflex jcontcenter">
+                        <div class="card dflex fdcol w100 jcontcenter">
+                            <a href="collections/<%= collection.collection_id %>" class="textblack centertext">
+                                <img src="<%= collection.avatar_url %>" alt="" width="" class="avatar w50">
+                                <h6 class="centertext browsetitle"><%= collection.collection_name %></h6>
+                                <h6 class="centertext browsetitle">User: <%= collection.display_name %></h6>
+                            </a>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% }) %>
+
+    </div>
+
+    <%- include("partials/footer") %>
+</body>
+</html>

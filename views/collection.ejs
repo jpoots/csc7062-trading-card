@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+    <div class="container">
+
+        <div class="row">
+
+            <% if (!owner) { %>
+                <div class="column">
+                    <form action="/browse" method="post" class="mb0">
+                        <fieldset class="talright mb0 dflex">
+                            <select id="filter" name="filter">
+                                <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
+                                <option value="none" selected disabled hidden>Filter</option>
+                                <option value="filt">Filter</option>                          
+                            </select>
+                            <input class="button-primary bluebutton textwhite mb0" type="submit" value="Go">
+                        </fieldset>
+                    </form>
+                </div>
+    
+                <div class="column">
+                    <!-- form from milligram docs -->
+                    <div class="container mt10">
+                        <form action="/browse" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                            <fieldset class="talright mb0 dflex">
+                                <input type="text" placeholder="Search" name="search" id="searchField" class="wauto mb0">
+                                <input class="button-primary bluebutton textwhite mb0" type="submit" value="Search">
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="column">
+                    <form action="/mycards" method="post" class="mb0">
+                        <fieldset class="talright mb0 dflex">
+                            <select id="collection" name="collid">
+                                <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
+                                <option value="none" selected disabled hidden>Select Collection</option>
+                                <% collections.forEach(element => { %>
+                                    <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
+                                <% }) %>
+                            </select>
+                            <input class="button-primary bluebutton textwhite mb0" type="submit" value="Search">
+                        </fieldset>
+                    </form>
+                </div>
+    
+                <div class="column">
+                    <!-- form from milligram docs -->
+                        <form action="/createcol" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                            <fieldset class="talright mb0 dflex">
+                                <input type="text" placeholder="Name" name="colName" id="searchField" class="wauto mb0">
+                                <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
+                            </fieldset>
+                        </form>
+                </div>
+            <% } %>
+        </div>
+
+    </div>
+    
+    <% if (!owner) { %>
+        <%- include("partials/cards") %>
+    <% } else { %>
+        <%- include("partials/collectionCards") %>
+    <% } %>
+
+    <%- include("partials/footer") %>
+</body>
+</html>

@@ -7,11 +7,45 @@
     <%- include("partials/navbar") %>
 
     <div class="container mt20">
+        
+        <div class="row">
+
+            <div class="column column-25 centertext">
+                <span>Likes : 100</span>
+            </div>
+
+            <% if (auth) { %>
+                <div class="column column-offset-25">
+                    <!-- form from milligram docs -->
+                        <form action="/createcol" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                            <fieldset class="talright mb0 dflex">
+                                <select id="collection" name="collid">
+                                    <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
+                                    <option value="none" selected disabled hidden>Select Collection</option>
+                                    <% collections.forEach(element => { %>
+                                        <option value= "<%= element.collection_id  %>"><%= element.collection_name  %></option>
+                                    <% }) %>
+                                </select>                        
+                                <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
+                            </fieldset>
+                        </form>
+                    </div>
+            <% } %>
+
+        </div>
+
         <div class="row cardimgrow">
 
             <div class="column column-25 cardimgcol dflex fdcol alitemscenter">
                 <img class="cardpageimg" src="<%= card.image %>" alt="">
-                <a href="<%= card.priceURL %>" class="button bluebutton">€<%= card.price %></a>
+                <div>
+                    <form action="/mycards" method="post" class="mb0">
+                        <a href="<%= card.priceURL %>" class="button bluebutton">€<%= card.price %></a>
+                        <input class="button redbutton mb0" type="submit" value="Like">
+                    </form>
+                    
+                </div>
+
             </div>
 
             
