@@ -81,10 +81,11 @@ html, body {
 
 /* homepage header */
 .homehead {
-    background-color: rgb(48, 48, 48);
     margin-bottom: 40px;
     padding-bottom: 40px;
     padding-top: 40px;
+    background-image: url(../images/homebackground.jpg) !important;
+
 }
 
 .homepagebuttons {
@@ -157,6 +158,10 @@ html, body {
     border-color: rgb(255,192,8) !important;
     /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
     box-shadow: 0px 0px 3px 2px rgb(255,192,8);
+}
+
+.mycards {
+    background-image: url(../images/mycardsbackground.jpg) !important;
 }
 
 
@@ -361,6 +366,8 @@ td, th {
 .h100{
     height: 100%;
 }
+
+
 
 
 /* responsive design */

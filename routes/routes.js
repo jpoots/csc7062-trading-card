@@ -296,21 +296,33 @@ router.post("/createcol", async (req, res) => {
 router.post("/deletecol", async (req, res) => {
     let collID = req.body.collid;
 
+    let collectionQ = `
+    SELECT * FROM collection
+    WHERE collection_id = ?;`;
+
+
     let deleteCollQ = `
     DELETE FROM collection
     WHERE collection_id = ?;
-    `
+    `;
+
+    let collectionResult = await db.promise().query(collectionQ, [collID]);
+    collectionResult = collectionResult[0][0];
 
     let deleteResult = await db.promise().query(deleteCollQ, [collID]);
+
+    if (collectionResult.collection_name === "Liked Cards") {
+        let unlikeQ = `
+        DELETE FROM `
+    }
+
     res.redirect("/mycards")
 });
 
 router.post("/removecard", async (req, res) => {
     let cardID = req.body.cardId;
     let collID = req.body.collId;
-    console.log(req.body)
-    console.log(req.body.cardId)
-    console.log(collID)
+    let userID = req.session.userid;
 
     let removeQ = `
     DELETE FROM collection_card
@@ -349,7 +361,15 @@ router.get("/browse/:expansionId", async (req, res) => {
 });
 
 // mycards
-router.get("/mycards", async (req, res) => {
+router.get("/mycards", (req, res) => {
+    if (!req.session.auth){
+        res.redirect("/login")
+    } else {
+        res.render("mycards")
+    }
+});
+
+router.get("/mycards/collections", async (req, res) => {
     if (!req.session.auth){
         res.redirect("/login")
     } else {
@@ -367,18 +387,33 @@ router.get("/mycards", async (req, res) => {
         let currentCollection = collections[0];
         
         if (!currentCollection){
-            res.render("mycards");
+            res.render("mycollections");
         } else {
             res.redirect(`/collections/${currentCollection.collection_id}`);
         }
     }
-  
-
 });
 
-router.post("/mycards", async (req, res) => {
+router.post("/mycards/collections", async (req, res) => {
     let collectionID = req.body.collid;
     res.redirect(`/collections/${collectionID}`);
+});
+
+router.get("/mycards/liked", async (req, res) => {
+    let userID = req.session.userid;
+
+    if (userID){
+        let likedCardsQ = `
+        SELECT card.card_id, name, image_url FROM card_like
+        INNER JOIN card 
+        ON card.card_id = card_like.card_id
+        WHERE user_id = ?`
+    
+        let cards = await slicedSearch(likedCardsQ, [userID]);
+        res.render("browse", {cards: cards})
+    } else {
+        res.redirect("login");
+    }
 });
 
 // card
@@ -470,7 +505,7 @@ router.get("/card/:cardId", async (req, res) => {
     });
 });
 
-router.post("/like", (req, res) => {
+router.post("/like", async (req, res) => {
     if (!req.session.userid){
         res.redirect("/login");
     } else {
@@ -479,18 +514,17 @@ router.post("/like", (req, res) => {
         let likeStatus = req.body.likestatus;
         let likeQ = "";
 
-        console.log(likeStatus)
-
         if (likeStatus === "Like") {
             likeQ = `
             INSERT INTO card_like (card_id, user_id)
             VALUES (?, ?)
-            `
+            `;
+
         } else {
             likeQ = `
             DELETE FROM card_like
             WHERE card_id = ?
-            AND user_id = ?
+            AND user_id = ?;
             `
         }
 

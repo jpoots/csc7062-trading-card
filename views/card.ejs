@@ -45,7 +45,7 @@
                         <input type="hidden" name="cardid" value="<%= card.cardId %>">
                         
                         <% if (!card.liked) { %>
-                            <input class="button redbutton mb0" type="submit" value="Like">
+                            <input class="button redbutton mb0" type="submit" name="likestatus" value="Like">
                         <% } else { %>
                             <input class="button redbuttonfaded mb0" type="submit" name="likestatus" value="Unlike">
                         <% } %>
