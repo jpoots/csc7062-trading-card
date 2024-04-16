@@ -30,7 +30,17 @@ html, body {
 .redbutton:hover {
     background-color: rgb(220,53,69);
     border-color: rgb(220,53,69);
-    color: black;
+    color: black !important;
+}
+
+.redbuttonfaded{
+    background-color: rgb(227,93,106) !important;
+    border-color: rgb(227,93,106) !important;
+    color: black !important;
+}
+
+.redbuttonfaded:hover {
+    color: white !important;
 }
 
 .yellowbutton {
@@ -41,7 +51,7 @@ html, body {
 .yellowbutton:hover {
     background-color: rgb(255,192,8);
     border-color: rgb(255,192,8);
-    color: white;
+    color: white !important;
 }
 
 .bluebutton {
@@ -338,8 +348,18 @@ td, th {
     width: 50%;
 }
 
+.w75{
+    width: 75%;
+}
+
 .wauto{
     width: auto;
+}
+
+/* height */
+
+.h100{
+    height: 100%;
 }
 
 

@@ -11,8 +11,9 @@
                                 <h6 class="centertext browsetitle"><%= card.name %></h6>
                             </a>
 
-                            <form action="/remove" method="post" class="mb0">
-                                <input type="hidden" name="cardID" value="<%= card.card_id %>">
+                            <form action="/removecard" method="post" class="mb0">
+                                <input type="hidden" name="collId" value="<%= currentCollection.collection_id %>">
+                                <input type="hidden" name="cardId" value="<%= card.card_id %>">
                                 <input class="button redbutton mb0 w100" type="submit" value="Remove">
                             </form>
                         </div>

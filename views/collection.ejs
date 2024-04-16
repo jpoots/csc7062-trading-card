@@ -40,7 +40,7 @@
                         <fieldset class="talright mb0 dflex">
                             <select id="collection" name="collid">
                                 <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
-                                <option value="none" selected disabled hidden>Select Collection</option>
+                                <option value="none" selected disabled hidden><%= currentCollection.collection_name %></option>
                                 <% collections.forEach(element => { %>
                                     <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
                                 <% }) %>
@@ -50,15 +50,22 @@
                     </form>
                 </div>
     
-                <div class="column">
+                <div class="column dflex">
                     <!-- form from milligram docs -->
-                        <form action="/createcol" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                        <form action="/createcol" method="post" class="mb0 dflex rowgap5 colgap5 fdcol w75">
                             <fieldset class="talright mb0 dflex">
                                 <input type="text" placeholder="Name" name="colName" id="searchField" class="wauto mb0">
                                 <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
                             </fieldset>
                         </form>
+
+
+                    <form action="/deletecol" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                        <input type="hidden" name="collid" value="<%= currentCollection.collection_id %>">
+                        <input class="button redbutton mb0" type="submit" value="Delete">
+                    </form>
                 </div>
+
             <% } %>
         </div>
 

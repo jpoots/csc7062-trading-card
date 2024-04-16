@@ -9,20 +9,7 @@
     <!-- form from milligram docs -->
     <div class="container mt10">
         <div class="row">
-            <div class="column">
-                <form action="/mycards" method="post" class="mb0">
-                    <fieldset class="talright mb0 dflex">
-                        <select id="collection" name="collid">
-                            <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
-                            <option value="none" selected disabled hidden><%= collection %></option>
-                            <% collections.forEach(element => { %>
-                                <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
-                            <% }) %>
-                        </select>
-                        <input class="button-primary bluebutton textwhite mb0" type="submit" value="Search">
-                    </fieldset>
-                </form>
-            </div>
+
 
             <div class="column">
                 <!-- form from milligram docs -->
@@ -37,8 +24,6 @@
         </div>
 
     </div>
-
-    <%- include("partials/collectionCards") %>
 
     <%- include("partials/footer") %>
 </body>

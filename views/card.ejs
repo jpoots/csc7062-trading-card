@@ -11,14 +11,15 @@
         <div class="row">
 
             <div class="column column-25 centertext">
-                <span>Likes : 100</span>
+                <h4>Likes : <%= card.likeCount %></h4>
             </div>
 
             <% if (auth) { %>
                 <div class="column column-offset-25">
                     <!-- form from milligram docs -->
-                        <form action="/createcol" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                        <form action="/addcard" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
                             <fieldset class="talright mb0 dflex">
+                                <input type="hidden" name="cardid" value=<%= card.cardId %>>
                                 <select id="collection" name="collid">
                                     <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
                                     <option value="none" selected disabled hidden>Select Collection</option>
@@ -26,7 +27,7 @@
                                         <option value= "<%= element.collection_id  %>"><%= element.collection_name  %></option>
                                     <% }) %>
                                 </select>                        
-                                <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
+                                <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Add">
                             </fieldset>
                         </form>
                     </div>
@@ -39,9 +40,15 @@
             <div class="column column-25 cardimgcol dflex fdcol alitemscenter">
                 <img class="cardpageimg" src="<%= card.image %>" alt="">
                 <div>
-                    <form action="/mycards" method="post" class="mb0">
+                    <form action="/like" method="post" class="mb0">
                         <a href="<%= card.priceURL %>" class="button bluebutton">€<%= card.price %></a>
-                        <input class="button redbutton mb0" type="submit" value="Like">
+                        <input type="hidden" name="cardid" value="<%= card.cardId %>">
+                        
+                        <% if (!card.liked) { %>
+                            <input class="button redbutton mb0" type="submit" value="Like">
+                        <% } else { %>
+                            <input class="button redbuttonfaded mb0" type="submit" name="likestatus" value="Unlike">
+                        <% } %>
                     </form>
                     
                 </div>

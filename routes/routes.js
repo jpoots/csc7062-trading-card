@@ -68,7 +68,12 @@ router.post("/login", async (req, res) => {
             req.session.auth = true;
             req.session.userid = user[0].user_id;
             res.redirect("/")
+        } else {
+            res.render("login", {
+                message: "Issue with username or password"
+            });
         }
+
     } else {
         res.render("login", {
             message: "Issue with usernme or password"
@@ -228,6 +233,7 @@ router.get("/collections/:collectionId", async (req, res) => {
     let collectionID = req.params.collectionId;
     let owner = false;
     let collections = [];
+    let currentCollection = "";
     
     let cardQuery = `SELECT * FROM collection_card
     INNER JOIN card
@@ -251,11 +257,21 @@ router.get("/collections/:collectionId", async (req, res) => {
         
         collections = await db.promise().query(collQ, [ownerId]);
         collections = collections[0]
+
+        let collection = `
+        SELECT * FROM collection
+        WHERE collection_id = ?
+        `;
+    
+        currentCollection = await db.promise().query(collection, [collectionID])
+        currentCollection = currentCollection[0][0];
     }
+
     res.render("collection", {
         cards: cards,
         owner: owner,
-        collections: collections
+        collections: collections,
+        currentCollection : currentCollection
     });
 
 });
@@ -277,6 +293,51 @@ router.post("/createcol", async (req, res) => {
     }
 });
 
+router.post("/deletecol", async (req, res) => {
+    let collID = req.body.collid;
+
+    let deleteCollQ = `
+    DELETE FROM collection
+    WHERE collection_id = ?;
+    `
+
+    let deleteResult = await db.promise().query(deleteCollQ, [collID]);
+    res.redirect("/mycards")
+});
+
+router.post("/removecard", async (req, res) => {
+    let cardID = req.body.cardId;
+    let collID = req.body.collId;
+    console.log(req.body)
+    console.log(req.body.cardId)
+    console.log(collID)
+
+    let removeQ = `
+    DELETE FROM collection_card
+    WHERE collection_id = ?
+    AND card_id = ?;
+    `;
+
+    let removeResult = await db.promise().query(removeQ, [collID, cardID]);
+
+    res.redirect(`/collections/${collID}`);
+})
+
+router.post("/addcard", async (req, res) => {
+    let userID = req.session.userid;
+    let cardID = req.body.cardid;
+    let collID = req.body.collid;
+
+    let addQ = `
+    INSERT INTO collection_card (collection_id, card_id)
+    VALUES (?, ?);
+    `
+
+    let addResult = await db.promise().query(addQ, [collID, cardID]);
+
+    res.redirect(`/collections/${collID}`)
+});
+
 router.get("/browse/:expansionId", async (req, res) => {
     let expansionID = req.params.expansionId;
     let read = `SELECT card_id, name, image_url FROM card
@@ -292,7 +353,6 @@ router.get("/mycards", async (req, res) => {
     if (!req.session.auth){
         res.redirect("/login")
     } else {
-        const rowSize = 5;
         let user_id = req.session.userid;
     
         // get collections to populate drop down
@@ -305,65 +365,20 @@ router.get("/mycards", async (req, res) => {
         collections = collections[0]
 
         let currentCollection = collections[0];
-    
-        // get cards in current collection
-        let cardQ = 
-        `SELECT name, image_url FROM card 
-        INNER JOIN collection_card
-        ON collection_card.card_id = card.card_id
-        INNER JOIN collection
-        ON collection.collection_id = collection_card.collection_id
-        WHERE collection.collection_id = ?`;
-    
-        let cards = await slicedSearch(cardQ, [currentCollection.collection_id]);
-    
-        res.render("mycards", {
-            cards: cards,
-            collections: collections,
-            collection: currentCollection.collection_name
-        });
+        
+        if (!currentCollection){
+            res.render("mycards");
+        } else {
+            res.redirect(`/collections/${currentCollection.collection_id}`);
+        }
     }
   
 
 });
 
 router.post("/mycards", async (req, res) => {
-    let userId = req.session.userid;
     let collectionID = req.body.collid;
-
-    // get collections to populate drop down
-    let collQ = 
-    `SELECT collection.collection_id, collection_name FROM collection 
-    WHERE collection.user_id = ?
-    ORDER BY collection_name`;
-
-    // get cards in current collection
-    let cardQ = 
-    `SELECT card.card_id, name, image_url FROM card 
-    INNER JOIN collection_card
-    ON collection_card.card_id = card.card_id
-    WHERE collection_card.collection_id = ?`;
-
-    let collections = await db.promise().query(collQ, [userId]);
-    collections = collections[0]
-
-    let collNameQ= 
-    `
-    SELECT collection_name FROM collection
-    WHERE collection_id = ?
-    `
-
-    let collName = await db.promise().query(collNameQ, [collectionID]);
-    collName = collName[0][0].collection_name;
-
-    let cards = await slicedSearch(cardQ, [collectionID]);
-
-    res.render("mycards", {
-        cards: cards,
-        collections: collections,
-        collection: collName
-    });
-
+    res.redirect(`/collections/${collectionID}`);
 });
 
 // card
@@ -373,16 +388,39 @@ router.get("/card/:cardId", async (req, res) => {
     let cardID = req.params.cardId;
     let read = `SELECT * FROM card WHERE card_id = ?`;
     let collections = [];
+    let liked = false;
+    let userID = req.session.userid;
 
-    if (req.session.userid){
+    if (userID){
         let collectionQuery = `
         SELECT * FROM collection
         WHERE user_id = ?;
         `
 
-        collections = await db.promise().query(collectionQuery, [req.session.userid]);
+        collections = await db.promise().query(collectionQuery, [userID]);
         collections = collections[0];
+
+        let likeQ = `
+        SELECT * FROM card_like
+        WHERE card_id = ?
+        AND user_id = ?
+        `;
+
+        let likeResult = await db.promise().query(likeQ, [cardID, userID]);
+        likeResult = likeResult[0]
+
+        if(likeResult.length > 0) {
+            liked = true;
+        }
+
     }
+
+    let likeQuery = `
+    SELECT COUNT(*) FROM card_like
+    WHERE card_id = ?`;
+
+    let likeCount = await db.promise().query(likeQuery, [cardID]);
+    likeCount = likeCount[0][0]["COUNT(*)"];
 
 
     // get card data from 
@@ -402,6 +440,9 @@ router.get("/card/:cardId", async (req, res) => {
         // prepare card data for rendering
         cardData = {
             name: card.name,
+            cardId: card.card_id,
+            likeCount: likeCount,
+            liked: liked,
             set: "a set",
             expansion: "an expansion",
             category: "Pokemon",
@@ -429,10 +470,44 @@ router.get("/card/:cardId", async (req, res) => {
     });
 });
 
+router.post("/like", (req, res) => {
+    if (!req.session.userid){
+        res.redirect("/login");
+    } else {
+        let cardID = req.body.cardid;
+        let userID = req.session.userid;
+        let likeStatus = req.body.likestatus;
+        let likeQ = "";
+
+        console.log(likeStatus)
+
+        if (likeStatus === "Like") {
+            likeQ = `
+            INSERT INTO card_like (card_id, user_id)
+            VALUES (?, ?)
+            `
+        } else {
+            likeQ = `
+            DELETE FROM card_like
+            WHERE card_id = ?
+            AND user_id = ?
+            `
+        }
+
+        let likeResult = db.promise().query(likeQ, [cardID, userID])
+        res.redirect(`/card/${cardID}`)
+    }
+});
+
 router.get("/expansions", async (req, res) => {
     let query = "SELECT * FROM expansion"
     let expansions = await slicedSearch(query)
     res.render("expansions", {expansions: expansions});
+});
+
+/* https://www.geeksforgeeks.org/how-to-redirect-404-errors-to-a-page-in-express-js/ */
+router.all('*', (req, res) => {
+    res.render("error")
 });
 
 module.exports = router;
