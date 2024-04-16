@@ -344,6 +344,10 @@ td, th {
     text-align: right;
 }
 
+.bold {
+    font-weight: bold;
+}
+
 /* width */
 .w100 {
     width: 100%;

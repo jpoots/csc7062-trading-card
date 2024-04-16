@@ -80,14 +80,14 @@
                         </div>
                     </div>
 
-                    <% cardData.attack.forEach(attack => { %>
+                    <% card.attacks.forEach(attack => { %>
                         <div class="row carddetailsrow attacktop">
                             <div class="column">
-                                <h5 class="mb2"><%= attack.name %></h5>
+                                <h5 class="mb2 bold"><%= attack.attack_name %></h5>
                             </div>
 
                             <div class="column">
-                                <p class="cardinfocol dflex"><%= attack.damage %></p>
+                                <p class="cardinfocol dflex mb0"><%= attack.damage %></p>
                             </div>
                         </div>
 
@@ -105,13 +105,13 @@
 
                             <table>
                                 <thead>
-                                    <th>Set</th>
+                                    <th>Evolves From</th>
                                     <th>Expansion</th>
                                     <th>Illustrator</th>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><%= card.set %></td>
+                                        <td><%= card.evolveFrom %></td>
                                         <td><%= card.expansion %></td>
                                         <td><%= card.illustrator %></td>
                                     </tr>

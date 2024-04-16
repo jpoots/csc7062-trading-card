@@ -421,87 +421,104 @@ router.get("/card/:cardId", async (req, res) => {
 
     // get card id from the req
     let cardID = req.params.cardId;
-    let read = `SELECT * FROM card WHERE card_id = ?`;
     let collections = [];
     let liked = false;
     let userID = req.session.userid;
+    let evolveFrom = "N/A"
 
     if (userID){
         let collectionQuery = `
         SELECT * FROM collection
         WHERE user_id = ?;
-        `
+        `;
 
         collections = await db.promise().query(collectionQuery, [userID]);
         collections = collections[0];
 
-        let likeQ = `
+        let likeStatusQ = `
         SELECT * FROM card_like
         WHERE card_id = ?
         AND user_id = ?
         `;
 
-        let likeResult = await db.promise().query(likeQ, [cardID, userID]);
+        let likeResult = await db.promise().query(likeStatusQ, [cardID, userID]);
         likeResult = likeResult[0]
 
         if(likeResult.length > 0) {
             liked = true;
         }
-
     }
 
-    let likeQuery = `
+    let likeCountQ = `
     SELECT COUNT(*) FROM card_like
     WHERE card_id = ?`;
 
-    let likeCount = await db.promise().query(likeQuery, [cardID]);
+    let likeCount = await db.promise().query(likeCountQ, [cardID]);
     likeCount = likeCount[0][0]["COUNT(*)"];
 
+    let cardQ = `
+    SELECT name, card.card_id, hp, card.tcg_id, category_name, stage_name, illustrator_name, image_url, expansion_name, evolve_from
+    FROM card 
+    INNER JOIN illustrator
+    ON illustrator.illustrator_id = card.illustrator_id
+    INNER JOIN expansion
+    ON expansion.expansion_id = card.expansion_id
+    INNER JOIN category
+    ON category.category_id = card.category_id
+    INNER JOIN stage
+    ON stage.stage_id = card.stage_id
+    WHERE card.card_id = ?;
+    `;
 
-    // get card data from 
-    db.query(read, [cardID], async (err, result) => {
-        // error checking
-        if(err) throw err;
-        if (result.length === 0) return res.redirect("/browse");
+    let card = await db.promise().query(cardQ, [cardID])
+    card = card[0][0];
 
-        // format card data and get price data
-        let card = result[0]
-        let response = await pokemon.card.find(card.tcg_id);
+    if (card.evolve_from) {
+        evolveFrom = card.evolve_from
+    }
 
-        // to fixed from https://www.tutorialspoint.com/How-to-format-a-number-with-two-decimals-in-JavaScript
-        let price = response.cardmarket.prices.trendPrice.toFixed(2);
-        let priceURL = response.cardmarket.url
+    console.log(card)
 
-        // prepare card data for rendering
-        cardData = {
-            name: card.name,
-            cardId: card.card_id,
-            likeCount: likeCount,
-            liked: liked,
-            set: "a set",
-            expansion: "an expansion",
-            category: "Pokemon",
-            evolves: "evolves",
-            stage: "Basic",
-            hp: card.hp,
-            illustrator: "Me",
-            image: card.image_url,
-            type: ["https://static.tcgcollector.com/content/images/90/d7/49/90d74923dfb481342fb5cb6c78e5fc6f6a8992cbd72a127d78af726c412a1bdc.png"],
-            attack:[
-                {
-                    name: "Absorb",
-                    effect: "Heal 10 damage from this Pokémon.",
-                    damage: 10
-                }
-            ],
-            price: price,
-            priceURL: priceURL
-        }
+    let attackQ = `
+    SELECT attack_name, effect, damage FROM attack
+    INNER JOIN attack_card
+    ON attack_card.attack_id = attack.attack_id
+    INNER JOIN card
+    ON card.card_id = attack_card.card_id
+    WHERE card.card_id = ?;
+    `
+    let attacks = await db.promise().query(attackQ, [cardID]);
+    attacks = attacks[0];
 
-        res.render("card", {
-            card : cardData,
-            collections: collections
-        });
+    console.log(attacks)
+
+    let priceResponse = await pokemon.card.find(card.tcg_id);
+    let price = priceResponse.cardmarket.prices.trendPrice.toFixed(2);
+    let priceURL = priceResponse.cardmarket.url
+    
+    // prepare card data for rendering
+    cardData = {
+        name: card.name,
+        cardId: card.card_id,
+        likeCount: likeCount,
+        liked: liked,
+        set: "a set",
+        expansion: card.expansion_name,
+        category: card.category_name,
+        evolveFrom: evolveFrom,
+        stage: card.stage_name,
+        hp: card.hp,
+        illustrator: card.illustrator_name,
+        image: card.image_url,
+        type: ["https://static.tcgcollector.com/content/images/90/d7/49/90d74923dfb481342fb5cb6c78e5fc6f6a8992cbd72a127d78af726c412a1bdc.png"],
+        attacks: attacks,
+        price: price,
+        priceURL: priceURL
+    }
+
+    res.render("card", {
+        card : cardData,
+        collections: collections
     });
 });
 
