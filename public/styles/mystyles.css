@@ -270,6 +270,10 @@ td, th {
     row-gap: 10px;
 }
 
+.ratingradio {
+    accent-color: rgb(255,192,8);
+}
+
 /* account */
 .avatar {
     border-radius: 50%;
@@ -288,6 +292,10 @@ td, th {
 
 .mb2{
     margin-bottom: 2px;
+}
+
+.mb20 {
+    margin-bottom: 20px;
 }
 
 .mb0{
@@ -315,8 +323,16 @@ td, th {
     text-align: center;
 }
 
+.righttext {
+    text-align: right;
+}
+
 .jcontcenter {
     justify-content: center;
+}
+
+.jcontspacearound {
+    justify-content: space-around;
 }
 
 .rowgap5{
@@ -325,6 +341,14 @@ td, th {
 
 .colgap5 {
     column-gap: 5px;
+}
+
+.colgap10 {
+    column-gap: 10px;
+}
+
+.breakword {
+    word-wrap: break-word
 }
 
 /* text  */
@@ -370,8 +394,6 @@ td, th {
 .h100{
     height: 100%;
 }
-
-
 
 
 /* responsive design */

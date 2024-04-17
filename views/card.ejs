@@ -40,7 +40,7 @@
             <div class="column column-25 cardimgcol dflex fdcol alitemscenter">
                 <img class="cardpageimg" src="<%= card.image %>" alt="">
                 <div>
-                    <form action="/like" method="post" class="mb0">
+                    <form action="/likecard" method="post" class="mb0">
                         <a href="<%= card.priceURL %>" class="button bluebutton">€<%= card.price %></a>
                         <input type="hidden" name="cardid" value="<%= card.cardId %>">
                         
@@ -66,7 +66,9 @@
 
                         <div class="column cardinfocol dflex alitemscenter mb0">
                             <span>HP <%= card.hp %> </span>
-                            <img src="<%= card.type %>" height="30" alt="">
+                            <% card.types.forEach(type => { %>
+                                <img src="<%= type.type_image %>" height="30" alt="">
+                            <% }) %>
                         </div>
                     </div>
 

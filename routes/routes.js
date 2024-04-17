@@ -67,7 +67,7 @@ router.post("/login", async (req, res) => {
         if (match) {
             req.session.auth = true;
             req.session.userid = user[0].user_id;
-            res.redirect("/")
+            res.redirect("/mycards")
         } else {
             res.render("login", {
                 message: "Issue with username or password"
@@ -203,7 +203,7 @@ router.get("/collections", async (req, res) => {
     INNER JOIN user
     ON user.user_id = collection.user_id;`;
 
-    let collections = await slicedSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
+    let collections = await slicedSearch(read);
     res.render("collections", {collections: collections});
 });
 
@@ -234,6 +234,9 @@ router.get("/collections/:collectionId", async (req, res) => {
     let owner = false;
     let collections = [];
     let currentCollection = "";
+    let rated = false;
+    let userID = req.session.userid;
+    let yourRating = 0;
     
     let cardQuery = `SELECT * FROM collection_card
     INNER JOIN card
@@ -245,34 +248,95 @@ router.get("/collections/:collectionId", async (req, res) => {
     WHERE collection_id = ?;`
 
     let ownerId = await db.promise().query(ownerQuery, [collectionID]);
-    ownerId = ownerId[0][0].user_id;
+    ownerId = ownerId[0];
 
-    if (ownerId === req.session.userid){
-        owner = true;
+    if (ownerId.length === 0){
+        res.render("error");
+    } else {
+        ownerId = ownerId[0].user_id;
 
-        let collQ = 
-        `SELECT collection.collection_id, collection_name FROM collection 
-        WHERE collection.user_id = ?
-        ORDER BY collection_name`;
-        
-        collections = await db.promise().query(collQ, [ownerId]);
-        collections = collections[0]
+        if (ownerId === userID){
+            owner = true;
+
+            let collQ = 
+            `SELECT collection.collection_id, collection_name FROM collection 
+            WHERE collection.user_id = ?
+            ORDER BY collection_name`;
+            
+            collections = await db.promise().query(collQ, [ownerId]);
+            collections = collections[0]
+        } else if (userID) {
+            let ratedQ = `
+            SELECT COUNT(*) as "count" FROM collection_rating
+            WHERE collection_id = ?
+            AND user_id = ?;
+            `;
+
+            let ratedResult = await db.promise().query(ratedQ, [collectionID, userID]);
+
+            if (ratedResult[0][0].count !== 0) {
+                rated = true;
+            }
+        }
 
         let collection = `
         SELECT * FROM collection
         WHERE collection_id = ?
         `;
-    
+
         currentCollection = await db.promise().query(collection, [collectionID])
         currentCollection = currentCollection[0][0];
-    }
 
-    res.render("collection", {
-        cards: cards,
-        owner: owner,
-        collections: collections,
-        currentCollection : currentCollection
-    });
+        let ratingQ = `
+        SELECT AVG(rating) FROM collection_rating
+        WHERE collection_id = ?;
+        `;
+
+        let ratingResult = await db.promise().query(ratingQ, [collectionID]);
+        ratingResult = ratingResult[0][0]["AVG(rating)"];
+
+        if (!ratingResult){
+            ratingResult = "Unrated";
+        } else {
+            /*https://stackoverflow.com/questions/7342957/how-do-you-round-to-one-decimal-place-in-javascript*/
+            ratingResult = Math.round(ratingResult * 10) / 10;
+        }
+
+        let youRatedQ = `
+        SELECT rating FROM collection_rating
+        WHERE user_id = ?
+        AND collection_id = ?;`;
+
+        let youRatedResults = await db.promise().query(youRatedQ, [userID, collectionID]);
+
+        if (youRatedResults[0].length > 0) {
+            rated = true;
+            yourRating = youRatedResults[0][0].rating;
+        }
+
+        let commentQ = `
+        SELECT comment_text, display_name, DATE_FORMAT(time_posted, '%d/%m/%Y') as "date", TIME_FORMAT(time_posted, '%H:%i:%s') as "time"
+        FROM collection_comment
+        INNER JOIN user
+        ON collection_comment.user_id = user.user_id
+        WHERE collection_id = ?
+        ORDER BY time_posted DESC;`;
+    
+        let comments = await db.promise().query(commentQ, [collectionID]);
+        comments = comments[0];
+
+        res.render("collection", {
+            cards: cards,
+            owner: owner,
+            collections: collections,
+            currentCollection : currentCollection,
+            rated: rated,
+            rating: ratingResult,
+            comments: comments,
+            rated: rated,
+            yourRating: yourRating
+        });
+    }
 
 });
 
@@ -426,7 +490,7 @@ router.get("/card/:cardId", async (req, res) => {
     let userID = req.session.userid;
     let evolveFrom = "N/A"
 
-    if (userID){
+    if (userID) {
         let collectionQuery = `
         SELECT * FROM collection
         WHERE user_id = ?;
@@ -450,11 +514,11 @@ router.get("/card/:cardId", async (req, res) => {
     }
 
     let likeCountQ = `
-    SELECT COUNT(*) FROM card_like
+    SELECT COUNT(*) as "count" FROM card_like
     WHERE card_id = ?`;
 
     let likeCount = await db.promise().query(likeCountQ, [cardID]);
-    likeCount = likeCount[0][0]["COUNT(*)"];
+    likeCount = likeCount[0][0].count;
 
     let cardQ = `
     SELECT name, card.card_id, hp, card.tcg_id, category_name, stage_name, illustrator_name, image_url, expansion_name, evolve_from
@@ -477,8 +541,6 @@ router.get("/card/:cardId", async (req, res) => {
         evolveFrom = card.evolve_from
     }
 
-    console.log(card)
-
     let attackQ = `
     SELECT attack_name, effect, damage FROM attack
     INNER JOIN attack_card
@@ -490,7 +552,15 @@ router.get("/card/:cardId", async (req, res) => {
     let attacks = await db.promise().query(attackQ, [cardID]);
     attacks = attacks[0];
 
-    console.log(attacks)
+    let typeQ = `
+    SELECT type_image
+    FROM type
+    INNER JOIN type_card
+    ON type.type_id = type_card.type_id
+    WHERE card_id = ?;`
+
+    let types = await db.promise().query(typeQ, [cardID]);
+    types = types[0];
 
     let priceResponse = await pokemon.card.find(card.tcg_id);
     let price = priceResponse.cardmarket.prices.trendPrice.toFixed(2);
@@ -502,7 +572,6 @@ router.get("/card/:cardId", async (req, res) => {
         cardId: card.card_id,
         likeCount: likeCount,
         liked: liked,
-        set: "a set",
         expansion: card.expansion_name,
         category: card.category_name,
         evolveFrom: evolveFrom,
@@ -510,7 +579,7 @@ router.get("/card/:cardId", async (req, res) => {
         hp: card.hp,
         illustrator: card.illustrator_name,
         image: card.image_url,
-        type: ["https://static.tcgcollector.com/content/images/90/d7/49/90d74923dfb481342fb5cb6c78e5fc6f6a8992cbd72a127d78af726c412a1bdc.png"],
+        types: types,
         attacks: attacks,
         price: price,
         priceURL: priceURL
@@ -522,7 +591,7 @@ router.get("/card/:cardId", async (req, res) => {
     });
 });
 
-router.post("/like", async (req, res) => {
+router.post("/likecard", async (req, res) => {
     if (!req.session.userid){
         res.redirect("/login");
     } else {
@@ -545,8 +614,54 @@ router.post("/like", async (req, res) => {
             `
         }
 
-        let likeResult = db.promise().query(likeQ, [cardID, userID])
+        let likeResult = await db.promise().query(likeQ, [cardID, userID])
         res.redirect(`/card/${cardID}`)
+    }
+});
+
+router.post("/ratecollection", async (req, res) => {
+    let userID = req.session.userid;
+
+    if (!userID) {
+        res.redirect("/login")
+    } else {
+        let collID = req.body.collid;
+        let rating = req.body.rating;
+        let rateStatus = req.body.ratestatus;
+        let rateQ = "";
+
+        if (rateStatus === "Rate") {
+            rateQ = `
+            INSERT INTO collection_rating (user_id, collection_id, rating)
+            VALUES (?, ?, ?)`;
+        } else {
+            rateQ = `
+            DELETE FROM collection_rating
+            WHERE user_id = ?
+            AND collection_id = ?;`;
+        }
+        
+        let rateResult = await db.promise().query(rateQ, [userID, collID, rating]);
+        res.redirect(`/collections/${collID}`);
+    }
+});
+
+router.post("/commentcollection", async (req, res) => {
+    let userID = req.session.userid;
+
+    if (!userID) {
+        res.redirect("/login");
+    } else {
+        let collID = req.body.collid;
+        let comment = req.body.comment;
+
+        let commentQ = `
+        INSERT INTO collection_comment (comment_text, collection_id, user_id)
+        VALUES (?, ?, ?)`
+
+        let commentResult = await db.promise().query(commentQ, [comment, collID, userID]);
+
+        res.redirect(`/collections/${collID}`);
     }
 });
 
