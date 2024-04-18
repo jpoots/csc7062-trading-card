@@ -170,7 +170,13 @@ router.get("/account", async (req, res) => {
 
 // browse
 router.get("/browse", async (req, res) => {
-    let read = "SELECT card_id, name, image_url FROM card";
+    let read = `
+    SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+    FROM card
+    LEFT JOIN card_like
+    ON card_like.card_id = card.card_id
+    GROUP BY card.card_id
+    ORDER BY name;`;
     
     let cards = await slicedSearch(read);
     res.render("browse", {cards: cards});
@@ -178,18 +184,22 @@ router.get("/browse", async (req, res) => {
 
 router.post("/browse", async (req, res) => {
     let searchName = `${req.body.search}`
-    
+
     // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
-    let read = `SELECT card_id, name, image_url FROM card 
+    let read = `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM card 
+                LEFT JOIN card_like
+                ON card_like.card_id = card.card_id
                 WHERE name 
                 LIKE ?
+                GROUP BY card.card_id
                 ORDER BY
                 CASE
                     WHEN name LIKE ? THEN 1
                     WHEN name LIKE ? THEN 2
                     WHEN name LIKE ? THEN 4
                     ELSE 3
-                END`;
+                END
+                `;
 
     let cards = await slicedSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
 
@@ -414,12 +424,17 @@ router.post("/addcard", async (req, res) => {
     res.redirect(`/collections/${collID}`)
 });
 
+
 router.get("/browse/:expansionId", async (req, res) => {
     let expansionID = req.params.expansionId;
-    let read = `SELECT card_id, name, image_url FROM card
+    let read = `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM card
+                LEFT JOIN card_like
+                ON card_like.card_id = card.card_id
                 INNER JOIN expansion
                 ON expansion.expansion_id = card.expansion_id
-                WHERE card.expansion_id = ?;`;
+                WHERE card.expansion_id = ?
+                GROUP BY card.card_id
+                ORDER BY name;`;
     let cards = await slicedSearch(read, [expansionID]);
     res.render("browse", {cards: cards});
 });
@@ -467,11 +482,14 @@ router.get("/mycards/liked", async (req, res) => {
     let userID = req.session.userid;
 
     if (userID){
-        let likedCardsQ = `
-        SELECT card.card_id, name, image_url FROM card_like
+        let likedCardsQ = 
+        `
+        SELECT card_like.card_id, name, image_url, COUNT(card_like.card_like_id) as "like_count" FROM card_like
         INNER JOIN card 
         ON card.card_id = card_like.card_id
-        WHERE user_id = ?`
+        WHERE user_id = ?
+        GROUP BY card.card_id
+        ORDER BY name;`
     
         let cards = await slicedSearch(likedCardsQ, [userID]);
         res.render("browse", {cards: cards})
@@ -669,6 +687,142 @@ router.get("/expansions", async (req, res) => {
     let query = "SELECT * FROM expansion"
     let expansions = await slicedSearch(query)
     res.render("expansions", {expansions: expansions});
+});
+
+router.get("/filter", async (req, res) => {
+    let query = req.query;
+    console.log(query)
+
+    if (req.query.expid) {
+        let expID = req.query.expid;
+
+        let expansionQ = 
+        `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+        FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        WHERE expansion_id = ?
+        GROUP BY card.card_id
+        ORDER BY name;`
+
+        let cards = await slicedSearch(expansionQ, [expID])
+
+        res.render("browse", {cards: cards})
+
+        console.log(expID);
+    } else if (req.query.minlikes) {
+        let minLikes = req.query.minlikes;
+
+        /* https://stackoverflow.com/questions/6095567/sql-query-to-obtain-value-that-occurs-more-than-once */
+        let minLikesQ = `
+        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+        FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        GROUP BY card.card_id
+        HAVING COUNT(card_like_id) >= ?
+        ORDER BY COUNT(card_like_id)
+        `
+
+        let cards = await slicedSearch(minLikesQ, [minLikes])
+
+        res.render("browse", {cards: cards})
+    
+    } else if (req.query.maxhp && req.query.minhp) {
+        let maxHP = req.query.maxhp;
+        let minHP = req.query.minhp;  
+
+        let hpQ = `
+        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+        FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        WHERE hp >= ?
+        AND hp <= ?
+      	GROUP BY card.card_id
+        ORDER BY hp`;
+
+        let cards = await slicedSearch(hpQ, [minHP, maxHP]);
+
+        res.render("browse", {cards: cards})
+
+    } else if (req.params.typeid) {
+        let typeID = req.params.typeid;
+
+        let typeQ = 
+        `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+        FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        WHERE hp >= ?
+        AND hp <= ?
+      	GROUP BY card.card_id
+        ORDER BY hp `
+
+    } else {
+        let allExpansionQ = 
+        `SELECT expansion_name, expansion_id FROM expansion
+        ORDER BY expansion_name;`;
+
+        let allTypeQ = 
+        `SELECT type_id, type_name FROM type;`;
+    
+        let expansions = await db.promise().query(allExpansionQ);
+        expansions = expansions[0];
+
+        let types = await db.promise().query(allTypeQ);
+        types = types[0];
+
+
+            /* http://localhost:3000/filter?filterby=hp&param=10 */        
+        res.render("filter", {
+        expansions: expansions,
+        types: types
+        });
+    } 
+});
+
+router.get("/messages", async (req, res) => {
+    let userID = req.session.userid;
+
+    if (userID){
+        let messageQ = `
+        SELECT send.display_name as "sender", rec.display_name as "receiver", message_body, DATE_FORMAT(time_sent, '%d/%m/%Y') as "date", TIME_FORMAT(time_sent, '%H:%i:%s') as "time"
+        FROM message
+        INNER JOIN user rec
+        ON rec.user_id = message.receiver_id
+        INNER JOIN user send
+        ON send.user_id = message.sender_id
+        WHERE receiver_id = ?
+        ORDER BY time_sent DESC;`;
+
+        let messages = await db.promise().query(messageQ, [userID]);
+        messages = messages[0];
+
+        res.render("inbox", {messages: messages})
+    } else {
+        res.redirect("/login");
+    }
+});
+
+router.get("/sendmessage/:recipientid", async (req, res) => {
+    let userID = req.session.userid;
+
+    if (userID){
+        let recipientID = req.params.recipientid;
+
+        let recipientQ = 
+        `SELECT user_id, display_name FROM user
+        WHERE user_id = ?
+        `
+
+        let recipient = await db.promise().query(recipientQ, [recipientID]);
+        recipient = recipient[0][0];
+
+        res.render("sendmessage", {recipient: recipient})
+    } else {
+        res.redirect("/login");
+    }
 });
 
 /* https://www.geeksforgeeks.org/how-to-redirect-404-errors-to-a-page-in-express-js/ */

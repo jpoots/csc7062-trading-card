@@ -10,16 +10,8 @@
         <div class="row">
 
             <div class="column">
-                <form action="/browse" method="post" class="mb0">
-                    <fieldset class="talright mb0 dflex">
-                        <select id="filter" name="filter">
-                            <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
-                            <option value="none" selected disabled hidden>Filter</option>
-                            <option value="filt">Filter</option>                          
-                        </select>
-                        <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Go">
-                    </fieldset>
-                </form>
+
+                <a href="/filter"><button class="button-primary bluebutton textwhite mb0 ml10" >Filter</button></button></a>
             </div>
 
             <div class="column">
@@ -27,7 +19,7 @@
                 <div class="container">
                     <form action="/browse" method="post">
                         <fieldset class="talright mb0 dflex">
-                            <input type="text" placeholder="Search" name="search" id="searchField" class="wauto mb0">
+                            <input type="text" placeholder="Search" name="search" id="searchField" class="wauto mb0 searchbar">
                             <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
                         </fieldset>
                     </form>

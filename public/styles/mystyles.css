@@ -22,14 +22,14 @@ html, body {
 }
 
 .redbutton {
-    background-color: rgb(220,53,69) !important;
-    border-color: rgb(220,53,69) !important;
+    background-color: rgb(204, 0, 0) !important;
+    border-color: rgb(204, 0, 0) !important;
 
 }
 
 .redbutton:hover {
-    background-color: rgb(220,53,69);
-    border-color: rgb(220,53,69);
+    background-color: rgb(204, 0, 0);
+    border-color: rgb(204, 0, 0);
     color: black !important;
 }
 
@@ -93,8 +93,8 @@ html, body {
 }
 
 .redoutlinebutton {
-    color: rgb(220,53,69) !important;
-    border-color: rgb(220,53,69);
+    color: rgb(204, 0, 0) !important;
+    border-color: rgb(204, 0, 0);
 }
 
 .yellowoutlinebutton{
@@ -103,8 +103,8 @@ html, body {
 }
 
 .redoutlinebutton:hover {
-    background-color: rgb(220,53,69) !important;
-    border-color: rgb(220,53,69) !important;;
+    background-color: rgb(204, 0, 0) !important;
+    border-color: rgb(204, 0, 0) !important;;
     color: white !important;
 }
 
@@ -149,9 +149,9 @@ html, body {
 }
 
 .loginformfield:focus {
-    border-color: rgb(220,53,69) !important;
+    border-color: rgb(204, 0, 0) !important;
     /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
-    box-shadow: 0px 0px 3px 2px rgb(220,53,69);
+    box-shadow: 0px 0px 3px 2px rgb(204, 0, 0);
 }
 
 .signformfield:focus {
@@ -232,11 +232,11 @@ footer {
 .searchbar:focus {
     border-color: rgb(52, 102, 175) !important;
     /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
-    box-shadow: 0px 0px 3px 2px rgb(52, 102, 175);
+    box-shadow: 0px 0px 2px 1px rgb(52, 102, 175);
 }
 
 /* single card page */
-.carddetails{
+.carddetails {
     border: thin solid rgb(224, 225, 225);
     border-radius: 15px;
     padding: 10px !important;
@@ -254,11 +254,11 @@ td, th {
 }
 
 .attacktop {
-    border-top: thin solid rgb(220,53,69);
+    border-top: thin solid rgb(204, 0, 0);
 }
 
 .attackbottom {
-    border-bottom: thin solid rgb(220,53,69);
+    border-bottom: thin solid rgb(204, 0, 0);
 }
 
 .cardinfocol{
@@ -274,9 +274,24 @@ td, th {
     accent-color: rgb(255,192,8);
 }
 
+.dropdown:focus {
+    border-color: rgb(52, 102, 175) !important;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 8" width="30"><path fill="blue"%20d="M0,0l6,8l6-8"/></svg>') center right no-repeat;
+}
+
 /* account */
 .avatar {
     border-radius: 50%;
+}
+
+/* filtering */
+.slider {
+    width: 100%;
+}
+
+/* messages */
+.message {
+    border-bottom: thin solid rgb(224, 225, 225);
 }
 
 /* utility */

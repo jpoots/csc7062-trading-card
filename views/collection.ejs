@@ -15,7 +15,7 @@
     
                 <div class="column">
                     <!-- form from milligram docs -->
-                    <div class="container mt10 righttext">
+                    <div class="righttext">
                         <h4>Average Rating: <%= rating %></h4>
                     </div>
                 </div>
@@ -23,14 +23,14 @@
                 <div class="column">
                     <form action="/mycards/collections" method="post" class="mb0">
                         <fieldset class="talright mb0 dflex">
-                            <select id="collection" name="collid">
+                            <select id="collection" name="collid" class="dropdown">
                                 <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
                                 <option value="none" selected disabled hidden><%= currentCollection.collection_name %></option>
                                 <% collections.forEach(element => { %>
                                     <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
                                 <% }) %>
                             </select>
-                            <input class="button-primary bluebutton textwhite mb0" type="submit" value="Search">
+                            <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
                         </fieldset>
                     </form>
                 </div>
@@ -39,7 +39,7 @@
                     <!-- form from milligram docs -->
                         <form action="/createcol" method="post" class="mb0 dflex rowgap5 colgap5 fdcol w75">
                             <fieldset class="talright mb0 dflex">
-                                <input type="text" placeholder="Name" name="colName" id="searchField" class="wauto mb0">
+                                <input type="text" placeholder="Name" name="colName" id="searchField" class="wauto mb0 searchbar">
                                 <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
                             </fieldset>
                         </form>
@@ -71,22 +71,22 @@
                     
                         <div>
                             <input class="ratingradio" type="radio" name="rating" value="1">
-                            <label for="1">1</label><br>
+                            <label>1</label><br>
                         </div>
                         
                         <div>
                             <input class="ratingradio" type="radio" name="rating" value="2">
-                            <label for="2">2</label><br>
+                            <label>2</label><br>
                         </div>
                     
                         <div>
                             <input class="ratingradio" type="radio" name="rating" value="3">
-                            <label for="3">3</label><br>
+                            <label>3</label><br>
                         </div>
                     
                         <div>
                             <input class="ratingradio" type="radio" name="rating" value="4">
-                            <label for="4">4</label><br>
+                            <label>4</label><br>
                         </div>
                     
                         <input class="button redbutton mb0" type="submit" name="ratestatus" value="Rate">
@@ -104,10 +104,10 @@
             </div>
 
             <div class="column">
-                    <form action="/commentcollection" method="post">
+                    <form action="/commentcollection" method="post" class="dflex colgap10">
                         <input type="hidden" name="collid" value="<%= currentCollection.collection_id %>">
-                        <input type="text" name="comment">
-                        <input type="submit">
+                        <textarea name="comment" cols="30" rows="10" class="searchbar"></textarea>
+                        <input class="button yellowbutton mb0 textblack" type="submit" value="Comment">
                     </form>
                 </div>
             </div>
@@ -117,18 +117,6 @@
                 <h4>Comments</h4>
             </div>
         </div>
-        <% comments.forEach(comment => { %>
-        <div class="row mb20">
-            <div class="column column-75">
-                <p class="breakword"><%= comment.comment_text %></p>
-            </div>
-
-            <div class="column column-25">
-                <span class="bold"><%= comment.display_name %></span> <span><%= comment.time %> <%= comment.date %></span>
-            </div>
-        </div>
-        <% }) %>
-
     </div>
 
     <%- include("partials/footer") %>
