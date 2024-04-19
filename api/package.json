@@ -11,7 +11,9 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
+    "email-validator": "^2.0.4",
     "express": "^4.19.2",
-    "mysql2": "^3.9.6"
+    "mysql2": "^3.9.6",
+    "pokemontcgsdk": "^2.0.0"
   }
 }

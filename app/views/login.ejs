@@ -7,6 +7,14 @@
     <%- include("partials/navbar") %>
     <form action="/login" method="post" class="container logsigncontainer mt20">
 
+        <% if (typeof message !== "undefined") { %>
+            <div class="row jcontcenter centertext">
+                <div class="column formcolumn">
+                    <h4 class="textred"><%= message  %></h4>
+                </div>
+            </div>
+        <% } %>
+
         <div class="row jcontcenter">
             <div class="column formcolumn centertext">
                 <img src="images/pokeball_straight.png" alt="" width="72">

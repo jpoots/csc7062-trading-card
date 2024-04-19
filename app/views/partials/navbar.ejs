@@ -14,7 +14,7 @@
       <a href="/expansions" class="navlink textblack"> Expansions </a>
     </div>
 
-    <% if (typeof auth === "undefined" || !auth) { %>
+    <% if (typeof userid === "undefined" || userid === null) { %>
       <div class="column-50 navsection dflex alitemscenter">
         <a href="/login" class="button redbutton mb0">Log in</a>
         <a href="/register" class="button yellowbutton mb0 textblack">Sign up</a>

@@ -5,7 +5,6 @@ const mysql = require("mysql2");
 const sessions = require("express-session")
 const cookieParser = require('cookie-parser');
 const dotenv = require("dotenv")
-const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
 
 // set up app
 const app = express();
@@ -21,15 +20,14 @@ app.use(sessions ({
 
 // https://stackoverflow.com/questions/37183766/how-to-get-the-session-value-in-ejs
 app.use(function(req, res, next) {
-    res.locals.auth = req.session.auth;
+    res.locals.userid = req.session.userid;
     next();
 });
 
 app.use(cookieParser());
 
-// setup dotenv and pokemon api
-dotenv.config();
-pokemon.configure({apiKey: process.env.TCG_KEY});
+// setup dotenv
+dotenv.config("/.env");
 const PORT = process.env.APP_PORT;
 
 // middleware and routes

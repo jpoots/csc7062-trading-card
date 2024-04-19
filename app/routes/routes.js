@@ -3,11 +3,12 @@ const router = express.Router();
 const mysql = require("mysql2");
 const sessions = require("express-session");
 const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
-const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
-const bcrypt = require("bcrypt");
 const axios = require("axios");
 const querystring = require('querystring');
 
+/* https://stackoverflow.com/questions/69879425/setting-dotenv-path-outside-of-root-directory-is-not-working */
+dotenv.config({ path: "../.env" })
+const API_PORT =  process.env.API_PORT;
 
 // establish db connection
 const db = mysql.createPool({
@@ -32,9 +33,6 @@ const formConfig = {
       'Content-Type': 'application/x-www-form-urlencoded',
     }
 }
-
-// define global row size
-const saltRounds = 5;
 
 // perform a db query, slice and return
 const slicedSearch = async (query, params) => {
@@ -61,6 +59,7 @@ const slicer = async (list) => {
 
 // home page
 router.get("/", (req, res) => {
+    console.log(API_PORT)
     res.render("index")
 });
 
@@ -74,53 +73,24 @@ router.post("/login", async (req, res) => {
         email: req.body.email,
         pass: req.body.pass
     };
-    console.log(credentials)
 
-    /* https://axios-http.com/docs/urlencoded */
-    credentials = querystring.stringify(credentials);
-
-
-    let authenticateResult = await axios.post("http://localhost:4000/authenticate", credentials, formConfig);
-    console.log(authenticateResult.data);
-    res.render("login")
-
-    /*
-    const insertData = { 
-        burgerField: burgertitle,
-        priceField: burgerprice,
-        typeField: burgertype,
-    };
-
-    const config = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'x-api-key': '554400',
-
-        }
-    }
-
-
-    let user = await db.promise().query(read, [email]);
-    user = user[0];
-
-    if (user.length === 1){
-        const match = await bcrypt.compare(password, user[0].password_hash);
-        if (match) {
-            req.session.auth = true;
-            req.session.userid = user[0].user_id;
+    try {
+        /* https://axios-http.com/docs/urlencoded */
+        credentials = querystring.stringify(credentials);
+    
+        let authenticateResult = await axios.post(`http://localhost:${API_PORT}/authenticate`, credentials, formConfig);
+    
+        if (authenticateResult.data.status === 200){
+            req.session.userid = authenticateResult.data.response;
             res.redirect("/mycards")
         } else {
             res.render("login", {
-                message: "Issue with username or password"
+                message: authenticateResult.data.message
             });
         }
-
-    } else {
-        res.render("login", {
-            message: "Issue with usernme or password"
-        });
+    } catch (err) {
+        res.render("error");
     }
-    */
 });
 
 // register
@@ -130,84 +100,64 @@ router.get("/register", (req, res) => {
 
 router.post("/register", async (req, res) => {
     // TODO: look at how i might improve security here (e.g can I call tolowercase on  undefined?)
-        // https://www.npmjs.com/package/bcrypt?activeTab=readme
-        const email = req.body.email.trim().toLowerCase();
-        const display = req.body.displayname.trim();
-        const password = req.body.password;
-        const confirmPassword = req.body.confirmpassword;
-        const avatarURL = `https://ui-avatars.com/api/?name=${display}`
+    // https://www.npmjs.com/package/bcrypt?activeTab=readme
+    const email = req.body.email;
+    const display = req.body.displayname
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmpassword;
 
-        let message = "";
+    let body = {
+        email: req.body.email,
+        displayname: req.body.displayname,
+        password: req.body.password,
+        confirmpassword: req.body.confirmpassword
+    }
 
-        if (!display || !email || !password || !confirmPassword || display.length === 0 || email.length === 0 || password.trim().length === 0 || confirmPassword.trim().length === 0){
-            message = "Please enter all fields";
+    try{
+        body = querystring.stringify(body);
+
+        let registrationResult = await axios.post(`http://localhost:${API_PORT}/register`, body, formConfig);
+        
+        if(registrationResult.data.status != 200){
             res.render("register", {
-                message
-            });
-        } else if (!email.includes("@")){
-            message = "Invalid email";
-            res.render("register", {
-                message
-            });
-        } else if (password !== confirmPassword){
-            message = "Passwords do not match";
-            res.render("register", {
-                message
+                message: registrationResult.data.message
             });
         } else {
-            let emailSearch = `SELECT * FROM user WHERE email_address = ?`;
-            let displaySearch = `SELECT * FROM user WHERE display_name = ?`;
-            let insert = `INSERT INTO user (email_address, password_hash, display_name, avatar_url) VALUES (?, ?, ?, ?)`;
-        
-            let emailUser = await db.promise().query(emailSearch, [email]);
-            emailUser = emailUser[0];
-
-            let displayUser = await db.promise().query(displaySearch, [display]);
-            displayUser = displayUser[0];
-        
-            if (emailUser.length != 0){
-                message = "Email already in use";
-                res.render("register", {
-                    message
-                });
-            } else if (displayUser.length != 0) {
-                message = "Display name already in use";
-                res.render("register", {
-                    message
-                });
-            } else {
-                bcrypt.hash(password, saltRounds, async (err, hash) => {
-                    let insertResult = await db.promise().query(insert, [email, hash, display, avatarURL]);
-                    req.session.auth = true;
-                    req.session.userid = insertResult[0].insertId;
-                    res.redirect("/");            
-                });
-            }
+            req.session.userid = registrationResult.data.response;
+            res.redirect("/mycards");
         }
+    } catch (error){
+        res.render("error");
+    }
 });
 
 // logout 
 router.get("/logout", (req, res) => {
-    req.session.auth = false;
     req.session.userid = null;
     res.redirect("/");
 });
 
 router.get("/account", async (req, res) => {
-
-    if (!req.session.auth){
-        res.redirect("/");
+    if (!req.session.userid){
+        res.redirect("/login");
     } else {
-        const read = "SELECT * FROM user WHERE user_id = ?";
-        let userData = await db.promise().query(read, [req.session.userid]);
+        try {
+            let accountResult = await axios.get(`http://localhost:${API_PORT}/account/${req.session.userid}`);
 
-        userData = userData[0][0];
-        
-        res.render("account", {
-            email: userData["email_address"],
-            displayName: userData["display_name"],
-            avatar: userData["avatar_url"]
-        });
+            if (accountResult.data.status != 200){
+                throw new Error("issue with request")
+            } else {
+                let userData = accountResult.data.response;
+    
+                res.render("account", {
+                    email: userData.email_address,
+                    displayName: userData.display_name,
+                    avatar: userData.avatar_url
+                });
+            }
+        } catch (error) {
+            res.render("error");
+        }
     }
 });
 
@@ -217,9 +167,9 @@ router.get("/browse", async (req, res) => {
         let cardQuery = "";
 
         if (req.query.search){
-            cardQuery = `http://localhost:4000/cards?search=${req.query.search}`;
+            cardQuery = `http://localhost:${API_PORT}/cards?search=${req.query.search}`;
         } else {
-            cardQuery = "http://localhost:4000/cards";
+            cardQuery = `http://localhost:${API_PORT}/cards`;
         }
 
         let cardResult = await axios.get(cardQuery);
@@ -239,13 +189,7 @@ router.get("/browse", async (req, res) => {
 
 router.get("/collections", async (req, res) => {
     try {
-        let collectionQ = "";
-
-        if (req.query.search){
-            collectionQ = `http://localhost:4000/collections?search=${req.query.search}`;
-        } else {
-            collectionQ = "http://localhost:4000/collections";
-        }
+        let collectionQ = req.query.search ? `http://localhost:${API_PORT}/collections?search=${req.query.search}` : `http://localhost:${API_PORT}/collections`;
     
         let collectionsResult = await axios.get(collectionQ);
     
@@ -470,7 +414,7 @@ router.get("/browse/:expansionId", async (req, res) => {
 
 // mycards
 router.get("/mycards", (req, res) => {
-    if (!req.session.auth){
+    if (!req.session.userid){
         res.redirect("/login")
     } else {
         res.render("mycards")
@@ -528,141 +472,58 @@ router.get("/mycards/liked", async (req, res) => {
 });
 
 // card
-router.get("/card/:cardId", async (req, res) => {
-
+router.get("/card/:cardid", async (req, res) => {
     // get card id from the req
-    let cardID = req.params.cardId;
-    let collections = [];
-    let liked = false;
     let userID = req.session.userid;
-    let evolveFrom = "N/A"
-
-    if (userID) {
-        let collectionQuery = `
-        SELECT * FROM collection
-        WHERE user_id = ?;
-        `;
-
-        collections = await db.promise().query(collectionQuery, [userID]);
-        collections = collections[0];
-
-        let likeStatusQ = `
-        SELECT * FROM card_like
-        WHERE card_id = ?
-        AND user_id = ?
-        `;
-
-        let likeResult = await db.promise().query(likeStatusQ, [cardID, userID]);
-        likeResult = likeResult[0]
-
-        if(likeResult.length > 0) {
-            liked = true;
-        }
-    }
-
-    let likeCountQ = `
-    SELECT COUNT(*) as "count" FROM card_like
-    WHERE card_id = ?`;
-
-    let likeCount = await db.promise().query(likeCountQ, [cardID]);
-    likeCount = likeCount[0][0].count;
-
-    let cardQ = `
-    SELECT name, card.card_id, hp, card.tcg_id, category_name, stage_name, illustrator_name, image_url, expansion_name, evolve_from
-    FROM card 
-    INNER JOIN illustrator
-    ON illustrator.illustrator_id = card.illustrator_id
-    INNER JOIN expansion
-    ON expansion.expansion_id = card.expansion_id
-    INNER JOIN category
-    ON category.category_id = card.category_id
-    INNER JOIN stage
-    ON stage.stage_id = card.stage_id
-    WHERE card.card_id = ?;
-    `;
-
-    let card = await db.promise().query(cardQ, [cardID])
-    card = card[0][0];
-
-    if (card.evolve_from) {
-        evolveFrom = card.evolve_from
-    }
-
-    let attackQ = `
-    SELECT attack_name, effect, damage FROM attack
-    INNER JOIN attack_card
-    ON attack_card.attack_id = attack.attack_id
-    INNER JOIN card
-    ON card.card_id = attack_card.card_id
-    WHERE card.card_id = ?;
-    `
-    let attacks = await db.promise().query(attackQ, [cardID]);
-    attacks = attacks[0];
-
-    let typeQ = `
-    SELECT type_image
-    FROM type
-    INNER JOIN type_card
-    ON type.type_id = type_card.type_id
-    WHERE card_id = ?;`
-
-    let types = await db.promise().query(typeQ, [cardID]);
-    types = types[0];
-
-    let priceResponse = await pokemon.card.find(card.tcg_id);
-    let price = priceResponse.cardmarket.prices.trendPrice.toFixed(2);
-    let priceURL = priceResponse.cardmarket.url
+    let cardID = req.params.cardid;
     
-    // prepare card data for rendering
-    cardData = {
-        name: card.name,
-        cardId: card.card_id,
-        likeCount: likeCount,
-        liked: liked,
-        expansion: card.expansion_name,
-        category: card.category_name,
-        evolveFrom: evolveFrom,
-        stage: card.stage_name,
-        hp: card.hp,
-        illustrator: card.illustrator_name,
-        image: card.image_url,
-        types: types,
-        attacks: attacks,
-        price: price,
-        priceURL: priceURL
+    let cardQ = "";
+    let collections = [];
+    try {
+        if (userID) {
+            let collectionsResult = await axios.get(`http://localhost:${API_PORT}/collections?userid=${userID}`);
+            if (collectionsResult.data.status != 200) throw new Error(collections.data.message);
+            collections = collectionsResult.data.response;
+
+            cardQ = `http://localhost:${API_PORT}/cards/${cardID}?userid=${userID}`;
+        } else {
+            cardQ = `http://localhost:${API_PORT}/cards/${cardID}`;
+        }
+    
+        let cardResult = await axios.get(cardQ);
+        
+        if (cardResult.data.status != 200) throw new Error (cardResult.data.message);
+
+        res.render("card", {
+            card : cardResult.data.card,
+            collections: collections
+        });
+
+    } catch (err){
+        res.render("error");
     }
 
-    res.render("card", {
-        card : cardData,
-        collections: collections
-    });
 });
 
 router.post("/likecard", async (req, res) => {
     if (!req.session.userid){
         res.redirect("/login");
     } else {
-        let cardID = req.body.cardid;
-        let userID = req.session.userid;
-        let likeStatus = req.body.likestatus;
-        let likeQ = "";
-
-        if (likeStatus === "Like") {
-            likeQ = `
-            INSERT INTO card_like (card_id, user_id)
-            VALUES (?, ?)
-            `;
-
-        } else {
-            likeQ = `
-            DELETE FROM card_like
-            WHERE card_id = ?
-            AND user_id = ?;
-            `
+        let body = {
+            cardid: req.body.cardid,
+            userid: req.session.userid
         }
 
-        let likeResult = await db.promise().query(likeQ, [cardID, userID])
-        res.redirect(`/card/${cardID}`)
+        try {
+            body = querystring.stringify(body);
+
+            let likeResult = await axios.post(`http://localhost:${API_PORT}/likecard`, body, formConfig);
+            if (likeResult.data.status != 200) throw new Error("error with request");
+            
+            res.redirect(`/card/${req.body.cardid}`);
+        } catch {
+            res.render("error");
+        }
     }
 });
 

@@ -8,13 +8,13 @@
 
     <form action="/register" method="post" class="container logsigncontainer mt20">
 
-        <div class="row formrow">
-            <div class="column formcolumn centertext">
-                <% if (typeof message != "undefined") { %>
-                    <span class="textred"><%= message  %></span>
-                <% } %>
+        <% if (typeof message !== "undefined") { %>
+            <div class="row jcontcenter centertext">
+                <div class="column formcolumn">
+                    <h4 class="textred"><%= message  %></h4>
+                </div>
             </div>
-        </div>
+        <% } %>
 
         <div class="row formrow">
             <div class="column formcolumn centertext">

@@ -14,7 +14,7 @@
                 <h4>Likes : <%= card.likeCount %></h4>
             </div>
 
-            <% if (auth) { %>
+            <% if (typeof userid != "undefined" && userid != null) { %>
                 <div class="column column-offset-25">
                     <!-- form from milligram docs -->
                         <form action="/addcard" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
@@ -45,9 +45,9 @@
                         <input type="hidden" name="cardid" value="<%= card.cardId %>">
                         
                         <% if (!card.liked) { %>
-                            <input class="button redbutton mb0" type="submit" name="likestatus" value="Like">
+                            <input class="button redbutton mb0" type="submit" name="likestatus" value="like">
                         <% } else { %>
-                            <input class="button redbuttonfaded mb0" type="submit" name="likestatus" value="Unlike">
+                            <input class="button redbuttonfaded mb0" type="submit" name="likestatus" value="unlike">
                         <% } %>
                     </form>
                     
