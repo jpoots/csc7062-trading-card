@@ -5,6 +5,9 @@ const sessions = require("express-session");
 const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
 const bcrypt = require("bcrypt");
+const axios = require("axios");
+const querystring = require('querystring');
+
 
 // establish db connection
 const db = mysql.createPool({
@@ -24,18 +27,31 @@ db.getConnection((err) => {
     console.log("connected to db using createPool");
 });
 
+const formConfig = {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }
+}
+
 // define global row size
-const rowSize = 5;
 const saltRounds = 5;
 
 // perform a db query, slice and return
 const slicedSearch = async (query, params) => {
+    const rowSize = 5;
+
     let cardResult = await db.promise().query(query, params);
     cardResult = cardResult[0];
+    let sliced = await slicer(cardResult)
+    return sliced;
+}
+
+const slicer = async (list) => {
+    const rowSize = 5;
     let sliced = [];
     // https://medium.com/@drdDavi/split-a-javascript-array-into-chunks-d90c90de3a2d breaks cards into arrays of length rowSize
-    for (let i = 0; i < cardResult.length; i += rowSize) {
-        const chunk = cardResult.slice(i, i + rowSize);
+    for (let i = 0; i < list.length; i += rowSize) {
+        const chunk = list.slice(i, i + rowSize);
         sliced.push(chunk);
     }
     // end of reference
@@ -54,10 +70,35 @@ router.get("/login", (req, res) => {
 
 // login
 router.post("/login", async (req, res) => {
-    // https://www.npmjs.com/package/bcrypt?activeTab=readme
-    let email = req.body.email;
-    let password = req.body.pass;
-    let read = `SELECT * FROM user WHERE email_address = ?`;
+    let credentials = {
+        email: req.body.email,
+        pass: req.body.pass
+    };
+    console.log(credentials)
+
+    /* https://axios-http.com/docs/urlencoded */
+    credentials = querystring.stringify(credentials);
+
+
+    let authenticateResult = await axios.post("http://localhost:4000/authenticate", credentials, formConfig);
+    console.log(authenticateResult.data);
+    res.render("login")
+
+    /*
+    const insertData = { 
+        burgerField: burgertitle,
+        priceField: burgerprice,
+        typeField: burgertype,
+    };
+
+    const config = {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'x-api-key': '554400',
+
+        }
+    }
+
 
     let user = await db.promise().query(read, [email]);
     user = user[0];
@@ -79,6 +120,7 @@ router.post("/login", async (req, res) => {
             message: "Issue with usernme or password"
         });
     }
+    */
 });
 
 // register
@@ -146,7 +188,8 @@ router.post("/register", async (req, res) => {
 
 // logout 
 router.get("/logout", (req, res) => {
-    req.session.auth = false; 
+    req.session.auth = false;
+    req.session.userid = null;
     res.redirect("/");
 });
 
@@ -170,102 +213,87 @@ router.get("/account", async (req, res) => {
 
 // browse
 router.get("/browse", async (req, res) => {
-    let read = `
-    SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
-    FROM card
-    LEFT JOIN card_like
-    ON card_like.card_id = card.card_id
-    GROUP BY card.card_id
-    ORDER BY name;`;
+    try {
+        let cardQuery = "";
+
+        if (req.query.search){
+            cardQuery = `http://localhost:4000/cards?search=${req.query.search}`;
+        } else {
+            cardQuery = "http://localhost:4000/cards";
+        }
+
+        let cardResult = await axios.get(cardQuery);
     
-    let cards = await slicedSearch(read);
-    res.render("browse", {cards: cards});
-});
-
-router.post("/browse", async (req, res) => {
-    let searchName = `${req.body.search}`
-
-    // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
-    let read = `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM card 
-                LEFT JOIN card_like
-                ON card_like.card_id = card.card_id
-                WHERE name 
-                LIKE ?
-                GROUP BY card.card_id
-                ORDER BY
-                CASE
-                    WHEN name LIKE ? THEN 1
-                    WHEN name LIKE ? THEN 2
-                    WHEN name LIKE ? THEN 4
-                    ELSE 3
-                END
-                `;
-
-    let cards = await slicedSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
-
-    res.render("browse", {cards: cards});
+        if (cardResult.data.status !== 200){
+            res.render("error");
+        } else {
+            let cards = cardResult.data.response;
+            cards = await slicer(cards);
+        
+            res.render("browse", {cards: cards});
+        }
+    } catch (err){
+        res.render("error");
+    }
 });
 
 router.get("/collections", async (req, res) => {
-    let searchName = `${req.body.search}`
+    try {
+        let collectionQ = "";
 
-    let read = `SELECT collection.collection_id, collection_name, display_name, avatar_url FROM collection 
-    INNER JOIN user
-    ON user.user_id = collection.user_id;`;
-
-    let collections = await slicedSearch(read);
-    res.render("collections", {collections: collections});
-});
-
-router.post("/collections", async (req, res) => {
-    let searchName = `${req.body.search}`
-
-    // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
-    let read = `SELECT collection.collection_id, collection_name, display_name, avatar_url FROM collection 
-                INNER JOIN user
-                ON user.user_id = collection.user_id
-                WHERE collection_name
-                LIKE ?
-                ORDER BY
-                CASE
-                    WHEN collection_name LIKE ? THEN 1
-                    WHEN collection_name LIKE ? THEN 2
-                    WHEN collection_name LIKE ? THEN 4
-                    ELSE 3
-                END`;
+        if (req.query.search){
+            collectionQ = `http://localhost:4000/collections?search=${req.query.search}`;
+        } else {
+            collectionQ = "http://localhost:4000/collections";
+        }
     
-    let collections = await slicedSearch(read, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
-    res.render("collections", {collections: collections});
-
+        let collectionsResult = await axios.get(collectionQ);
+    
+        if (collectionsResult.data.status !== 200){
+            res.render("error");
+        } else {
+            let collections = collectionsResult.data.response;
+            collections = await slicer(collections);
+            res.render("collections", {collections: collections});
+        }
+    } catch (err){
+        render("error");
+    }
 });
 
-router.get("/collections/:collectionId", async (req, res) => {
-    let collectionID = req.params.collectionId;
+router.get("/collections/:collectionid", async (req, res) => {
+    let collectionID = req.params.collectionid;
     let owner = false;
+    let ownerID = 0;
     let collections = [];
     let currentCollection = "";
     let rated = false;
     let userID = req.session.userid;
     let yourRating = 0;
-    
-    let cardQuery = `SELECT * FROM collection_card
+
+    let cardQuery = `
+    SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM collection_card
     INNER JOIN card
     ON collection_card.card_id = card.card_id
-    WHERE collection_card.collection_id = ?;`;
+    LEFT JOIN card_like
+    ON card_like.card_id = card.card_id
+    WHERE collection_card.collection_id = ?
+    GROUP BY card.card_id;`;
+
     let cards = await slicedSearch(cardQuery, [collectionID]);
 
     let ownerQuery = `SELECT user_id FROM collection
     WHERE collection_id = ?;`
 
-    let ownerId = await db.promise().query(ownerQuery, [collectionID]);
-    ownerId = ownerId[0];
+    ownerID = await db.promise().query(ownerQuery, [collectionID]);
+    ownerID = ownerID[0];
 
-    if (ownerId.length === 0){
+    if (ownerID.length === 0){
         res.render("error");
     } else {
-        ownerId = ownerId[0].user_id;
+        ownerID = ownerID[0].user_id;
 
-        if (ownerId === userID){
+        if (ownerID === userID){
             owner = true;
 
             let collQ = 
@@ -273,7 +301,7 @@ router.get("/collections/:collectionId", async (req, res) => {
             WHERE collection.user_id = ?
             ORDER BY collection_name`;
             
-            collections = await db.promise().query(collQ, [ownerId]);
+            collections = await db.promise().query(collQ, [ownerID]);
             collections = collections[0]
         } else if (userID) {
             let ratedQ = `
@@ -337,7 +365,8 @@ router.get("/collections/:collectionId", async (req, res) => {
 
         res.render("collection", {
             cards: cards,
-            owner: owner,
+            isOwner: owner,
+            ownerID: ownerID,
             collections: collections,
             currentCollection : currentCollection,
             rated: rated,
@@ -361,7 +390,7 @@ router.post("/createcol", async (req, res) => {
 
         let insertResult = await db.promise().query(insertQuery, [colName, user_id]);
 
-        res.redirect("/mycards");
+        res.redirect("/mycards/collections");
     } else {
         res.redirect("/login");
     }
@@ -390,7 +419,7 @@ router.post("/deletecol", async (req, res) => {
         DELETE FROM `
     }
 
-    res.redirect("/mycards")
+    res.redirect("/mycards/collections")
 });
 
 router.post("/removecard", async (req, res) => {
@@ -787,13 +816,13 @@ router.get("/messages", async (req, res) => {
 
     if (userID){
         let messageQ = `
-        SELECT send.display_name as "sender", rec.display_name as "receiver", message_body, DATE_FORMAT(time_sent, '%d/%m/%Y') as "date", TIME_FORMAT(time_sent, '%H:%i:%s') as "time"
+        SELECT send.display_name as "sender", rec.display_name as "recipient", subject, body, DATE_FORMAT(time_sent, '%d/%m/%Y') as "date", TIME_FORMAT(time_sent, '%H:%i:%s') as "time", sender_id, recipient_id, card_id
         FROM message
         INNER JOIN user rec
-        ON rec.user_id = message.receiver_id
+        ON rec.user_id = message.recipient_id
         INNER JOIN user send
         ON send.user_id = message.sender_id
-        WHERE receiver_id = ?
+        WHERE recipient_id = ?
         ORDER BY time_sent DESC;`;
 
         let messages = await db.promise().query(messageQ, [userID]);
@@ -805,21 +834,54 @@ router.get("/messages", async (req, res) => {
     }
 });
 
-router.get("/sendmessage/:recipientid", async (req, res) => {
+router.get("/sendmessage", async (req, res) => {
     let userID = req.session.userid;
 
     if (userID){
-        let recipientID = req.params.recipientid;
+        let recipientID = req.query.recipientid;
+        let cardID = req.query.cardid;
 
         let recipientQ = 
         `SELECT user_id, display_name FROM user
         WHERE user_id = ?
         `
 
+        let cardQ = 
+        `SELECT card_id, name FROM card
+        WHERE card_id = ?`
+
         let recipient = await db.promise().query(recipientQ, [recipientID]);
         recipient = recipient[0][0];
 
-        res.render("sendmessage", {recipient: recipient})
+        let card = await db.promise().query(cardQ, [cardID]);
+        card = card[0][0];
+
+        console.log(recipient)
+
+        res.render("sendmessage", {
+            recipient: recipient,
+            card: card
+        })
+    } else {
+        res.redirect("/login");
+    }
+});
+
+router.post("/sendmessage", async (req, res) => {
+    let senderID = req.session.userid;
+    let recipientID = req.body.recipientid;
+    let cardID = req.body.cardid;
+    let subject = req.body.subject;
+    let body = req.body.body;
+
+    if (senderID){        
+        let messageQ = 
+        `INSERT INTO message (sender_id, recipient_id, card_id, subject, body)
+        VALUES (?, ?, ?, ?, ?);`;
+    
+        let messageResult = db.promise().query(messageQ, [senderID, recipientID, cardID, subject, body]);
+
+        res.redirect("/");
     } else {
         res.redirect("/login");
     }

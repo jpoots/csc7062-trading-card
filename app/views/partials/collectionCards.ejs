@@ -1,0 +1,38 @@
+<div class="container browsecontainer">
+
+    <% if (cards.length > 0){ %>
+        <% cards.forEach(row => { %>
+            <div class="row mt20">
+                <% row.forEach(card => { %>
+                    <div class="column browsecol dflex jcontcenter">
+                        <div class="card dflex fdcol w100 jcontcenter">
+                            <a href="/card/<%= card.card_id %>" class="textblack">
+                                <img src="<%= card.image_url %>" alt="" width="" class="cardimg">
+                                <h6 class="centertext browsetitle"><%= card.name %></h6>
+                            </a>
+
+                            <% if (isOwner) { %>
+                                <form action="/removecard" method="post" class="mb0">
+                                    <input type="hidden" name="collname" value="<%= currentCollection.collection_name %>">
+                                    <input type="hidden" name="collId" value="<%= currentCollection.collection_id %>">
+                                    <input type="hidden" name="cardId" value="<%= card.card_id %>">
+                                    <input class="button redbutton mb0 w100" type="submit" value="Remove">
+                                </form>
+                            <% } else { %>
+                                <form action="/sendmessage" method="get" class="mb0">
+                                    <input type="hidden" name="recipientid" value="<%= ownerID %>">
+                                    <input type="hidden" name="cardid" value="<%= card.card_id %>">
+                                    <input class="button-primary bluebutton textwhite mb0 w100" type="submit" value="Trade">
+                                </form>
+                            <% } %>
+
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <h5>Nothing to display!</h5>
+    <% } %>
+
+</div>

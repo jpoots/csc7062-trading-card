@@ -15,14 +15,18 @@
         <% messages.forEach(message => { %>
             <div class="row mb20 message">
                 <div class="column column-75">
-                    <p class="breakword"> PIkACHU <%= message.message_body %></p>
+                    <p class="breakword bold"> Subject : <%= message.subject %></p>
+                    <p class="breakword"><%= message.body %></p>
                 </div>
     
                 <div class="column column-25">
                     <span class="bold"><%= message.sender %></span> <span><%= message.time %> <%= message.date %></span>
-                </div>
 
-                <div class="column">
+                    <form action="/sendmessage" method="get" class="mb0">
+                        <input type="hidden" name="recipientid" value="<%= message.sender_id %>">
+                        <input type="hidden" name="cardid" value="<%= message.card_id  %>">
+                        <input class="button button-primary bluebutton textwhite mb0" type="submit" value="Reply">
+                    </form>
 
                 </div>
             </div>

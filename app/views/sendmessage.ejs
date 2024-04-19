@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+    <form action="/sendmessage" method="post" class="container messagecontainer mt20">
+        <input type="hidden" name="cardid" value="<%= card.card_id %>">
+        <input type="hidden" name="recipientid" value="<%= recipient.user_id %>">
+        <input type="hidden" name="subject" value="Trading For <%= card.name %>">
+
+        <div class="row formrow mt10">
+            <div class="column">
+                <h4>To: <%= recipient.display_name %></h4>
+            </div>
+        </div>
+
+        <div class="row formrow">
+            <div class="column">
+                <h4>Subject: Trading For <%= card.name %></h4>
+            </div>
+        </div>
+        
+
+        <div class="row jcontcenter">
+            <div class="column formcolumn">
+                <textarea name="body" cols="30" rows="10" placeholder="Write your message!" class="messagebody"></textarea>
+            </div>
+        </div>
+
+
+        <div class="row jcontcenter centertext">
+            <div class="column formcolumn">
+                <input class="redbutton button w100" type="submit" value="Send">      
+            </div>
+        </div>
+
+    </form>
+    <%- include("partials/footer")  %>
+</body>
+</html>
