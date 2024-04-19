@@ -12,10 +12,11 @@
                             </a>
 
                             <% if (isOwner) { %>
-                                <form action="/removecard" method="post" class="mb0">
+                                <form action="/addremovecard" method="post" class="mb0">
+                                    <input type="hidden" name="action" value="1">
                                     <input type="hidden" name="collname" value="<%= currentCollection.collection_name %>">
-                                    <input type="hidden" name="collId" value="<%= currentCollection.collection_id %>">
-                                    <input type="hidden" name="cardId" value="<%= card.card_id %>">
+                                    <input type="hidden" name="collid" value="<%= currentCollection.collection_id %>">
+                                    <input type="hidden" name="cardid" value="<%= card.card_id %>">
                                     <input class="button redbutton mb0 w100" type="submit" value="Remove">
                                 </form>
                             <% } else { %>

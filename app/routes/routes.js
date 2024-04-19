@@ -190,18 +190,17 @@ router.get("/browse", async (req, res) => {
 router.get("/collections", async (req, res) => {
     try {
         let collectionQ = req.query.search ? `http://localhost:${API_PORT}/collections?search=${req.query.search}` : `http://localhost:${API_PORT}/collections`;
-    
+
         let collectionsResult = await axios.get(collectionQ);
-    
         if (collectionsResult.data.status !== 200){
-            res.render("error");
+            throw new Error(collectionsResult.data.message);
         } else {
             let collections = collectionsResult.data.response;
             collections = await slicer(collections);
             res.render("collections", {collections: collections});
         }
     } catch (err){
-        render("error");
+        res.render("error");
     }
 });
 
@@ -382,34 +381,52 @@ router.post("/removecard", async (req, res) => {
     res.redirect(`/collections/${collID}`);
 })
 
-router.post("/addcard", async (req, res) => {
+router.post("/addremovecard", async (req, res) => {
     let userID = req.session.userid;
-    let cardID = req.body.cardid;
-    let collID = req.body.collid;
 
-    let addQ = `
-    INSERT INTO collection_card (collection_id, card_id)
-    VALUES (?, ?);
-    `
+    if (userID){
+        let body = {
+            userid: userID,
+            cardid: req.body.cardid,
+            collid: req.body.collid,
+            action: req.body.action
+        }
 
-    let addResult = await db.promise().query(addQ, [collID, cardID]);
+        try {
+            body = querystring.stringify(body);
+            let addResult = await axios.post(`http://localhost:${API_PORT}/addremovecard`, body, formConfig);
 
-    res.redirect(`/collections/${collID}`)
+            if (addResult.data.status === 409) {
+                res.redirect(`/card/${req.body.cardid}?error=duplicate`);
+                return;
+            } else if (addResult.data.status != 200){
+                throw new Error(addResult.data.message);
+            }
+        
+            res.redirect(`/collections/${req.body.collid}`)
+        } catch (error) {
+            res.render("error")
+        }
+
+    } else {
+        res.redirect("/login")
+    }
+
 });
 
 
-router.get("/browse/:expansionId", async (req, res) => {
-    let expansionID = req.params.expansionId;
-    let read = `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM card
-                LEFT JOIN card_like
-                ON card_like.card_id = card.card_id
-                INNER JOIN expansion
-                ON expansion.expansion_id = card.expansion_id
-                WHERE card.expansion_id = ?
-                GROUP BY card.card_id
-                ORDER BY name;`;
-    let cards = await slicedSearch(read, [expansionID]);
-    res.render("browse", {cards: cards});
+router.get("/expansions/:expansionid", async (req, res) => {
+    let expansionID = req.params.expansionid;
+
+    try {
+        let cards = await axios.get(`http://localhost:${API_PORT}/cards?expansionid=${expansionID}`);
+        if (cards.data.status != 200) throw new Error(cards.data.message);
+
+        cards = await slicer(cards.data.response);
+        res.render("browse", {cards: cards});
+    } catch (error) {
+        res.render("error");
+    }
 });
 
 // mycards
@@ -422,26 +439,25 @@ router.get("/mycards", (req, res) => {
 });
 
 router.get("/mycards/collections", async (req, res) => {
-    if (!req.session.auth){
+    if (!req.session.userid){
         res.redirect("/login")
     } else {
-        let user_id = req.session.userid;
-    
-        // get collections to populate drop down
-        let collQ = 
-        `SELECT collection.collection_id, collection_name FROM collection 
-        WHERE collection.user_id = ${user_id}
-        ORDER BY collection_name`;
-
-        let collections = await db.promise().query(collQ);
-        collections = collections[0]
-
-        let currentCollection = collections[0];
+        let userID = req.session.userid;
         
-        if (!currentCollection){
-            res.render("mycollections");
-        } else {
-            res.redirect(`/collections/${currentCollection.collection_id}`);
+        try {
+            // get collections to populate drop down
+            let collections = await axios.get(`http://localhost:${API_PORT}/collections?userid=${userID}`);
+            if (collections.data.status != 200) throw new Error(collections.data.message);
+
+            collections = collections.data.response;
+            let currentCollection = collections[0];
+            if (!currentCollection){
+                res.render("mycollections");
+            } else {
+                res.redirect(`/collections/${currentCollection.collection_id}`);
+            }
+        } catch (error){
+            res.render("error");
         }
     }
 });
@@ -455,19 +471,19 @@ router.get("/mycards/liked", async (req, res) => {
     let userID = req.session.userid;
 
     if (userID){
-        let likedCardsQ = 
-        `
-        SELECT card_like.card_id, name, image_url, COUNT(card_like.card_like_id) as "like_count" FROM card_like
-        INNER JOIN card 
-        ON card.card_id = card_like.card_id
-        WHERE user_id = ?
-        GROUP BY card.card_id
-        ORDER BY name;`
-    
-        let cards = await slicedSearch(likedCardsQ, [userID]);
-        res.render("browse", {cards: cards})
+        try {
+            let cards = await axios.get(`http://localhost:${API_PORT}/cards?likedby=${userID}`);
+            if (cards.data.status != 200) throw new Error(cards.data.message);
+
+            cards = cards.data.response;
+            cards = await slicer(cards);
+
+            res.render("browse", {cards: cards})
+        } catch (error) {
+            res.render("error");
+        }
     } else {
-        res.redirect("login");
+        res.redirect("/login");
     }
 });
 
@@ -476,6 +492,7 @@ router.get("/card/:cardid", async (req, res) => {
     // get card id from the req
     let userID = req.session.userid;
     let cardID = req.params.cardid;
+    let error = req.query.error;
     
     let cardQ = "";
     let collections = [];
@@ -496,7 +513,8 @@ router.get("/card/:cardid", async (req, res) => {
 
         res.render("card", {
             card : cardResult.data.card,
-            collections: collections
+            collections: collections,
+            error: error
         });
 
     } catch (err){
@@ -518,7 +536,7 @@ router.post("/likecard", async (req, res) => {
             body = querystring.stringify(body);
 
             let likeResult = await axios.post(`http://localhost:${API_PORT}/likecard`, body, formConfig);
-            if (likeResult.data.status != 200) throw new Error("error with request");
+            if (likeResult.data.status != 200) throw new Error(likeResult.data.message);
             
             res.redirect(`/card/${req.body.cardid}`);
         } catch {
@@ -533,24 +551,19 @@ router.post("/ratecollection", async (req, res) => {
     if (!userID) {
         res.redirect("/login")
     } else {
-        let collID = req.body.collid;
-        let rating = req.body.rating;
-        let rateStatus = req.body.ratestatus;
-        let rateQ = "";
-
-        if (rateStatus === "Rate") {
-            rateQ = `
-            INSERT INTO collection_rating (user_id, collection_id, rating)
-            VALUES (?, ?, ?)`;
-        } else {
-            rateQ = `
-            DELETE FROM collection_rating
-            WHERE user_id = ?
-            AND collection_id = ?;`;
+        let body = {
+            collid: req.body.collid,
+            userid: userID,
+            rating: req.body.rating
         }
-        
-        let rateResult = await db.promise().query(rateQ, [userID, collID, rating]);
-        res.redirect(`/collections/${collID}`);
+
+        try {
+            body = querystring.stringify(body);
+            let rateResult = await axios.post(`http://localhost:${API_PORT}/ratecollection`, body, formConfig);
+            res.redirect(`/collections/${req.body.collid}`);
+        } catch {
+            res.render("error");
+        }
     }
 });
 
@@ -560,23 +573,37 @@ router.post("/commentcollection", async (req, res) => {
     if (!userID) {
         res.redirect("/login");
     } else {
-        let collID = req.body.collid;
-        let comment = req.body.comment;
+        let body = {
+            userid: userID,
+            collid: req.body.collid,
+            comment: req.body.comment
+        };
+        
+        try {
+            body = querystring.stringify(body);
+            let commentResult = await axios.post(`http://localhost:${API_PORT}/commentcollection`, body, formConfig);
+            if (commentResult.data.status != 200) throw new Error(commentResult.data.message);
 
-        let commentQ = `
-        INSERT INTO collection_comment (comment_text, collection_id, user_id)
-        VALUES (?, ?, ?)`
-
-        let commentResult = await db.promise().query(commentQ, [comment, collID, userID]);
-
-        res.redirect(`/collections/${collID}`);
+            res.redirect(`/collections/${req.body.collid}`);
+        } catch (error){
+            res.render("error");
+        }
     }
 });
 
 router.get("/expansions", async (req, res) => {
-    let query = "SELECT * FROM expansion"
-    let expansions = await slicedSearch(query)
-    res.render("expansions", {expansions: expansions});
+
+    try {
+        let expansions = await axios.get(`http://localhost:${API_PORT}/expansions`);
+        if (expansions.data.status != 200) throw new Error(expansions.data.message);
+
+        expansions = expansions.data.response;
+        expansions = await slicer(expansions);
+        res.render("expansions", {expansions: expansions});
+    } catch {
+        res.render("error");
+    }
+
 });
 
 router.get("/filter", async (req, res) => {
@@ -585,21 +612,8 @@ router.get("/filter", async (req, res) => {
 
     if (req.query.expid) {
         let expID = req.query.expid;
-
-        let expansionQ = 
-        `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
-        FROM card
-        LEFT JOIN card_like
-        ON card_like.card_id = card.card_id
-        WHERE expansion_id = ?
-        GROUP BY card.card_id
-        ORDER BY name;`
-
-        let cards = await slicedSearch(expansionQ, [expID])
-
-        res.render("browse", {cards: cards})
-
-        console.log(expID);
+        res.redirect(`/expansions/${expID}`);
+        return
     } else if (req.query.minlikes) {
         let minLikes = req.query.minlikes;
 

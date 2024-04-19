@@ -27,6 +27,7 @@ db.getConnection((err) => {
 router.get("/cards", async (req, res) => {
     let cardQ = "";
     let searchName = "";
+    let params = [];
 
     if (req.query.search){
         searchName = `${req.query.search}`
@@ -46,7 +47,29 @@ router.get("/cards", async (req, res) => {
         WHEN name LIKE ? THEN 4
         ELSE 3
         END;`;
+        params = [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`];
 
+    } else if (req.query.likedby){
+        userID = req.query.likedby;
+        cardQ =
+        `SELECT card_like.card_id, name, image_url, COUNT(card_like.card_like_id) as "like_count" FROM card_like
+        INNER JOIN card 
+        ON card.card_id = card_like.card_id
+        WHERE user_id = ?
+        GROUP BY card.card_id
+        ORDER BY name;`;
+        params = [userID];
+    } else if (req.query.expansionid){
+        cardQ = `
+        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        INNER JOIN expansion
+        ON expansion.expansion_id = card.expansion_id
+        WHERE card.expansion_id = ?
+        GROUP BY card.card_id
+        ORDER BY name;`;
+        params = [req.query.expansionid]
     } else {
         cardQ = `
         SELECT card.card_id, tcg_id, name, image_url, COUNT(card_like_id) as "like_count"
@@ -58,7 +81,7 @@ router.get("/cards", async (req, res) => {
     }
 
     try {
-        let cards = await db.promise().query(cardQ, [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`]);
+        let cards = await db.promise().query(cardQ, params);
         cards = cards[0];
 
         res.json({
@@ -385,9 +408,124 @@ router.post("/likecard", async (req, res) => {
     }
 });
 
-router.post("/ratecollection", (req, res) => {
+router.post("/ratecollection", async (req, res) => {
+    let userID = req.body.userid;
+    let collID = req.body.collid;
+    let rating = req.body.rating;
+
+    let ratingStatus = false;
+    let ratingStatusQ = `
+    SELECT * FROM collection_rating
+    WHERE user_id = ?
+    AND collection_id = ?
+    `
+
+    try {
+        if ((rating >  4 || rating < 1) && rating) throw new Error("invalid rating");
+
+        let ratingStatusResult = await db.promise().query(ratingStatusQ, [userID, collID]);
+        if (ratingStatusResult[0].length === 1) ratingStatus = true;
     
+        let rateQ = ratingStatus ? "DELETE FROM collection_rating WHERE user_id = ? AND collection_id = ?;" : "INSERT INTO collection_rating (user_id, collection_id, rating) VALUES (?, ?, ?)";
+        let ratingResult = await db.promise().query(rateQ, [userID, collID, rating]);
+
+        res.json({
+            status: 200,
+            message: "success"
+        });
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
 });
+
+router.post("/commentcollection", async (req, res) => {
+    let collID = req.body.collid;
+    let comment = req.body.comment;
+    let userID = req.body.userid;
+
+    let commentQ = `
+    INSERT INTO collection_comment (comment_text, collection_id, user_id)
+    VALUES (?, ?, ?);`;
+
+    try {
+        let commentResult = await db.promise().query(commentQ, [comment, collID, userID]);
+
+        res.json({
+            status: 200,
+            message: "success"
+        });
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+});
+
+router.get("/expansions", async (req, res) => {
+    let expansionQ = `
+    SELECT * FROM expansion`;
+
+    try {
+        let expansions = await db.promise().query(expansionQ);
+        expansions = expansions[0];
+    
+        res.json({
+            status: 200,
+            message: "succcess",
+            response: expansions
+        });
+    } catch {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+});
+
+router.post("/addremovecard", async (req, res) => {
+    let cardID = req.body.cardid;
+    let collID = req.body.collid;
+    let action = req.body.action;
+
+    let inCollection = false;
+    let cardStatusQ = `
+    SELECT * FROM collection_card
+    WHERE card_id = ?
+    AND collection_id = ?
+    `;
+    try {
+        let cardStatusResult = await db.promise().query(cardStatusQ, [cardID, collID]);
+        if (cardStatusResult[0].length > 0) inCollection = true;
+    
+        let query = action == 1 ? "DELETE FROM collection_card WHERE collection_id = ? AND card_id = ?;" : "INSERT INTO collection_card (collection_id, card_id) VALUES (?, ?);"
+        if (action == 0 && inCollection) throw new Error("duplicate")
+    
+        let queryResult = await db.promise().query(query, [collID, cardID]);
+        res.json({
+        status: 200,
+        message: "success"
+        });
+    } catch (error) {
+        if (error.message === "duplicate"){
+            res.json({
+                status: 409,
+                message: "duplicate"
+            });
+        } else {            
+            res.json({
+            status: 400,
+            message: "failure"
+            });
+        }
+    }
+
+
+});
+
 
 /* https://www.geeksforgeeks.org/how-to-redirect-404-errors-to-a-page-in-express-js/ */
 router.all('*', (req, res) => {

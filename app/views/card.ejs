@@ -11,14 +11,19 @@
         <div class="row">
 
             <div class="column column-25 centertext">
+                <% if (error) { %>
+                    <h5 class="textred">Already in collection!</h5>
+                <% } %>
                 <h4>Likes : <%= card.likeCount %></h4>
             </div>
 
             <% if (typeof userid != "undefined" && userid != null) { %>
                 <div class="column column-offset-25">
+
                     <!-- form from milligram docs -->
-                        <form action="/addcard" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
+                        <form action="/addremovecard" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
                             <fieldset class="talright mb0 dflex">
+                                <input type="hidden" name="action" value="0">
                                 <input type="hidden" name="cardid" value=<%= card.cardId %>>
                                 <select id="collection" name="collid" class="dropdown">
                                     <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
