@@ -6,7 +6,7 @@
 <body>
     <%- include("partials/navbar") %>
     <form action="/sendmessage" method="post" class="container messagecontainer mt20">
-        <input type="hidden" name="cardid" value="<%= card.card_id %>">
+        <input type="hidden" name="cardid" value="<%= card.cardID %>">
         <input type="hidden" name="recipientid" value="<%= recipient.user_id %>">
         <input type="hidden" name="subject" value="Trading For <%= card.name %>">
 
@@ -18,7 +18,7 @@
 
         <div class="row formrow">
             <div class="column">
-                <h4>Subject: Trading For <%= card.name %></h4>
+                <h4>Subject: Trading <%= card.name %></h4>
             </div>
         </div>
         

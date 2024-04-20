@@ -322,18 +322,23 @@ router.get("/collections/:collectionid", async (req, res) => {
 
 });
 
-router.post("/createcol", async (req, res) => {
-    let user_id = req.session.userid;
+router.post("/createcoll", async (req, res) => {
+    let userID = req.session.userid;
 
-    if (user_id) {
-        let colName = `${req.body.colName}`;
+    if (userID) {
+        let body = {
+            userid: userID,
+            collname: req.body.collname
+        };
 
-        let insertQuery = `INSERT INTO collection (collection_name, user_id) 
-        VALUES (?, ?);`
-
-        let insertResult = await db.promise().query(insertQuery, [colName, user_id]);
-
-        res.redirect("/mycards/collections");
+        try {
+            body = querystring.stringify(body);
+            let createResult = await axios.post(`http://localhost:${API_PORT}/createcoll`, body, formConfig);
+            if (createResult.data.status !== 200) throw new Error(createResult.data.message);
+            res.redirect("/mycards/collections");
+        } catch (error){
+            res.render("error");
+        }
     } else {
         res.redirect("/login");
     }
@@ -357,29 +362,9 @@ router.post("/deletecol", async (req, res) => {
 
     let deleteResult = await db.promise().query(deleteCollQ, [collID]);
 
-    if (collectionResult.collection_name === "Liked Cards") {
-        let unlikeQ = `
-        DELETE FROM `
-    }
-
     res.redirect("/mycards/collections")
 });
 
-router.post("/removecard", async (req, res) => {
-    let cardID = req.body.cardId;
-    let collID = req.body.collId;
-    let userID = req.session.userid;
-
-    let removeQ = `
-    DELETE FROM collection_card
-    WHERE collection_id = ?
-    AND card_id = ?;
-    `;
-
-    let removeResult = await db.promise().query(removeQ, [collID, cardID]);
-
-    res.redirect(`/collections/${collID}`);
-})
 
 router.post("/addremovecard", async (req, res) => {
     let userID = req.session.userid;
@@ -512,7 +497,7 @@ router.get("/card/:cardid", async (req, res) => {
         if (cardResult.data.status != 200) throw new Error (cardResult.data.message);
 
         res.render("card", {
-            card : cardResult.data.card,
+            card : cardResult.data.response,
             collections: collections,
             error: error
         });
@@ -690,20 +675,14 @@ router.get("/messages", async (req, res) => {
     let userID = req.session.userid;
 
     if (userID){
-        let messageQ = `
-        SELECT send.display_name as "sender", rec.display_name as "recipient", subject, body, DATE_FORMAT(time_sent, '%d/%m/%Y') as "date", TIME_FORMAT(time_sent, '%H:%i:%s') as "time", sender_id, recipient_id, card_id
-        FROM message
-        INNER JOIN user rec
-        ON rec.user_id = message.recipient_id
-        INNER JOIN user send
-        ON send.user_id = message.sender_id
-        WHERE recipient_id = ?
-        ORDER BY time_sent DESC;`;
-
-        let messages = await db.promise().query(messageQ, [userID]);
-        messages = messages[0];
-
-        res.render("inbox", {messages: messages})
+        try {
+            let messages = await axios.get(`http://localhost:${API_PORT}/messages/${userID}`);
+            messages = messages.data.response;
+    
+            res.render("inbox", {messages: messages}); 
+        } catch (error) {
+            res.render("error");
+        }
     } else {
         res.redirect("/login");
     }
@@ -713,30 +692,23 @@ router.get("/sendmessage", async (req, res) => {
     let userID = req.session.userid;
 
     if (userID){
-        let recipientID = req.query.recipientid;
-        let cardID = req.query.cardid;
+        try {
+            let recipient = await axios.get(`http://localhost:${API_PORT}/user/${req.query.recipientid}`);
+            if (recipient.data.status != 200) throw new Error(response.data.message);
+            recipient = recipient.data.response;
 
-        let recipientQ = 
-        `SELECT user_id, display_name FROM user
-        WHERE user_id = ?
-        `
+            let card = await axios.get(`http://localhost:${API_PORT}/cards/${req.query.cardid}`);
+            if (card.data.status != 200) throw new Error(card.data.message);
+            card = card.data.response;
+            
+            res.render("sendmessage", {
+                recipient: recipient,
+                card: card
+            })
+        } catch (error) {
+            res.render("error");
+        }
 
-        let cardQ = 
-        `SELECT card_id, name FROM card
-        WHERE card_id = ?`
-
-        let recipient = await db.promise().query(recipientQ, [recipientID]);
-        recipient = recipient[0][0];
-
-        let card = await db.promise().query(cardQ, [cardID]);
-        card = card[0][0];
-
-        console.log(recipient)
-
-        res.render("sendmessage", {
-            recipient: recipient,
-            card: card
-        })
     } else {
         res.redirect("/login");
     }
@@ -744,19 +716,25 @@ router.get("/sendmessage", async (req, res) => {
 
 router.post("/sendmessage", async (req, res) => {
     let senderID = req.session.userid;
-    let recipientID = req.body.recipientid;
-    let cardID = req.body.cardid;
-    let subject = req.body.subject;
-    let body = req.body.body;
 
     if (senderID){        
-        let messageQ = 
-        `INSERT INTO message (sender_id, recipient_id, card_id, subject, body)
-        VALUES (?, ?, ?, ?, ?);`;
-    
-        let messageResult = db.promise().query(messageQ, [senderID, recipientID, cardID, subject, body]);
+        let body = {
+            senderid: senderID,
+            recipientid: req.body.recipientid,
+            cardid: req.body.cardid,
+            subject: req.body.subject,
+            body: req.body.body
+        };
 
-        res.redirect("/");
+        try {
+            body = querystring.stringify(body);
+            let messageResult = await axios.post(`http://localhost:${API_PORT}/sendmessage`, body, formConfig);
+            if (messageResult.data.status !== 200) throw new Error(messageResult.data.message);
+            res.redirect("/");
+        } catch (error) {
+            res.render("error");
+        }
+
     } else {
         res.redirect("/login");
     }

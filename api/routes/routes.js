@@ -171,7 +171,7 @@ router.get("/cards/:cardid", async (req, res) => {
     
         cardData = {
             name: card.name,
-            cardId: card.card_id,
+            cardID: card.card_id,
             likeCount: likeCount,
             liked: liked,
             expansion: card.expansion_name,
@@ -190,7 +190,7 @@ router.get("/cards/:cardid", async (req, res) => {
         res.json({
             status: 200,
             message: "success",
-            card: cardData
+            response: cardData
         })
     } catch (error) {
         res.json({
@@ -522,9 +522,111 @@ router.post("/addremovecard", async (req, res) => {
             });
         }
     }
-
-
 });
+
+router.get("/user/:userid", async (req, res) => {
+    let userID = req.params.userid;
+    let userQ = `SELECT * FROM user WHERE user_id = ?`;
+    let status = 200;
+    let message = "success";
+
+    try {
+        let userResult = await db.promise().query(userQ, [userID]);
+
+        if (userResult[0].length === 0){
+            status = 404;
+            message = "user not found"
+        } 
+
+        userResult = userResult[0][0];
+        res.json({
+            status: status,
+            message: message,
+            response: userResult
+        });
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+});
+
+router.post("/sendmessage", async (req, res) => {
+    let senderID = req.body.senderid;
+    let recipientID = req.body.recipientid;
+    let cardID = req.body.cardid;
+    let subject = req.body.subject;
+    let body = req.body.body;
+
+    let messageQ = `
+    INSERT INTO message (sender_id, recipient_id, card_id, subject, body)
+    VALUES (?, ?, ?, ?, ?);`;
+
+    try {
+        let messageResult = await db.promise().query(messageQ, [senderID, recipientID, cardID, subject, body]);
+        res.json({
+            status: 200,
+            message: "success",
+        });
+    } catch (error){
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+});
+
+router.get("/messages/:userid", async (req, res) => {
+    let userID = req.params.userid;
+
+    let messageQ = `
+    SELECT send.display_name as "sender", rec.display_name as "recipient", subject, body, DATE_FORMAT(time_sent, '%d/%m/%Y') as "date", TIME_FORMAT(time_sent, '%H:%i:%s') as "time", sender_id, recipient_id, card_id
+    FROM message
+    INNER JOIN user rec
+    ON rec.user_id = message.recipient_id
+    INNER JOIN user send
+    ON send.user_id = message.sender_id
+    WHERE recipient_id = ?
+    ORDER BY time_sent DESC;`;
+    try {
+        let messages = await db.promise().query(messageQ, [userID]);
+        messages = messages[0];
+    
+        res.json({
+            status: 200,
+            message: "success",
+            response: messages
+        });
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+});
+
+router.post("/createcoll", async (req, res) => {
+    let userID = req.body.userid;
+    let collName = req.body.collname;
+
+    let insertQuery = `INSERT INTO collection (collection_name, user_id) 
+    VALUES (?, ?);`
+
+    try {
+        let insertResult = await db.promise().query(insertQuery, [collName, userID]);
+        res.json({
+            status: 200,
+            message: "success"
+        });
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+})
 
 
 /* https://www.geeksforgeeks.org/how-to-redirect-404-errors-to-a-page-in-express-js/ */
