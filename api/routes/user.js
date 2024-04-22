@@ -4,8 +4,10 @@ const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const validator = require("email-validator"); // https://www.npmjs.com/package/email-validator
 const db = require("../db");
+const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
 
-router.post("/authenticate", async (req, res) => {
+router.post("/authenticate", [auth, admin], async (req, res) => {
     const email = req.body.email;
     const password = req.body.pass;
     const loginQ = `SELECT * FROM user WHERE email_address = ?`;
@@ -40,7 +42,7 @@ router.post("/authenticate", async (req, res) => {
     }
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", [auth, admin] , async (req, res) => {
     const saltRounds = 5;
 
     let email = req.body.email;
@@ -100,7 +102,7 @@ router.post("/register", async (req, res) => {
 
 });
 
-router.get("/user/:userid", async (req, res) => {
+router.get("/user/:userid", [auth, admin], async (req, res) => {
     let userID = req.params.userid;
 
     const accountQ = "SELECT * FROM user WHERE user_id = ?";

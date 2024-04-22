@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db")
+const db = require("../db");
+const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
 
-router.get("/collections", async (req, res) => {
+router.get("/collections", [auth], async (req, res) => {
     let collectionQ = "";
     let searchName = "";
     let params = [];
@@ -55,7 +57,7 @@ router.get("/collections", async (req, res) => {
     }
 });
 
-router.get("/collections/:collid", async (req, res) => {
+router.get("/collections/:collid", [auth], async (req, res) => {
     let collectionID = req.params.collid;
     let userID = req.query.userid;
     let isOwner = false;
@@ -163,42 +165,7 @@ router.get("/collections/:collid", async (req, res) => {
 
 });
 
-router.post("/authenticate", async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.pass;
-    const loginQ = `SELECT * FROM user WHERE email_address = ?`;
-
-    try {
-        let user = await db.promise().query(loginQ, [email]);
-        user = user[0];
-    
-        if (user.length === 1){
-            // https://www.npmjs.com/package/bcrypt?activeTab=readme
-            const match = await bcrypt.compare(password, user[0].password_hash);
-            if (match) {
-                res.json({
-                    status: 200,
-                    message: "authenticated",
-                    response: user[0].user_id
-                });
-                return;
-            }
-        }
-
-        res.json({
-            status: 401,
-            message: "Issue with username or password"
-        });
-
-    } catch (err) {
-        res.json({
-            status: 400,
-            message: "Issue logging in"
-        });
-    }
-});
-
-router.post("/ratecollection", async (req, res) => {
+router.post("/ratecollection", [auth, admin], async (req, res) => {
     let userID = req.body.userid;
     let collID = req.body.collid;
     let rating = req.body.rating;
@@ -231,7 +198,7 @@ router.post("/ratecollection", async (req, res) => {
     }
 });
 
-router.post("/commentcollection", async (req, res) => {
+router.post("/commentcollection", [auth, admin], async (req, res) => {
     let collID = req.body.collid;
     let comment = req.body.comment;
     let userID = req.body.userid;
@@ -255,7 +222,7 @@ router.post("/commentcollection", async (req, res) => {
     }
 });
 
-router.post("/createcoll", async (req, res) => {
+router.post("/createcoll", [auth, admin], async (req, res) => {
     let userID = req.body.userid;
     let collName = req.body.collname;
 

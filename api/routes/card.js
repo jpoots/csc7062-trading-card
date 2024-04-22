@@ -2,8 +2,10 @@ const express = require("express");
 const router = express.Router();
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
 const db = require("../db")
+const auth = require("../middleware/auth");
+const admin = require("../middleware/admin")
 
-router.get("/cards", async (req, res) => {
+router.get("/cards", [auth, admin], async (req, res) => {
     let cardQ = "";
     let searchName = "";
     let params = [];
@@ -111,7 +113,7 @@ router.get("/cards", async (req, res) => {
     }
 });
 
-router.get("/cards/:cardid", async (req, res) => {
+router.get("/cards/:cardid", [auth], async (req, res) => {
     let cardID = req.params.cardid;
     let userID = req.query.userid;
 
@@ -214,7 +216,7 @@ router.get("/cards/:cardid", async (req, res) => {
 
 });
 
-router.post("/likecard", async (req, res) => {
+router.post("/likecard", [auth, admin], async (req, res) => {
     let cardID = req.body.cardid;
     let userID = req.body.userid;
 

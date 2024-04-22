@@ -13,7 +13,8 @@ const API_ADD = process.env.API_ADDRESS;
 
 const formConfig = {
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+        'x-api-key': '554400',
+        'Content-Type': 'application/x-www-form-urlencoded',
     }
 }
 
