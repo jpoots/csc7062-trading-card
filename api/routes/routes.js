@@ -70,6 +70,40 @@ router.get("/cards", async (req, res) => {
         GROUP BY card.card_id
         ORDER BY name;`;
         params = [req.query.expansionid]
+    } else if (req.query.minlikes){
+        cardQ = `
+        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+        FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        GROUP BY card.card_id
+        HAVING COUNT(card_like_id) >= ?
+        ORDER BY COUNT(card_like_id)
+        `
+        params = [req.query.minlikes]
+    } else if (req.query.maxhp && req.query.minhp) {
+        cardQ = `
+        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+        FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        WHERE hp >= ?
+        AND hp <= ?
+      	GROUP BY card.card_id
+        ORDER BY hp`;
+
+        params = [req.query.minhp, req.query.maxhp]
+    } else if (req.params.typeid) {
+        cardQ = `
+        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+        FROM card
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        WHERE hp >= ?
+        AND hp <= ?
+      	GROUP BY card.card_id
+        ORDER BY hp `
+        params = [req.params.typeid];
     } else {
         cardQ = `
         SELECT card.card_id, tcg_id, name, image_url, COUNT(card_like_id) as "like_count"
@@ -252,6 +286,114 @@ router.get("/collections", async (req, res) => {
             message: "failure",
         });
     }
+});
+
+router.get("/collections/:collid", async (req, res) => {
+    let collectionID = req.params.collid;
+    let userID = req.query.userid;
+    let isOwner = false;
+    let rated = false;
+    let yourRating = null;
+    let ownerID = null;
+    let rating = "Unrated"
+    let name = "";
+    let id = null;
+    
+    let cardQuery = `
+    SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM collection_card
+    INNER JOIN card
+    ON collection_card.card_id = card.card_id
+    LEFT JOIN card_like
+    ON card_like.card_id = card.card_id
+    WHERE collection_card.collection_id = ?
+    GROUP BY card.card_id;`;
+
+    let ownerQuery = `SELECT * FROM collection
+    WHERE collection_id = ?;`
+
+    let ratedQ = `
+    SELECT * FROM collection_rating
+    WHERE collection_id = ?
+    AND user_id = ?;
+    `;
+
+    let ratingQ = `
+    SELECT AVG(rating) FROM collection_rating
+    WHERE collection_id = ?;
+    `;
+
+    let commentQ = `
+    SELECT comment_text, display_name, DATE_FORMAT(time_posted, '%d/%m/%Y') as "date", TIME_FORMAT(time_posted, '%H:%i:%s') as "time"
+    FROM collection_comment
+    INNER JOIN user
+    ON collection_comment.user_id = user.user_id
+    WHERE collection_id = ?
+    ORDER BY time_posted DESC;`;
+
+    let youRatedQ = `
+    SELECT rating FROM collection_rating
+    WHERE user_id = ?
+    AND collection_id = ?;`;
+
+    try {
+        let cards = await db.promise().query(cardQuery, [collectionID]);
+        cards = cards[0];
+    
+        let collection = await db.promise().query(ownerQuery, [collectionID]);
+        ownerID = collection[0][0].user_id;
+        name = collection[0][0].collection_name;
+        id = collection[0][0].collection_id;
+    
+        if (!ownerID) {
+            throw new Error("corrupt collection record");
+        }
+    
+        if (userID === ownerID) isOwner = true;
+    
+        let ratedResult = await db.promise().query(ratedQ, [collectionID, userID]);
+        if (ratedResult[0].length != 0) rated = true;
+    
+        let comments = await db.promise().query(commentQ, [collectionID]);
+        comments = comments[0];
+    
+        let youRatedResults = await db.promise().query(youRatedQ, [userID, collectionID]);
+    
+        if (youRatedResults[0].length > 0) {
+            rated = true;
+            yourRating = youRatedResults[0][0].rating;
+        }
+    
+        let ratingResult = await db.promise().query(ratingQ, [collectionID]);
+        ratingResult = ratingResult[0][0]["AVG(rating)"];
+    
+        /*https://stackoverflow.com/questions/7342957/how-do-you-round-to-one-decimal-place-in-javascript*/
+        if (ratingResult) ratingResult = Math.round(ratingResult * 10) / 10;
+    
+        let response = {
+            id: id,
+            name: name, 
+            cards: cards,
+            isOwner:isOwner,
+            ownerID: ownerID,
+            rated: rated,
+            rating: rating,
+            yourRating: yourRating,
+            comments: comments,
+            yourRating: yourRating
+        }
+    
+        res.json({
+            status: 200,
+            message: "success",
+            response: response
+        });
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    };
+
 });
 
 router.post("/authenticate", async (req, res) => {
@@ -467,7 +609,8 @@ router.post("/commentcollection", async (req, res) => {
 
 router.get("/expansions", async (req, res) => {
     let expansionQ = `
-    SELECT * FROM expansion`;
+    SELECT * FROM expansion
+    ORDER BY expansion_name`;
 
     try {
         let expansions = await db.promise().query(expansionQ);
@@ -484,6 +627,29 @@ router.get("/expansions", async (req, res) => {
             message: "failure"
         });
     }
+});
+
+router.get("/types", async (req, res) => {
+    let allTypeQ = 
+    `SELECT type_id, type_name FROM type
+    ORDER BY type_name;`;
+
+    try {
+        let types = await db.promise().query(allTypeQ);
+        types = types[0];
+    
+        res.json({
+            status: 200,
+            message: "success",
+            response: types
+        });
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+
 });
 
 router.post("/addremovecard", async (req, res) => {
@@ -627,6 +793,29 @@ router.post("/createcoll", async (req, res) => {
         });
     }
 })
+
+router.post("/deletecoll", async (req, res) => {
+    let collID = req.body.collid;
+
+    let deleteCollQ = `
+    DELETE FROM collection
+    WHERE collection_id = ?;
+    `;
+
+    try{
+        let deleteResult = await db.promise().query(deleteCollQ, [collID]);
+
+        res.json({
+            status: 200,
+            message: "success",
+        });
+    } catch (error) {
+        res.json({
+            status: 400,
+            message: "failure"
+        });
+    }
+});
 
 
 /* https://www.geeksforgeeks.org/how-to-redirect-404-errors-to-a-page-in-express-js/ */

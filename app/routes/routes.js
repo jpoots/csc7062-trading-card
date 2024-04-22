@@ -9,6 +9,7 @@ const querystring = require('querystring');
 /* https://stackoverflow.com/questions/69879425/setting-dotenv-path-outside-of-root-directory-is-not-working */
 dotenv.config({ path: "../.env" })
 const API_PORT =  process.env.API_PORT;
+const API_ADD = process.env.API_ADDRESS;
 
 // establish db connection
 const db = mysql.createPool({
@@ -204,122 +205,23 @@ router.get("/collections", async (req, res) => {
     }
 });
 
-router.get("/collections/:collectionid", async (req, res) => {
-    let collectionID = req.params.collectionid;
-    let owner = false;
-    let ownerID = 0;
-    let collections = [];
-    let currentCollection = "";
-    let rated = false;
-    let userID = req.session.userid;
-    let yourRating = 0;
-
-    let cardQuery = `
-    SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM collection_card
-    INNER JOIN card
-    ON collection_card.card_id = card.card_id
-    LEFT JOIN card_like
-    ON card_like.card_id = card.card_id
-    WHERE collection_card.collection_id = ?
-    GROUP BY card.card_id;`;
-
-    let cards = await slicedSearch(cardQuery, [collectionID]);
-
-    let ownerQuery = `SELECT user_id FROM collection
-    WHERE collection_id = ?;`
-
-    ownerID = await db.promise().query(ownerQuery, [collectionID]);
-    ownerID = ownerID[0];
-
-    if (ownerID.length === 0){
-        res.render("error");
-    } else {
-        ownerID = ownerID[0].user_id;
-
-        if (ownerID === userID){
-            owner = true;
-
-            let collQ = 
-            `SELECT collection.collection_id, collection_name FROM collection 
-            WHERE collection.user_id = ?
-            ORDER BY collection_name`;
-            
-            collections = await db.promise().query(collQ, [ownerID]);
-            collections = collections[0]
-        } else if (userID) {
-            let ratedQ = `
-            SELECT COUNT(*) as "count" FROM collection_rating
-            WHERE collection_id = ?
-            AND user_id = ?;
-            `;
-
-            let ratedResult = await db.promise().query(ratedQ, [collectionID, userID]);
-
-            if (ratedResult[0][0].count !== 0) {
-                rated = true;
-            }
-        }
-
-        let collection = `
-        SELECT * FROM collection
-        WHERE collection_id = ?
-        `;
-
-        currentCollection = await db.promise().query(collection, [collectionID])
-        currentCollection = currentCollection[0][0];
-
-        let ratingQ = `
-        SELECT AVG(rating) FROM collection_rating
-        WHERE collection_id = ?;
-        `;
-
-        let ratingResult = await db.promise().query(ratingQ, [collectionID]);
-        ratingResult = ratingResult[0][0]["AVG(rating)"];
-
-        if (!ratingResult){
-            ratingResult = "Unrated";
-        } else {
-            /*https://stackoverflow.com/questions/7342957/how-do-you-round-to-one-decimal-place-in-javascript*/
-            ratingResult = Math.round(ratingResult * 10) / 10;
-        }
-
-        let youRatedQ = `
-        SELECT rating FROM collection_rating
-        WHERE user_id = ?
-        AND collection_id = ?;`;
-
-        let youRatedResults = await db.promise().query(youRatedQ, [userID, collectionID]);
-
-        if (youRatedResults[0].length > 0) {
-            rated = true;
-            yourRating = youRatedResults[0][0].rating;
-        }
-
-        let commentQ = `
-        SELECT comment_text, display_name, DATE_FORMAT(time_posted, '%d/%m/%Y') as "date", TIME_FORMAT(time_posted, '%H:%i:%s') as "time"
-        FROM collection_comment
-        INNER JOIN user
-        ON collection_comment.user_id = user.user_id
-        WHERE collection_id = ?
-        ORDER BY time_posted DESC;`;
+router.get("/collections/:collid", async (req, res) => {
+    try {
+        let collection = await axios.get(API_ADD + `/collections/${req.params.collid}?userid=${req.session.userid}`);
+        collection = collection.data.response;
+        collection.cards = await slicer(collection.cards);
     
-        let comments = await db.promise().query(commentQ, [collectionID]);
-        comments = comments[0];
-
+        let collections = await axios.get(API_ADD + `/collections?userid=${req.session.userid}`);
+        collections = collections.data.response;
+    
         res.render("collection", {
-            cards: cards,
-            isOwner: owner,
-            ownerID: ownerID,
-            collections: collections,
-            currentCollection : currentCollection,
-            rated: rated,
-            rating: ratingResult,
-            comments: comments,
-            rated: rated,
-            yourRating: yourRating
+            cards: collection.cards,
+            collection: collection,
+            collections: collections
         });
+    } catch (error) {
+        res.render("error");
     }
-
 });
 
 router.post("/createcoll", async (req, res) => {
@@ -344,25 +246,26 @@ router.post("/createcoll", async (req, res) => {
     }
 });
 
-router.post("/deletecol", async (req, res) => {
-    let collID = req.body.collid;
+router.post("/deletecoll", async (req, res) => {
+    if (req.session.userid) {
+        let body = {
+            collid: req.body.collid
+        };
+        
+        try {
+            body = querystring.stringify(body);
 
-    let collectionQ = `
-    SELECT * FROM collection
-    WHERE collection_id = ?;`;
+            let deleteResult = await axios.post(API_ADD + `/deletecoll`, body, formConfig)
+            if (deleteResult.data.status != 200) throw new Error(deleteResult.data.message);
 
+            res.redirect("/mycards/collections")
+        } catch (error) {
+            res.render("error");
+        }
 
-    let deleteCollQ = `
-    DELETE FROM collection
-    WHERE collection_id = ?;
-    `;
-
-    let collectionResult = await db.promise().query(collectionQ, [collID]);
-    collectionResult = collectionResult[0][0];
-
-    let deleteResult = await db.promise().query(deleteCollQ, [collID]);
-
-    res.redirect("/mycards/collections")
+    } else {
+        res.redirect("/login");
+    }
 });
 
 
@@ -479,20 +382,15 @@ router.get("/card/:cardid", async (req, res) => {
     let cardID = req.params.cardid;
     let error = req.query.error;
     
-    let cardQ = "";
     let collections = [];
     try {
         if (userID) {
             let collectionsResult = await axios.get(`http://localhost:${API_PORT}/collections?userid=${userID}`);
             if (collectionsResult.data.status != 200) throw new Error(collections.data.message);
             collections = collectionsResult.data.response;
-
-            cardQ = `http://localhost:${API_PORT}/cards/${cardID}?userid=${userID}`;
-        } else {
-            cardQ = `http://localhost:${API_PORT}/cards/${cardID}`;
         }
     
-        let cardResult = await axios.get(cardQ);
+        let cardResult = await axios.get(API_ADD + `/cards/${cardID}?userid=${userID}`);
         
         if (cardResult.data.status != 200) throw new Error (cardResult.data.message);
 
@@ -592,83 +490,36 @@ router.get("/expansions", async (req, res) => {
 });
 
 router.get("/filter", async (req, res) => {
-    let query = req.query;
-    console.log(query)
+    try {
+    // https://stackoverflow.com/questions/5223/length-of-a-javascript-object */https://stackoverflow.com/questions/5223/length-of-a-javascript-objects
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+    if (Object.keys(req.query).length > 0) {
+        let cardsResult = await axios.get(API_ADD + "/cards", {
+            params: req.query
+        });
 
-    if (req.query.expid) {
-        let expID = req.query.expid;
-        res.redirect(`/expansions/${expID}`);
-        return
-    } else if (req.query.minlikes) {
-        let minLikes = req.query.minlikes;
+        if (cardsResult.data.status != 200) throw new Error(cardsResult.data.message);
 
-        /* https://stackoverflow.com/questions/6095567/sql-query-to-obtain-value-that-occurs-more-than-once */
-        let minLikesQ = `
-        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
-        FROM card
-        LEFT JOIN card_like
-        ON card_like.card_id = card.card_id
-        GROUP BY card.card_id
-        HAVING COUNT(card_like_id) >= ?
-        ORDER BY COUNT(card_like_id)
-        `
+        let cards = await slicer(cardsResult.data.response);
 
-        let cards = await slicedSearch(minLikesQ, [minLikes])
-
-        res.render("browse", {cards: cards})
-    
-    } else if (req.query.maxhp && req.query.minhp) {
-        let maxHP = req.query.maxhp;
-        let minHP = req.query.minhp;  
-
-        let hpQ = `
-        SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
-        FROM card
-        LEFT JOIN card_like
-        ON card_like.card_id = card.card_id
-        WHERE hp >= ?
-        AND hp <= ?
-      	GROUP BY card.card_id
-        ORDER BY hp`;
-
-        let cards = await slicedSearch(hpQ, [minHP, maxHP]);
-
-        res.render("browse", {cards: cards})
-
-    } else if (req.params.typeid) {
-        let typeID = req.params.typeid;
-
-        let typeQ = 
-        `SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
-        FROM card
-        LEFT JOIN card_like
-        ON card_like.card_id = card.card_id
-        WHERE hp >= ?
-        AND hp <= ?
-      	GROUP BY card.card_id
-        ORDER BY hp `
-
+        res.render("browse", {cards: cards});
     } else {
-        let allExpansionQ = 
-        `SELECT expansion_name, expansion_id FROM expansion
-        ORDER BY expansion_name;`;
 
-        let allTypeQ = 
-        `SELECT type_id, type_name FROM type;`;
-    
-        let expansions = await db.promise().query(allExpansionQ);
-        expansions = expansions[0];
+        let expansions = await axios.get(API_ADD + "/expansions");
+        expansions = expansions.data.response;
 
-        let types = await db.promise().query(allTypeQ);
-        types = types[0];
+        let types = await axios.get(API_ADD + "/types");
+        types = types.data.response;
 
-
-            /* http://localhost:3000/filter?filterby=hp&param=10 */        
+        /* http://localhost:3000/filter?filterby=hp&param=10 */        
         res.render("filter", {
         expansions: expansions,
         types: types
         });
-    } 
+    }
+    } catch (error) {
+        res.render("error");
+    }
 });
 
 router.get("/messages", async (req, res) => {
