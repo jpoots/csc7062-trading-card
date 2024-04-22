@@ -11,24 +11,6 @@ dotenv.config({ path: "../.env" })
 const API_PORT =  process.env.API_PORT;
 const API_ADD = process.env.API_ADDRESS;
 
-// establish db connection
-const db = mysql.createPool({
-    connectionLimit: 10,
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: '40259713',
-    port: '8889',
-    multipleStatements: true,
-    waitForConnections: true,
-    queueLimit: 10
-});
-
-db.getConnection((err) => {
-    if (err) return console.log(err.message);
-    console.log("connected to db using createPool");
-});
-
 const formConfig = {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -80,7 +62,7 @@ router.post("/login", async (req, res) => {
         credentials = querystring.stringify(credentials);
     
         let authenticateResult = await axios.post(`http://localhost:${API_PORT}/authenticate`, credentials, formConfig);
-    
+        
         if (authenticateResult.data.status === 200){
             req.session.userid = authenticateResult.data.response;
             res.redirect("/mycards")
@@ -143,7 +125,7 @@ router.get("/account", async (req, res) => {
         res.redirect("/login");
     } else {
         try {
-            let accountResult = await axios.get(`http://localhost:${API_PORT}/account/${req.session.userid}`);
+            let accountResult = await axios.get(`http://localhost:${API_PORT}/user/${req.session.userid}`);
 
             if (accountResult.data.status != 200){
                 throw new Error("issue with request")
@@ -213,6 +195,7 @@ router.get("/collections/:collid", async (req, res) => {
     
         let collections = await axios.get(API_ADD + `/collections?userid=${req.session.userid}`);
         collections = collections.data.response;
+        console.log(collection)
     
         res.render("collection", {
             cards: collection.cards,
