@@ -4,7 +4,7 @@ const db = require("../db");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 
-router.post("/sendmessage", [auth, admin], async (req, res) => {
+router.post("/sendmessage", [admin], async (req, res) => {
     let senderID = req.body.senderid;
     let recipientID = req.body.recipientid;
     let cardID = req.body.cardid;
@@ -29,7 +29,7 @@ router.post("/sendmessage", [auth, admin], async (req, res) => {
     }
 });
 
-router.get("/messages/:userid", [auth, admin], async (req, res) => {
+router.get("/messages/:userid", [admin], async (req, res) => {
     let userID = req.params.userid;
 
     let messageQ = `

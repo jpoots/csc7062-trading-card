@@ -3,6 +3,7 @@ const path = require("path");
 const mysql = require("mysql2");
 const dotenv = require("dotenv");
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
+const auth = require("./middleware/auth");
 
 const user = require("./routes/user")
 const card = require("./routes/card");
@@ -21,6 +22,7 @@ const PORT = process.env.API_PORT;
 
 // middleware and routes
 app.use(express.urlencoded({ extended: true }));
+app.use(auth);
 
 app.use(user);
 app.use(card);

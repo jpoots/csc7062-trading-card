@@ -12,26 +12,35 @@ const auth = async (req, res, next) => {
 
     let getKeysQ = `
     SELECT * FROM api_user`
-
-    let keys = await db.promise().query(getKeysQ, [apiKey]);
-    keys = keys[0];
-
-    for (let keyInd = 0; keyInd < keys.length; keyInd++) {
-        if (await bcrypt.compare(apiKey, keys[keyInd].api_key)){
-            foundKey = keys[keyInd];
-            break;
+    
+    try {
+        let keys = await db.promise().query(getKeysQ, [apiKey]);
+        keys = keys[0];
+    
+        for (let keyInd = 0; keyInd < keys.length; keyInd++) {
+            if (await bcrypt.compare(apiKey, keys[keyInd].api_key)){
+                foundKey = keys[keyInd];
+                break;
+            }
         }
-    }
 
-    if (foundKey){
-        req.admin = foundKey.admin;
-        next();
-    } else {
-        res.json({
+        if (foundKey){
+            req.admin = foundKey.admin;
+            next();
+        } else {
+            res.json({
+                status: 403,
+                message: "access denied"
+            })
+        }
+        
+    } catch {
+               res.json({
             status: 403,
             message: "access denied"
-        })
+        }) 
     }
+
 }
 
 module.exports = auth;

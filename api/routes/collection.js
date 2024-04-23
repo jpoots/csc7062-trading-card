@@ -4,7 +4,7 @@ const db = require("../db");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 
-router.get("/collections", [auth], async (req, res) => {
+router.get("/collections", async (req, res) => {
     let collectionQ = "";
     let searchName = "";
     let params = [];
@@ -27,7 +27,7 @@ router.get("/collections", [auth], async (req, res) => {
             ELSE 3
         END;`;
         params = [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`];
-    } if (req.query.userid) {
+    } else if (req.query.userid) {
         collectionQ = `
         SELECT * FROM collection
         WHERE user_id = ?;`;
@@ -57,7 +57,7 @@ router.get("/collections", [auth], async (req, res) => {
     }
 });
 
-router.get("/collections/:collid", [auth], async (req, res) => {
+router.get("/collections/:collid", async (req, res) => {
     let collectionID = req.params.collid;
     let userID = req.query.userid;
     let isOwner = false;
@@ -165,7 +165,7 @@ router.get("/collections/:collid", [auth], async (req, res) => {
 
 });
 
-router.post("/ratecollection", [auth, admin], async (req, res) => {
+router.post("/ratecollection", [admin], async (req, res) => {
     let userID = req.body.userid;
     let collID = req.body.collid;
     let rating = req.body.rating;
@@ -198,7 +198,7 @@ router.post("/ratecollection", [auth, admin], async (req, res) => {
     }
 });
 
-router.post("/commentcollection", [auth, admin], async (req, res) => {
+router.post("/commentcollection", [admin], async (req, res) => {
     let collID = req.body.collid;
     let comment = req.body.comment;
     let userID = req.body.userid;
@@ -222,7 +222,7 @@ router.post("/commentcollection", [auth, admin], async (req, res) => {
     }
 });
 
-router.post("/createcoll", [auth, admin], async (req, res) => {
+router.post("/createcoll", [admin], async (req, res) => {
     let userID = req.body.userid;
     let collName = req.body.collname;
 
@@ -243,7 +243,7 @@ router.post("/createcoll", [auth, admin], async (req, res) => {
     }
 })
 
-router.post("/deletecoll", async (req, res) => {
+router.post("/deletecoll", [admin], async (req, res) => {
     let collID = req.body.collid;
 
     let deleteCollQ = `
@@ -266,7 +266,7 @@ router.post("/deletecoll", async (req, res) => {
     }
 });
 
-router.post("/addremovecard", async (req, res) => {
+router.post("/addremovecard", [admin], async (req, res) => {
     let cardID = req.body.cardid;
     let collID = req.body.collid;
     let action = req.body.action;
