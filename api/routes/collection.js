@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const createError = require("http-errors");
 
 router.get("/collections", async (req, res) => {
     let collectionQ = "";
@@ -28,6 +28,8 @@ router.get("/collections", async (req, res) => {
         END;`;
         params = [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`];
     } else if (req.query.userid) {
+        if (!parseInt(req.query.userid)) throw new createError.BadRequest();
+
         collectionQ = `
         SELECT * FROM collection
         WHERE user_id = ?;`;
@@ -50,9 +52,11 @@ router.get("/collections", async (req, res) => {
             response: collections
         });
     } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure",
+            status: err.status,
+            message: err.message
         });
     }
 });
@@ -105,19 +109,21 @@ router.get("/collections/:collid", async (req, res) => {
     AND collection_id = ?;`;
 
     try {
+
+        if (!parseInt(collectionID) || (userID && !parseInt(userID))) throw new createError.BadRequest();
+        if (userID && !parseInt(userID)) throw new createError.BadRequest();
+
         let cards = await db.promise().query(cardQuery, [collectionID]);
         cards = cards[0];
     
         let collection = await db.promise().query(ownerQuery, [collectionID]);
+        if (collection[0].length === 0) throw new createError.NotFound();
+
         ownerID = collection[0][0].user_id;
         name = collection[0][0].collection_name;
         id = collection[0][0].collection_id;
-    
-        if (!ownerID) {
-            throw new Error("corrupt collection record");
-        }
-    
-        if (userID === ownerID) isOwner = true;
+        
+        if (userID == ownerID) isOwner = true;
     
         let ratedResult = await db.promise().query(ratedQ, [collectionID, userID]);
         if (ratedResult[0].length != 0) rated = true;
@@ -156,10 +162,12 @@ router.get("/collections/:collid", async (req, res) => {
             message: "success",
             response: response
         });
-    } catch (error) {
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     };
 
@@ -178,7 +186,7 @@ router.post("/ratecollection", [admin], async (req, res) => {
     `
 
     try {
-        if ((rating >  4 || rating < 1) && rating) throw new Error("invalid rating");
+        if (!parseInt(userID) || !parseInt(collID) || !parseInt(rating) || rating > 4 || rating < 1) throw new createError.BadRequest();
 
         let ratingStatusResult = await db.promise().query(ratingStatusQ, [userID, collID]);
         if (ratingStatusResult[0].length === 1) ratingStatus = true;
@@ -190,10 +198,12 @@ router.post("/ratecollection", [admin], async (req, res) => {
             status: 200,
             message: "success"
         });
-    } catch (error) {
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 });
@@ -208,16 +218,20 @@ router.post("/commentcollection", [admin], async (req, res) => {
     VALUES (?, ?, ?);`;
 
     try {
+        if (!parseInt(collID) || !parseInt(userID) || !comment || comment.trim().length === 0) throw new createError.BadRequest();
+
         let commentResult = await db.promise().query(commentQ, [comment, collID, userID]);
 
         res.json({
             status: 200,
             message: "success"
         });
-    } catch (error) {
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 });
@@ -230,15 +244,19 @@ router.post("/createcoll", [admin], async (req, res) => {
     VALUES (?, ?);`
 
     try {
+        if (!parseInt(userID) || !collName || collName.trim().length === 0) throw new createError.BadRequest();
+
         let insertResult = await db.promise().query(insertQuery, [collName, userID]);
         res.json({
             status: 200,
             message: "success"
         });
-    } catch (error) {
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 })
@@ -252,16 +270,19 @@ router.post("/deletecoll", [admin], async (req, res) => {
     `;
 
     try{
+        if (!parseInt(collID)) throw new createError.BadRequest();
         let deleteResult = await db.promise().query(deleteCollQ, [collID]);
 
         res.json({
             status: 200,
             message: "success",
         });
-    } catch (error) {
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 });
@@ -275,32 +296,30 @@ router.post("/addremovecard", [admin], async (req, res) => {
     let cardStatusQ = `
     SELECT * FROM collection_card
     WHERE card_id = ?
-    AND collection_id = ?
-    `;
+    AND collection_id = ?`;
+
     try {
+        if (!parseInt(cardID) || !parseInt(collID) || !action || !(action == 1 || action == 0)) throw new createError.BadRequest();
+
         let cardStatusResult = await db.promise().query(cardStatusQ, [cardID, collID]);
         if (cardStatusResult[0].length > 0) inCollection = true;
     
         let query = action == 1 ? "DELETE FROM collection_card WHERE collection_id = ? AND card_id = ?;" : "INSERT INTO collection_card (collection_id, card_id) VALUES (?, ?);"
-        if (action == 0 && inCollection) throw new Error("duplicate")
+        if (action == 0 && inCollection) throw new createError.Conflict();
     
         let queryResult = await db.promise().query(query, [collID, cardID]);
+
         res.json({
         status: 200,
         message: "success"
         });
-    } catch (error) {
-        if (error.message === "duplicate"){
-            res.json({
-                status: 409,
-                message: "duplicate"
-            });
-        } else {            
-            res.json({
-            status: 400,
-            message: "failure"
-            });
-        }
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
+        res.json({
+            status: err.status,
+            message: err.message
+        });
     }
 });
 

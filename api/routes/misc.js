@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const auth = require("../middleware/auth");
+const createError = require("http-errors");
 
 router.get("/expansions", async (req, res) => {
     let expansionQ = `
@@ -17,10 +17,12 @@ router.get("/expansions", async (req, res) => {
             message: "succcess",
             response: expansions
         });
-    } catch {
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 });
@@ -40,18 +42,22 @@ router.get("/types", async (req, res) => {
             response: types
         });
     } catch (error) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 });
 
 /* https://www.geeksforgeeks.org/how-to-redirect-404-errors-to-a-page-in-express-js/ */
 router.all('*', (req, res) => {
+    let err = createError.NotFound();
+
     res.json({
-        status: 404,
-        message: "endpoint not found",
+        status: err.status,
+        message: err.message,
     })
 });
 

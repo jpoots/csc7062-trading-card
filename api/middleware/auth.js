@@ -35,7 +35,7 @@ const auth = async (req, res, next) => {
         }
         
     } catch {
-               res.json({
+            res.json({
             status: 403,
             message: "access denied"
         }) 

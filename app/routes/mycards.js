@@ -1,11 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
 const axios = require("axios");
-
-/* https://stackoverflow.com/questions/69879425/setting-dotenv-path-outside-of-root-directory-is-not-working */
-dotenv.config({ path: "../.env" })
-const API_ADD = process.env.API_ADDRESS;
+const util = require("../utility");
 
 // mycards
 router.get("/mycards", (req, res) => {
@@ -24,25 +20,30 @@ router.get("/mycards/collections", async (req, res) => {
         
         try {
             // get collections to populate drop down
-            let collections = await axios.get(`${API_ADD}/collections?userid=${userID}`);
-            if (collections.data.status != 200) throw new Error(collections.data.message);
+            let collections = await axios.get(`${util.apiAdd}/collections?userid=${userID}`);
+            if (collections.data.status != 200) throw new util.SystemError(collections.data.message);
 
             collections = collections.data.response;
             let currentCollection = collections[0];
+
             if (!currentCollection){
                 res.render("mycollections");
             } else {
                 res.redirect(`/collections/${currentCollection.collection_id}`);
             }
-        } catch (error){
-            res.render("error");
+
+        } catch (err){
+            util.errorHandler(err, res);
         }
     }
 });
 
+/*
 router.post("/mycards/collections", async (req, res) => {
     let collectionID = req.body.collid;
     res.redirect(`/collections/${collectionID}`);
 });
+*/
+
 
 module.exports = router;

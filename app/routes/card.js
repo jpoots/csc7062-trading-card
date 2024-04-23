@@ -1,37 +1,36 @@
 const express = require("express");
 const router = express.Router();
-const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
 const axios = require("axios");
 const querystring = require('querystring');
-const slicer = require("../utility");
-
-/* https://stackoverflow.com/questions/69879425/setting-dotenv-path-outside-of-root-directory-is-not-working */
-dotenv.config({ path: "../.env" })
-const API_ADD = process.env.API_ADDRESS;
+const util = require("../utility");
 
 // browse
 router.get("/browse", async (req, res) => {
     try {
-        let cardQuery = "";
+        let cardQuery = `${util.apiAdd}/cards`;
 
-        if (req.query.search){
-            cardQuery = `${API_ADD}/cards?search=${req.query.search}`;
-        } else {
-            cardQuery = `${API_ADD}/cards`;
-        }
-
+        if (req.query.search) cardQuery = `${cardQuery}?search=${req.query.search}`;
+        
         let cardResult = await axios.get(cardQuery);
     
         if (cardResult.data.status !== 200){
-            res.render("error");
+            res.render("error", {
+                status: cardResult.data.status,
+                message: cardResult.data.message
+            });
         } else {
             let cards = cardResult.data.response;
-            cards = await slicer(cards);
+            cards = await util.slicer(cards);
         
             res.render("browse", {cards: cards});
         }
+
     } catch (err){
-        res.render("error");
+        let errorMessage = err instanceof util.SystemError ? err.message : util.defaultError;
+
+        res.render("error", {
+            message: errorMessage
+        });
     }
 });
 
@@ -44,15 +43,16 @@ router.get("/card/:cardid", async (req, res) => {
     
     let collections = [];
     try {
+        let cardResult = await axios.get(util.apiAdd + `/cards/${cardID}`);
+
         if (userID) {
-            let collectionsResult = await axios.get(`${API_ADD}/collections?userid=${userID}`);
-            if (collectionsResult.data.status != 200) throw new Error(collections.data.message);
+            let collectionsResult = await axios.get(`${util.apiAdd}/collections?userid=${userID}`);
+            if (collectionsResult.data.status != 200) throw new util.SystemError(`${collections.data.status} ${collections.data.message}`);
             collections = collectionsResult.data.response;
+            cardResult = `${cardResult}?userid=${userID}`;
         }
-    
-        let cardResult = await axios.get(API_ADD + `/cards/${cardID}?userid=${userID}`);
         
-        if (cardResult.data.status != 200) throw new Error (cardResult.data.message);
+        if (cardResult.data.status != 200) throw new util.SystemError(`${cardResult.data.status} ${cardResult.data.message}`);
 
         res.render("card", {
             card : cardResult.data.response,
@@ -61,7 +61,7 @@ router.get("/card/:cardid", async (req, res) => {
         });
 
     } catch (err){
-        res.render("error");
+        util.errorHandler(err, res)
     }
 
 });
@@ -78,12 +78,12 @@ router.post("/likecard", async (req, res) => {
         try {
             body = querystring.stringify(body);
 
-            let likeResult = await axios.post(`${API_ADD}/likecard`, body, formConfig);
-            if (likeResult.data.status != 200) throw new Error(likeResult.data.message);
+            let likeResult = await axios.post(`${util.apiAdd}/likecard`, body, formConfig);
+            if (likeResult.data.status != 200) throw new util.SystemErrorError(`${likeResult.data.status} ${likeResult.data.message}`);
             
             res.redirect(`/card/${req.body.cardid}`);
-        } catch {
-            res.render("error");
+        } catch (err) {
+            util.errorHandler(err, res)
         }
     }
 });
@@ -93,21 +93,21 @@ router.get("/filter", async (req, res) => {
     // https://stackoverflow.com/questions/5223/length-of-a-javascript-object */https://stackoverflow.com/questions/5223/length-of-a-javascript-objects
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
     if (Object.keys(req.query).length > 0) {
-        let cardsResult = await axios.get(API_ADD + "/cards", {
+        let cardsResult = await axios.get(util.apiAdd + "/cards", {
             params: req.query
         });
 
-        if (cardsResult.data.status != 200) throw new Error(cardsResult.data.message);
+        if (cardsResult.data.status != 200) throw new util.SystemError(`${cardsResult.data.status} ${cardsResult.data.message}`);
 
-        let cards = await slicer(cardsResult.data.response);
+        let cards = await util.slicer(cardsResult.data.response);
 
         res.render("browse", {cards: cards});
     } else {
 
-        let expansions = await axios.get(API_ADD + "/expansions");
+        let expansions = await axios.get(util.apiAdd + "/expansions");
         expansions = expansions.data.response;
 
-        let types = await axios.get(API_ADD + "/types");
+        let types = await axios.get(util.apiAdd + "/types");
         types = types.data.response;
 
         /* http://localhost:3000/filter?filterby=hp&param=10 */        
@@ -116,8 +116,8 @@ router.get("/filter", async (req, res) => {
         types: types
         });
     }
-    } catch (error) {
-        res.render("error");
+    } catch (err) {
+        util.errorHandler(err, res)
     }
 });
 

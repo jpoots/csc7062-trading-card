@@ -1,3 +1,10 @@
+const dotenv = require("dotenv");
+
+// API address
+dotenv.config("/.env");
+const apiAdd = process.env.API_ADDRESS;
+
+// slicing function
 const slicer = async (list) => {
     const rowSize = 5;
     let sliced = [];
@@ -10,4 +17,26 @@ const slicer = async (list) => {
     return sliced;
 }
 
-module.exports = slicer;
+// custom error
+// https://stackoverflow.com/questions/38504780/how-can-i-identify-custom-error
+function SystemError(message = "") {
+    this.message = message;
+  }
+SystemError.prototype = new Error();
+
+// error handling
+const defaultError = "500 Internal server error";
+const errorHandler = (err, res) => {
+    let errorMessage = err instanceof SystemError ? err.message : defaultError;
+
+    res.render("error", {
+        message: errorMessage
+    });     
+};
+
+module.exports = {
+    slicer: slicer,
+    SystemError: SystemError,
+    errorHandler: errorHandler,
+    apiAdd: apiAdd
+};

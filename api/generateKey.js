@@ -1,7 +1,5 @@
 const bcrypt = require("bcrypt");
-const readline = require('node:readline');
 const dotenv = require("dotenv");
-const validator = require("email-validator"); // https://www.npmjs.com/package/email-validator
 const db = require("./db");
 const crypto = require("crypto");
 
@@ -22,6 +20,7 @@ const saltRounds = Number(process.env.SALT_ROUNDS);
     let result = await db.promise().query(insertQ, [hashedKey, admin])
 
     console.log(`Your API key is ${apiKey}`)
+    console.log(`This key has admin privileges`)
     console.log(`Keep it safe and do not share with others. You will not be able to access it again.`);
 })();
 

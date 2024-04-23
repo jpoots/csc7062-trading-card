@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const createError = require("http-errors");
+
 
 router.post("/sendmessage", [admin], async (req, res) => {
     let senderID = req.body.senderid;
@@ -16,15 +17,19 @@ router.post("/sendmessage", [admin], async (req, res) => {
     VALUES (?, ?, ?, ?, ?);`;
 
     try {
+        if (!parseInt(senderID) || !parseInt(recipientID) || !parseInt(cardID) || !subject || !body || body.trim().length === 0 || subject.trim().length === 0) throw new createError.BadRequest();
         let messageResult = await db.promise().query(messageQ, [senderID, recipientID, cardID, subject, body]);
+
         res.json({
             status: 200,
             message: "success",
         });
-    } catch (error){
+    } catch (err){
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 });
@@ -41,7 +46,10 @@ router.get("/messages/:userid", [admin], async (req, res) => {
     ON send.user_id = message.sender_id
     WHERE recipient_id = ?
     ORDER BY time_sent DESC;`;
+
     try {
+        if (!parseInt(userID)) throw createError.BadRequest();
+
         let messages = await db.promise().query(messageQ, [userID]);
         messages = messages[0];
     
@@ -50,10 +58,12 @@ router.get("/messages/:userid", [admin], async (req, res) => {
             message: "success",
             response: messages
         });
-    } catch (error) {
+    } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "failure"
+            status: err.status,
+            message: err.message
         });
     }
 });

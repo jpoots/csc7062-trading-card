@@ -1,40 +1,46 @@
 const express = require("express");
 const router = express.Router();
-const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
 const axios = require("axios");
 const querystring = require('querystring');
-const slicer = require("../utility");
-
-/* https://stackoverflow.com/questions/69879425/setting-dotenv-path-outside-of-root-directory-is-not-working */
-dotenv.config({ path: "../.env" })
-const API_ADD = process.env.API_ADDRESS;
+const util = require("../utility");
 
 //https://blog.logrocket.com/using-axios-set-request-headers/
 
 router.get("/collections", async (req, res) => {
     try {
-        let collectionQ = req.query.search ? `${API_ADD}/collections?search=${req.query.search}` : `${API_ADD}/collections`;
+        let collectionQ = req.query.search ? `${util.apiAdd}/collections?search=${req.query.search}` : `${util.apiAdd}/collections`;
 
         let collectionsResult = await axios.get(collectionQ);
-        if (collectionsResult.data.status !== 200){
-            throw new Error(collectionsResult.data.message);
-        } else {
-            let collections = collectionsResult.data.response;
-            collections = await slicer(collections);
-            res.render("collections", {collections: collections});
-        }
+        if (collectionsResult.data.status !== 200) throw new util.SystemError(`${collectionsResult.data.status} ${collectionsResult.data.message}`);
+
+        let collections = collectionsResult.data.response;
+        collections = await util.slicer(collections);
+        res.render("collections", {collections: collections});
+
     } catch (err){
-        res.render("error");
+        util.errorHandler(err, res); 
     }
 });
 
 router.get("/collections/:collid", async (req, res) => {
     try {
-        let collection = await axios.get(API_ADD + `/collections/${req.params.collid}?userid=${req.session.userid}`);
+        let collectionEnd = `${util.apiAdd}/collections/${req.params.collid}`;
+        let collectionsEnd = `${util.apiAdd}/collections` 
+
+        if (req.session.userid){
+            collectionEnd = `${collectionEnd}?userid=${req.session.userid}`;
+            collectionsEnd = `${collectionsEnd}?userid=${req.session.userid}`
+        } 
+
+        let collection = await axios.get(collectionEnd);
+        if (collection.data.status !== 200) throw new util.SystemError(`${collection.data.status} ${collection.data.message}`); 
+
         collection = collection.data.response;
-        collection.cards = await slicer(collection.cards);
+        collection.cards = await util.slicer(collection.cards);
     
-        let collections = await axios.get(API_ADD + `/collections?userid=${req.session.userid}`);
+        let collections = await axios.get(collectionsEnd);
+        if (collections.data.status !== 200) throw new util.SystemError(`${collections.data.status} ${collections.data.message}`); 
+
         collections = collections.data.response;
     
         res.render("collection", {
@@ -42,8 +48,8 @@ router.get("/collections/:collid", async (req, res) => {
             collection: collection,
             collections: collections
         });
-    } catch (error) {
-        res.render("error");
+    } catch (err) {
+        util.errorHandler(err, res);   
     }
 });
 
@@ -59,10 +65,11 @@ router.post("/createcoll", async (req, res) => {
         try {
             body = querystring.stringify(body);
             let createResult = await axios.post(`http://localhost:${API_PORT}/createcoll`, body, formConfig);
-            if (createResult.data.status !== 200) throw new Error(createResult.data.message);
+            if (createResult.data.status !== 200) throw new util.SystemError(`${createResult.data.status} ${createResult.data.message}`);
+
             res.redirect("/mycards/collections");
-        } catch (error){
-            res.render("error");
+        } catch (err){
+            util.errorHandler(err, res);
         }
     } else {
         res.redirect("/login");
@@ -78,12 +85,12 @@ router.post("/deletecoll", async (req, res) => {
         try {
             body = querystring.stringify(body);
 
-            let deleteResult = await axios.post(API_ADD + `/deletecoll`, body, formConfig)
-            if (deleteResult.data.status != 200) throw new Error(deleteResult.data.message);
+            let deleteResult = await axios.post(util.apiAdd + `/deletecoll`, body)
+            if (deleteResult.data.status != 200) throw new util.SystemError(`${deleteResult.data.status} ${deleteResult.data.message}`);
 
             res.redirect("/mycards/collections")
-        } catch (error) {
-            res.render("error");
+        } catch (err) {
+            util.errorHandler(err, res);
         }
 
     } else {
@@ -105,18 +112,18 @@ router.post("/addremovecard", async (req, res) => {
 
         try {
             body = querystring.stringify(body);
-            let addResult = await axios.post(`${API_ADD}/addremovecard`, body);
+            let addResult = await axios.post(`${util.apiAdd}/addremovecard`, body);
 
             if (addResult.data.status === 409) {
-                res.redirect(`/card/${req.body.cardid}?error=duplicate`);
+                res.redirect(`/card/${req.body.cardid}?error=409`);
                 return;
             } else if (addResult.data.status != 200){
-                throw new Error(addResult.data.message);
+                throw new util.SystemError(`${addResult.data.status} ${addResult.data.message}`);
             }
         
             res.redirect(`/collections/${req.body.collid}`)
-        } catch (error) {
-            res.render("error")
+        } catch (err) {
+            util.errorHandler(err, res);       
         }
 
     } else {
@@ -134,14 +141,17 @@ router.post("/ratecollection", async (req, res) => {
             collid: req.body.collid,
             userid: userID,
             rating: req.body.rating
-        }
+        };
 
         try {
             body = querystring.stringify(body);
-            let rateResult = await axios.post(`http://localhost:${API_PORT}/ratecollection`, body, formConfig);
+            let rateResult = await axios.post(`${util.apiAdd}/ratecollection`, body);
+
+            if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
+
             res.redirect(`/collections/${req.body.collid}`);
-        } catch {
-            res.render("error");
+        } catch (err) {
+            util.errorHandler(err, res);
         }
     }
 });
@@ -161,11 +171,11 @@ router.post("/commentcollection", async (req, res) => {
         try {
             body = querystring.stringify(body);
             let commentResult = await axios.post(`http://localhost:${API_PORT}/commentcollection`, body, formConfig);
-            if (commentResult.data.status != 200) throw new Error(commentResult.data.message);
+            if (commentResult.data.status != 200) throw new util.SystemErrorError(`${commentResult.data.status} ${commentResult.data.message}`);
 
             res.redirect(`/collections/${req.body.collid}`);
         } catch (error){
-            res.render("error");
+            util.errorHandler(err, res);
         }
     }
 });

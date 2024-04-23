@@ -1,12 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const dotenv = require("dotenv"); // https://www.npmjs.com/package/dotenv#-install
 const axios = require("axios");
 const querystring = require('querystring');
-
-/* https://stackoverflow.com/questions/69879425/setting-dotenv-path-outside-of-root-directory-is-not-working */
-dotenv.config({ path: "../.env" })
-const API_ADD = process.env.API_ADDRESS;
+const util = require("../utility");
 
 router.get("/login", (req, res) => {
     res.render("login");
@@ -23,18 +19,20 @@ router.post("/login", async (req, res) => {
         /* https://axios-http.com/docs/urlencoded */
         credentials = querystring.stringify(credentials);
     
-        let authenticateResult = await axios.post(`${API_ADD}/authenticate`, credentials);
-        
+        let authenticateResult = await axios.post(`${util.apiAdd}/authenticate`, credentials);
+
         if (authenticateResult.data.status === 200){
             req.session.userid = authenticateResult.data.response;
             res.redirect("/mycards")
-        } else {
+        } else if (authenticateResult.data.status === 401) {
             res.render("login", {
-                message: authenticateResult.data.message
+                message: "Invalid username or password"
             });
+        } else {
+            throw new utility.error(`${authenticateResult.data.status} ${authenticateResult.data.message}`);
         }
     } catch (err) {
-        res.render("error");
+        util.errorHandler(err, res);
     }
 });
 
@@ -60,7 +58,8 @@ router.post("/register", async (req, res) => {
     try{
         body = querystring.stringify(body);
 
-        let registrationResult = await axios.post(`${API_ADD}/register`, body, formConfig);
+        let registrationResult = await axios.post(`${util.apiAdd}/register`, body);
+        if (registrationResult.data.status === 200) throw new util.SystemError(`${registrationResult.data.status} ${registrationResult.data.message}`);
         
         if(registrationResult.data.status != 200){
             res.render("register", {
@@ -70,8 +69,8 @@ router.post("/register", async (req, res) => {
             req.session.userid = registrationResult.data.response;
             res.redirect("/mycards");
         }
-    } catch (error){
-        res.render("error");
+    } catch (err){
+        util.errorHandler(err, res);
     }
 });
 
@@ -86,10 +85,13 @@ router.get("/account", async (req, res) => {
         res.redirect("/login");
     } else {
         try {
-            let accountResult = await axios.get(`${API_ADD}/user/${req.session.userid}`);
+            let accountResult = await axios.get(`${util.apiAdd}/user/${req.session.userid}`);
 
-            if (accountResult.data.status != 200){
-                throw new Error("issue with request")
+            if (accountResult.data.status != 200) {
+                res.render("error", {
+                    status: accountResult.data.status,
+                    message: accountResult.data.message
+                })
             } else {
                 let userData = accountResult.data.response;
     
@@ -99,8 +101,8 @@ router.get("/account", async (req, res) => {
                     avatar: userData.avatar_url
                 });
             }
-        } catch (error) {
-            res.render("error");
+        } catch (err) {
+            util.errorHandler(err, res);
         }
     }
 });

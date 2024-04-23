@@ -3,8 +3,9 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const validator = require("email-validator"); // https://www.npmjs.com/package/email-validator
 const db = require("../db");
-const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
+const createError = require("http-errors");
+
 
 router.post("/authenticate", [admin], async (req, res) => {
     const email = req.body.email;
@@ -12,31 +13,30 @@ router.post("/authenticate", [admin], async (req, res) => {
     const loginQ = `SELECT * FROM user WHERE email_address = ?`;
 
     try {
+
         let user = await db.promise().query(loginQ, [email]);
         user = user[0];
     
-        if (user.length === 1) {
-            // https://www.npmjs.com/package/bcrypt?activeTab=readme
-            const match = await bcrypt.compare(password, user[0].password_hash);
-            if (match) {
-                res.json({
-                    status: 200,
-                    message: "authenticated",
-                    response: user[0].user_id
-                });
-                return;
-            }
+        if (user.length !== 1) throw new createError.Unauthorized();
+
+        // https://www.npmjs.com/package/bcrypt?activeTab=readme
+        const match = await bcrypt.compare(password, user[0].password_hash);
+
+        if (match) {
+            res.json({
+                status: 200,
+                message: "success",
+                response: user[0].user_id
+            });
+        } else {
+            throw new createError.Unauthorized();
         }
-
-        res.json({
-            status: 401,
-            message: "Issue with username or password"
-        });
-
     } catch (err) {
+        if (!err.status || !err.message) err = createError.InternalServerError();
+        
         res.json({
-            status: 400,
-            message: "Issue logging in"
+            status: err.status,
+            message: err.message
         });
     }
 });
