@@ -5,6 +5,7 @@ const validator = require("email-validator"); // https://www.npmjs.com/package/e
 const db = require("../db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
+const util = require("../utility");
 
 
 router.post("/authenticate", [admin], async (req, res) => {
@@ -13,6 +14,7 @@ router.post("/authenticate", [admin], async (req, res) => {
     const loginQ = `SELECT * FROM user WHERE email_address = ?`;
 
     try {
+        if (!email || !password) throw new createError.BadRequest();
 
         let user = await db.promise().query(loginQ, [email]);
         user = user[0];
@@ -22,22 +24,18 @@ router.post("/authenticate", [admin], async (req, res) => {
         // https://www.npmjs.com/package/bcrypt?activeTab=readme
         const match = await bcrypt.compare(password, user[0].password_hash);
 
-        if (match) {
-            res.json({
-                status: 200,
-                message: "success",
-                response: user[0].user_id
-            });
-        } else {
-            throw new createError.Unauthorized();
-        }
-    } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
+        if (!match) throw new createError.Unauthorized();
+
         res.json({
-            status: err.status,
-            message: err.message
+            status: 200,
+            message: "success",
+            response: {
+                id: user[0].user_id
+            }
         });
+
+    } catch (err) {
+        util.errorHandler(err, res)
     }
 });
 
@@ -54,11 +52,11 @@ router.post("/register", [admin] , async (req, res) => {
 
     try {
         if (!display || !email || !password || !confirmPassword || display.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0 || confirmPassword.trim().length === 0){
-            message = "Enter all fields";
+            throw new createError(400, "Enter all fields");
         } else if (!validator.validate(email)){
-            message = "Invalid email";
+            throw new createError(400,"Invalid email");
         } else if (password !== confirmPassword){
-            message = "Passwords do not match";
+            throw new createError(400,"Passwords do not match");
         } else {
             display = display.trim();
             email = email.trim();
@@ -74,29 +72,20 @@ router.post("/register", [admin] , async (req, res) => {
             let displayUser = await db.promise().query(displaySearch, [display]);
             displayUser = displayUser[0];
         
-            if (emailUser.length != 0){
-                message = "Email in use";
-            } else if (displayUser.length != 0) {
-                message = "Display name in use";
-            } else {
-                let hash = await bcrypt.hash(password, saltRounds);
-                let insertResult = await db.promise().query(insert, [email, hash, display, avatarURL]);
-    
-                res.json({
-                    status: 200,
-                    message: "registered successfully",
-                    response: insertResult[0].insertId
-                });
-                return;
-            }
+            if (emailUser.length != 0) throw new createError(400,"Email in use");
+            if (displayUser.length != 0) throw new createError(400,"Display name in use");
+
+            let hash = await bcrypt.hash(password, saltRounds);
+            let insertResult = await db.promise().query(insert, [email, hash, display, avatarURL]);
+
+            res.json({
+                status: 200,
+                message: "registered successfully",
+                response: insertResult[0].insertId
+            });
         }
-    } catch (error) {
-        message = "error processing request";
-    } finally {
-        res.json({
-            status: 400,
-            message: message
-        });
+    } catch (err) {
+        util.errorHandler(err, res)
     }
 
 });
@@ -107,25 +96,19 @@ router.get("/user/:userid", [admin], async (req, res) => {
     const accountQ = "SELECT * FROM user WHERE user_id = ?";
 
     try {
+        if (!parseInt(userID)) throw new createError.BadRequest();
+
         let userData = await db.promise().query(accountQ, [userID]);
-        if (userData[0].length === 1){
-            userData = userData[0][0];
-            res.json({
-                status: 200,
-                message: "success",
-                response: userData
-            });
-        } else {
-            res.json({
-                status: 200,
-                message: "account not found",
-            });
-        }
-    } catch (error) {
+        if (userData[0].length !== 1) throw new createError.NotFound();
+
+        userData = userData[0][0];
         res.json({
-            status: 400,
-            message: "error processing request",
-        }); 
+            status: 200,
+            message: "success",
+            response: userData
+        });
+    } catch (err) {
+        util.errorHandler(err, res)
     }
 });
 

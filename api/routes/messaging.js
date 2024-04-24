@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require("../db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
+const util = require("../utility");
 
 
 router.post("/sendmessage", [admin], async (req, res) => {
@@ -59,12 +60,7 @@ router.get("/messages/:userid", [admin], async (req, res) => {
             response: messages
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res)
     }
 });
 

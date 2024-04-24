@@ -18,12 +18,7 @@ router.get("/expansions", async (req, res) => {
             response: expansions
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res)
     }
 });
 
@@ -42,12 +37,7 @@ router.get("/types", async (req, res) => {
             response: types
         });
     } catch (error) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res)
     }
 });
 

@@ -3,46 +3,48 @@ const router = express.Router();
 const db = require("../db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
+const util = require("../utility");
 
 router.get("/collections", async (req, res) => {
     let collectionQ = "";
     let searchName = "";
     let params = [];
 
-    if (req.query.search) {
-        searchName = `${req.query.search}`
-        // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
-        collectionQ = `
-        SELECT collection.collection_id, collection_name, display_name, avatar_url 
-        FROM collection 
-        INNER JOIN user
-        ON user.user_id = collection.user_id
-        WHERE collection_name
-        LIKE ?
-        ORDER BY
-        CASE
-            WHEN collection_name LIKE ? THEN 1
-            WHEN collection_name LIKE ? THEN 2
-            WHEN collection_name LIKE ? THEN 4
-            ELSE 3
-        END;`;
-        params = [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`];
-    } else if (req.query.userid) {
-        if (!parseInt(req.query.userid)) throw new createError.BadRequest();
-
-        collectionQ = `
-        SELECT * FROM collection
-        WHERE user_id = ?;`;
-        params = req.query.userid;
-    } else {
-        collectionQ = `
-        SELECT collection.collection_id, collection_name, display_name, avatar_url 
-        FROM collection 
-        INNER JOIN user
-        ON user.user_id = collection.user_id;`;
-    }
-
     try {
+
+        if (req.query.search) {
+            searchName = `${req.query.search}`
+            // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
+            collectionQ = `
+            SELECT collection.collection_id, collection_name, display_name, avatar_url 
+            FROM collection 
+            INNER JOIN user
+            ON user.user_id = collection.user_id
+            WHERE collection_name
+            LIKE ?
+            ORDER BY
+            CASE
+                WHEN collection_name LIKE ? THEN 1
+                WHEN collection_name LIKE ? THEN 2
+                WHEN collection_name LIKE ? THEN 4
+                ELSE 3
+            END;`;
+            params = [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`];
+        } else if (req.query.userid) {
+            if (!parseInt(req.query.userid)) throw new createError.BadRequest();
+
+            collectionQ = `
+            SELECT * FROM collection
+            WHERE user_id = ?;`;
+            params = req.query.userid;
+        } else {
+            collectionQ = `
+            SELECT collection.collection_id, collection_name, display_name, avatar_url 
+            FROM collection 
+            INNER JOIN user
+            ON user.user_id = collection.user_id;`;
+        }
+
         let collections = await db.promise().query(collectionQ, params);
         collections = collections[0];
     
@@ -52,12 +54,7 @@ router.get("/collections", async (req, res) => {
             response: collections
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     }
 });
 
@@ -163,12 +160,7 @@ router.get("/collections/:collid", async (req, res) => {
             response: response
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     };
 
 });
@@ -182,15 +174,25 @@ router.post("/ratecollection", [admin], async (req, res) => {
     let ratingStatusQ = `
     SELECT * FROM collection_rating
     WHERE user_id = ?
-    AND collection_id = ?
-    `
+    AND collection_id = ?`;
+
+    let collectionQ = `
+    SELECT * FROM collection
+    WHERE collection_id = ?`;
 
     try {
         if (!parseInt(userID) || !parseInt(collID) || !parseInt(rating) || rating > 4 || rating < 1) throw new createError.BadRequest();
 
         let ratingStatusResult = await db.promise().query(ratingStatusQ, [userID, collID]);
         if (ratingStatusResult[0].length === 1) ratingStatus = true;
-    
+
+        let collection = await db.promise().query(collectionQ, collID);
+
+        if(collection[0].length != 1) throw new createError.NotFound();
+        
+        collection = collection[0][0];
+        if(collection.user_id == userID) throw new createError.BadRequest();
+
         let rateQ = ratingStatus ? "DELETE FROM collection_rating WHERE user_id = ? AND collection_id = ?;" : "INSERT INTO collection_rating (user_id, collection_id, rating) VALUES (?, ?, ?)";
         let ratingResult = await db.promise().query(rateQ, [userID, collID, rating]);
 
@@ -199,12 +201,7 @@ router.post("/ratecollection", [admin], async (req, res) => {
             message: "success"
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     }
 });
 
@@ -227,12 +224,7 @@ router.post("/commentcollection", [admin], async (req, res) => {
             message: "success"
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     }
 });
 
@@ -247,17 +239,16 @@ router.post("/createcoll", [admin], async (req, res) => {
         if (!parseInt(userID) || !collName || collName.trim().length === 0) throw new createError.BadRequest();
 
         let insertResult = await db.promise().query(insertQuery, [collName, userID]);
+
         res.json({
             status: 200,
-            message: "success"
+            message: "success",
+            response: {
+                id: insertResult[0].insertId
+            }
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     }
 })
 
@@ -269,8 +260,18 @@ router.post("/deletecoll", [admin], async (req, res) => {
     WHERE collection_id = ?;
     `;
 
+    let collectionQ = `
+    SELECT * FROM collection
+    WHERE collection_id = ?;
+    `;
+
     try{
         if (!parseInt(collID)) throw new createError.BadRequest();
+
+        let collection = await db.promise().query(collectionQ, [collID]);
+
+        if (collection[0].length != 1) throw new createError.NotFound();
+
         let deleteResult = await db.promise().query(deleteCollQ, [collID]);
 
         res.json({
@@ -278,12 +279,7 @@ router.post("/deletecoll", [admin], async (req, res) => {
             message: "success",
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     }
 });
 
@@ -305,7 +301,7 @@ router.post("/addremovecard", [admin], async (req, res) => {
         if (cardStatusResult[0].length > 0) inCollection = true;
     
         let query = action == 1 ? "DELETE FROM collection_card WHERE collection_id = ? AND card_id = ?;" : "INSERT INTO collection_card (collection_id, card_id) VALUES (?, ?);"
-        if (action == 0 && inCollection) throw new createError.Conflict();
+        if ((action == 0 && inCollection) || (action == 1 && !inCollection)) throw new createError.Conflict();
     
         let queryResult = await db.promise().query(query, [collID, cardID]);
 
@@ -314,12 +310,7 @@ router.post("/addremovecard", [admin], async (req, res) => {
         message: "success"
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     }
 });
 

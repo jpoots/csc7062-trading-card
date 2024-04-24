@@ -22,7 +22,7 @@ router.post("/login", async (req, res) => {
         let authenticateResult = await axios.post(`${util.apiAdd}/authenticate`, credentials);
 
         if (authenticateResult.data.status === 200){
-            req.session.userid = authenticateResult.data.response;
+            req.session.userid = authenticateResult.data.response.id;
             res.redirect("/mycards")
         } else if (authenticateResult.data.status === 401) {
             res.render("login", {

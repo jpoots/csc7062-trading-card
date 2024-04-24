@@ -4,6 +4,7 @@ const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokem
 const createError = require("http-errors");
 const db = require("../db");
 const admin = require("../middleware/admin");
+const util = require("../utility");
 
 // getting a card or subset of cards
 router.get("/cards", async (req, res) => {
@@ -82,19 +83,21 @@ router.get("/cards", async (req, res) => {
             GROUP BY card.card_id
             ORDER BY hp`;
             params = [req.query.minhp, req.query.maxhp];
-        } else if (req.params.typeid) {
-            if (!parseInt(req.params.typeid)) throw new createError.BadRequest();
+        } else if (req.query.typeid) {
+            if (!parseInt(req.query.typeid)) throw new createError.BadRequest();
 
             cardQ = `
-            SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
-            FROM card
+            SELECT card.card_id, tcg_id, name, image_url, COUNT(card_like_id) as "like_count" FROM type
+            INNER JOIN type_card
+            ON type.type_id = type_card.card_id
+            INNER JOIN card
+            ON card.card_id = type_card.card_id
             LEFT JOIN card_like
             ON card_like.card_id = card.card_id
-            WHERE hp >= ?
-            AND hp <= ?
+            WHERE type.type_id = ?
             GROUP BY card.card_id
-            ORDER BY hp `;
-            params = [req.params.typeid];
+            ORDER BY name`;
+            params = [req.query.typeid];
         } else {
             cardQ = `
             SELECT card.card_id, tcg_id, name, image_url, COUNT(card_like_id) as "like_count"
@@ -114,12 +117,7 @@ router.get("/cards", async (req, res) => {
         });
 
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        util.errorHandler(err, res);
     }
 });
 
@@ -230,12 +228,7 @@ router.get("/cards/:cardid", async (req, res) => {
         });
 
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });  
+        util.errorHandler(err, res);
     }
 });
 
@@ -265,12 +258,7 @@ router.post("/likecard", [admin], async (req, res) => {
             message: "success"
         });
     } catch (err) {
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });  
+        util.errorHandler(err, res);
     }
 });
 

@@ -64,11 +64,12 @@ router.post("/createcoll", async (req, res) => {
 
         try {
             body = querystring.stringify(body);
-            let createResult = await axios.post(`http://localhost:${API_PORT}/createcoll`, body, formConfig);
+            let createResult = await axios.post(`${util.apiAdd}/createcoll`, body);
             if (createResult.data.status !== 200) throw new util.SystemError(`${createResult.data.status} ${createResult.data.message}`);
 
-            res.redirect("/mycards/collections");
+            res.redirect(`/collections/${createResult.data.response.id}`);
         } catch (err){
+            throw err
             util.errorHandler(err, res);
         }
     } else {
