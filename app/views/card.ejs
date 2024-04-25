@@ -10,15 +10,8 @@
         
         <div class="row">
 
-            <div class="column column-25 centertext">
-                <% if (error) { %>
-                    <h5 class="textred">Already in collection!</h5>
-                <% } %>
-                <h4>Likes : <%= card.likeCount %></h4>
-            </div>
-
             <% if (typeof userid != "undefined" && userid != null) { %>
-                <div class="column column-offset-25">
+                <div class="column">
 
                     <!-- form from milligram docs -->
                         <form action="/addremovecard" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
@@ -45,15 +38,17 @@
             <div class="column column-25 cardimgcol dflex fdcol alitemscenter">
                 <img class="cardpageimg" src="<%= card.image %>" alt="">
                 <div>
-                    <form action="/likecard" method="post" class="mb0">
-                        <a href="<%= card.priceURL %>" class="button bluebutton">€<%= card.price %></a>
-                        <input type="hidden" name="cardid" value="<%= card.cardId %>">
+
+                    <form action="/likecard" method="post" class="mb0 dflex alitemscenter colgap5">
+                        <a href="<%= card.priceURL %>" class="button bluebutton mb0">€<%= card.price %></a>
+                        <input type="hidden" name="cardid" value="<%= card.id %>">
                         
                         <% if (!card.liked) { %>
-                            <input class="button redbutton mb0" type="submit" name="likestatus" value="like">
+                            <input type="image" src="/images/like.png" class="mb0 likebutton" height=30 name="likestatus" value="like">
                         <% } else { %>
-                            <input class="button redbuttonfaded mb0" type="submit" name="likestatus" value="unlike">
+                            <input type="image" src="/images/liked.png" class="mb0 likebutton" height=30 name="likestatus" value="unlike">
                         <% } %>
+                        <div><%= card.likeCount %></div>
                     </form>
                     
                 </div>
@@ -100,30 +95,52 @@
 
                         <div class="row carddetailsrow attackbottom">
 
-                                <div class="column">
-                                    <div><%= attack.effect %></div>
-                                </div>
+                            <div class="column">
+                                <div><%= attack.effect %></div>
+                            </div>
 
+                            <div class="column">
+                                <p class="cardinfocol dflex mb0">
+                                    <% for(let attackType = 0; attackType < attack.types.length; attackType++ ) { %>
+                                        <img src="<%= attack.types[attackType].type_image %>" alt="" height="30">
+                                        <% if (attack.types[attackType].multiplier > 0) { %>
+                                            <span>X<%= attack.types[attackType].multiplier %></span>
+                                        <% } %>
+                                    <% } %>
+                                </p>
+     
+                            </div>
+
+                                
                         </div>
                     <% }) %>
 
                     <div class="row">
                         <div class="column">
+                            <div class="bold centertext">Evolves From</div>
+                            <div class="centertext"><%= card.evolveFrom %></div>
+                        </div>
 
-                            <table>
-                                <thead>
-                                    <th>Evolves From</th>
-                                    <th>Expansion</th>
-                                    <th>Illustrator</th>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><%= card.evolveFrom %></td>
-                                        <td><%= card.expansion %></td>
-                                        <td><%= card.illustrator %></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="column">
+                            <div class="bold centertext">Expansion</div>
+                            <div class="centertext"><%= card.expansion %></div>
+                        </div>
+
+                        <div class="column">
+                            <div class="bold centertext">Illustrator</div>
+                            <div class="centertext"><%= card.illustrator %></div>
+                        </div>
+
+                        <div class="column">
+                            <div class="bold centertext">Weaknesss</div>
+                            <div class="dflex jcontcenter colgap5">
+                                <% card.weakness.forEach(weak => { %>
+                                    <img src="<%= weak.type_image %>" alt="" height="30">
+                                    <% if (weak.multiplier > 0) { %>
+                                        <span>X<%= weak.multiplier %></span>
+                                    <% } %>
+                                <% }) %>
+                            </div>
                         </div>
                     </div>
 

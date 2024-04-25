@@ -1,0 +1,123 @@
+/* utility */
+
+/* margins */
+.mt20{
+    margin-top: 20px;
+}
+
+.mt10{
+    margin-top: 10px;
+}
+
+.mb2{
+    margin-bottom: 2px;
+}
+
+.mb5 {
+    margin-bottom: 5px;
+}
+
+.mb20 {
+    margin-bottom: 20px;
+}
+
+.mb0{
+    margin-bottom: 0;
+}
+
+.ml10 {
+    margin-left: 10px;
+}
+
+/* flex settings */
+.dflex{
+    display: flex !important;
+}
+
+.flexwrap {
+    flex-wrap: wrap;
+}
+
+.fdcol {
+    flex-direction: column !important;
+}
+
+.alitemscenter{
+    align-items: center !important;
+}
+
+.centertext{
+    text-align: center;
+}
+
+.righttext {
+    text-align: right;
+}
+
+.jcontcenter {
+    justify-content: center;
+}
+
+.jcontspacearound {
+    justify-content: space-around;
+}
+
+.rowgap5{
+    row-gap: 5px;
+}
+
+.colgap5 {
+    column-gap: 5px;
+}
+
+.colgap10 {
+    column-gap: 10px;
+}
+
+.breakword {
+    word-wrap: break-word
+}
+
+/* text  */
+.textwhite {
+    color: white !important;
+}
+
+.textblack {
+    color: black !important;
+}
+
+.textred {
+    color: red !important;
+}
+
+.talright {
+    text-align: right;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+/* width */
+.w100 {
+    width: 100%;
+}
+
+.w50 {
+    width: 50%;
+}
+
+.w75{
+    width: 75%;
+}
+
+.wauto{
+    width: auto;
+}
+
+/* height */
+
+.h100{
+    height: 100%;
+}

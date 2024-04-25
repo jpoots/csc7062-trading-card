@@ -1,0 +1,38 @@
+/* browse page */
+.browsecol {
+    padding: 0 !important;
+    max-width: 20% !important;
+}
+
+.browsecontainer{
+    padding: 15px;
+}
+
+.card {
+    border: thin solid rgb(224, 225, 225);
+    border-radius: 15px;
+    padding: 5px;
+    background-color: white;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.browseinfo{
+    border-bottom: thin solid lightgray;
+}
+
+.searchbar:focus {
+    border-color: rgb(52, 102, 175) !important;
+    /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
+    box-shadow: 0px 0px 2px 1px rgb(52, 102, 175);
+}
+
+.test {
+    align-items: flex-end;
+}
+
+.adiv {
+    height: 100%;
+}

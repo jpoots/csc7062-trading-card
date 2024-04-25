@@ -22,14 +22,29 @@
         </div>
 
         <% collections.forEach(collection => { %>
+            <%= collection.rating  %>
             <div class="row mt20">
                 <% collection.forEach(collection => { %>
                     <div class="column browsecol dflex jcontcenter">
                         <div class="card dflex fdcol w100 jcontcenter">
                             <a href="collections/<%= collection.collection_id %>" class="textblack centertext">
+                                
                                 <img src="<%= collection.avatar_url %>" alt="" width="" class="avatar w50">
-                                <h6 class="centertext browsetitle"><%= collection.collection_name %></h6>
-                                <h6 class="centertext browsetitle">User: <%= collection.display_name %></h6>
+                                <h6 class="centertext browseinfo mb5 bold"><%= collection.collection_name %></h6>
+
+                                <div class="centertext browseinfo mb5">User: <%= collection.display_name %> %></div>
+
+                                <div class="dflex jcontcenter colgap10 ">
+                                    <img src="/images/star_full.png" alt="" height="30">
+                                    <% if (collection.rating) { %>
+                                        <div class="mb5">
+                                            <%= collection.rating %>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="mb5">Unrated</div>
+                                    <% } %>
+                                </div>
+
                             </a>
                         </div>
                     </div>

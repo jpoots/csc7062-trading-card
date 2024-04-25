@@ -1,0 +1,58 @@
+/* homepage header */
+.homehead {
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    padding-top: 40px;
+    background-image: url(../images/homebackground.jpg) !important;
+
+}
+
+.homepagebuttons {
+    column-gap: 10px;
+}
+
+.redoutlinebutton {
+    color: rgb(204, 0, 0) !important;
+    border-color: rgb(204, 0, 0);
+}
+
+.yellowoutlinebutton{
+    color: rgb(255,192,8) !important;
+    border-color: rgb(255,192,8);
+}
+
+.redoutlinebutton:hover {
+    background-color: rgb(204, 0, 0) !important;
+    border-color: rgb(204, 0, 0) !important;;
+    color: white !important;
+}
+
+.yellowoutlinebutton:hover {
+    background-color: rgb(255,192,8) !important;
+    border-color: rgb(255,192,8) !important;;
+    color: black !important;
+}
+
+/* main homepage content */
+
+.lefthomepage {
+    background-color: rgb(220,53,69);
+    border-color: rgb(216, 36, 54);
+}
+
+.righthomepage {
+    background-color: rgb(248,249,250);
+    border-color: rgb(224, 225, 225);
+}
+
+.homepagebox {
+    padding: 20px;
+    border-radius: 15px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.homerow {
+    column-gap: 20px;
+    row-gap: 20px;
+}

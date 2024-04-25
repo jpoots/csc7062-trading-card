@@ -1,0 +1,55 @@
+/* responsive design */
+@media (max-width: 40rem) {
+
+    .logincontainer{
+        border: none;
+        max-width: 100%;
+    }
+
+    .footercopy {
+        justify-content: center;
+    }
+
+    .footerlinks {
+        justify-content: center;
+    }
+
+    .navsection {
+        justify-content: center;
+    }
+
+    .card{
+        width: 70%;
+    }
+
+    .browsecol {
+        max-width: 100% !important;
+    }
+
+    fieldset {
+        text-align: center;
+    }
+
+    .cardimgcol{
+        width: 50% !important;
+        max-width: 50% !important;
+    }
+
+    .carddetailsrow {
+        flex-direction: row;
+    }
+
+    .cardimgrow {
+        align-items: center;
+    }
+
+    table {
+    display: table;
+    overflow-x: initial;
+    }
+
+    .navlinks {
+        flex-direction: column;
+    }
+    
+}

@@ -1,0 +1,30 @@
+/* navbar */
+
+.navcontainer {
+    background-color: rgb(248,249,250);
+    margin-bottom: 40px;
+}
+
+.navrow {
+    justify-content: space-between;
+    row-gap: 10px;
+}
+
+.navimg {
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.navsection {
+    column-gap: 10px;
+}
+
+.navlink {
+    text-decoration: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.navlink:hover {
+    color: grey !important;
+}

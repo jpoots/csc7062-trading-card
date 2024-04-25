@@ -16,7 +16,7 @@ router.get("/collections", async (req, res) => {
             searchName = `${req.query.search}`
             // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
             collectionQ = `
-            SELECT collection.collection_id, collection_name, display_name, avatar_url 
+            SELECT collection.collection_id, collection_name, display_name, avatar_url
             FROM collection 
             INNER JOIN user
             ON user.user_id = collection.user_id
@@ -39,10 +39,13 @@ router.get("/collections", async (req, res) => {
             params = req.query.userid;
         } else {
             collectionQ = `
-            SELECT collection.collection_id, collection_name, display_name, avatar_url 
+            SELECT collection.collection_id, collection_name, display_name, avatar_url , ROUND(AVG(rating)) as "rating"
             FROM collection 
             INNER JOIN user
-            ON user.user_id = collection.user_id;`;
+            ON user.user_id = collection.user_id
+            LEFT JOIN collection_rating
+            ON collection.collection_id = collection_rating.collection_id
+            GROUP BY collection.collection_id;`;
         }
 
         let collections = await db.promise().query(collectionQ, params);
@@ -88,7 +91,7 @@ router.get("/collections/:collid", async (req, res) => {
     `;
 
     let ratingQ = `
-    SELECT AVG(rating) FROM collection_rating
+    SELECT ROUND(AVG(rating)) as "rating" FROM collection_rating
     WHERE collection_id = ?;
     `;
 
@@ -136,11 +139,8 @@ router.get("/collections/:collid", async (req, res) => {
         }
     
         let ratingResult = await db.promise().query(ratingQ, [collectionID]);
-        ratingResult = ratingResult[0][0]["AVG(rating)"];
-    
-        /*https://stackoverflow.com/questions/7342957/how-do-you-round-to-one-decimal-place-in-javascript*/
-        if (ratingResult) ratingResult = Math.round(ratingResult * 10) / 10;
-    
+        rating = ratingResult[0][0].rating;
+        
         let response = {
             id: id,
             name: name, 
@@ -181,7 +181,8 @@ router.post("/ratecollection", [admin], async (req, res) => {
     WHERE collection_id = ?`;
 
     try {
-        if (!parseInt(userID) || !parseInt(collID) || !parseInt(rating) || rating > 4 || rating < 1) throw new createError.BadRequest();
+        if (!parseInt(userID) || !parseInt(collID)) throw new createError.BadRequest();
+        if (rating && (!parseInt(rating) || rating > 4 || rating < 1)) throw new createError.BadRequest();
 
         let ratingStatusResult = await db.promise().query(ratingStatusQ, [userID, collID]);
         if (ratingStatusResult[0].length === 1) ratingStatus = true;
@@ -248,6 +249,7 @@ router.post("/createcoll", [admin], async (req, res) => {
             }
         });
     } catch (err) {
+        console.log(err)
         util.errorHandler(err, res);
     }
 })

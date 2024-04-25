@@ -1,0 +1,47 @@
+/* single card page */
+.carddetails {
+    border: thin solid rgb(224, 225, 225);
+    border-radius: 15px;
+    padding: 10px !important;
+}
+
+.detailscontainer {
+    row-gap: 10px;
+}
+
+td, th {
+    width: 33%;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border: 0;
+}
+
+.attacktop {
+    border-top: thin solid rgb(204, 0, 0);
+}
+
+.attackbottom {
+    border-bottom: thin solid rgb(204, 0, 0);
+}
+
+.cardinfocol{
+    justify-content: flex-end;
+    column-gap: 5px;
+}
+
+.cardimgcol{
+    row-gap: 10px;
+}
+
+.ratingradio {
+    accent-color: rgb(255,192,8);
+}
+
+.dropdown:focus {
+    border-color: rgb(52, 102, 175) !important;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 8" width="30"><path fill="blue"%20d="M0,0l6,8l6-8"/></svg>') center right no-repeat;
+}
+
+.likebutton:hover {
+    background-color: lightgray;
+}

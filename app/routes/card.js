@@ -43,15 +43,17 @@ router.get("/card/:cardid", async (req, res) => {
     
     let collections = [];
     try {
-        let cardResult = await axios.get(util.apiAdd + `/cards/${cardID}`);
-
+        let endpoint = `${util.apiAdd}/cards/${cardID}`
         if (userID) {
             let collectionsResult = await axios.get(`${util.apiAdd}/collections?userid=${userID}`);
+
             if (collectionsResult.data.status != 200) throw new util.SystemError(`${collections.data.status} ${collections.data.message}`);
             collections = collectionsResult.data.response;
-            cardResult = `${cardResult}?userid=${userID}`;
+            endpoint = `${endpoint}?userid=${userID}`;
         }
         
+        let cardResult = await axios.get(endpoint);
+
         if (cardResult.data.status != 200) throw new util.SystemError(`${cardResult.data.status} ${cardResult.data.message}`);
 
         res.render("card", {
@@ -70,6 +72,8 @@ router.post("/likecard", async (req, res) => {
     if (!req.session.userid){
         res.redirect("/login");
     } else {
+        console.log(req.body)
+
         let body = {
             cardid: req.body.cardid,
             userid: req.session.userid
@@ -78,11 +82,12 @@ router.post("/likecard", async (req, res) => {
         try {
             body = querystring.stringify(body);
 
-            let likeResult = await axios.post(`${util.apiAdd}/likecard`, body, formConfig);
-            if (likeResult.data.status != 200) throw new util.SystemErrorError(`${likeResult.data.status} ${likeResult.data.message}`);
+            let likeResult = await axios.post(`${util.apiAdd}/likecard`, body);
+            if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
             
             res.redirect(`/card/${req.body.cardid}`);
         } catch (err) {
+            console.log(err)
             util.errorHandler(err, res)
         }
     }

@@ -11,10 +11,12 @@
             <div class="row mt20 dflex rowgap5">
                 <% row.forEach(expansion => { %>
                     <div class="column browsecol dflex jcontcenter">
-                        <div class="card dflex fdcol w100 jcontcenter ">
+                        <div class="card dflex fdcol w100 jcontcenter tester">
                             <a href="/expansions/<%= expansion.expansion_id %>" class="textblack centertext">
                                 <img src="<%= expansion.logo_url %>" alt="" width="" class="cardimg">
-                                <h6 class="centertext browsetitle"><%= expansion.name %></h6>
+                                <div class="test">
+                                    <h6 class="mb0"><%= expansion.expansion_name %></h6>
+                                </div>
                             </a>
                         </div>
                     </div>

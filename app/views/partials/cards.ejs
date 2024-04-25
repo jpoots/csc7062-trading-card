@@ -8,8 +8,16 @@
                         <div class="card dflex fdcol w100 jcontcenter">
                             <a href="/card/<%= card.card_id %>" class="textblack">
                                 <img src="<%= card.image_url %>" alt="" width="" class="cardimg">
-                                <h6 class="centertext browsetitle"><%= card.name %></h6>
-                                <p class="centertext">Likes: <%= card.like_count %></p>
+                                <h6 class="centertext browseinfo mb2 bold"><%= card.name %></h6>
+
+                                <div class="centertext browseinfo"><%= card.card_number %></div>
+
+                                <div class="dflex jcontcenter colgap10">
+                                    <img src="/images/liked.png" alt="" height="30">
+                                    <div>
+                                        <%= card.like_count %>
+                                    </div>
+                                </div>
                             </a>
                         </div>
                     </div>

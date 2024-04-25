@@ -69,7 +69,6 @@ router.post("/createcoll", async (req, res) => {
 
             res.redirect(`/collections/${createResult.data.response.id}`);
         } catch (err){
-            throw err
             util.errorHandler(err, res);
         }
     } else {
@@ -152,6 +151,7 @@ router.post("/ratecollection", async (req, res) => {
 
             res.redirect(`/collections/${req.body.collid}`);
         } catch (err) {
+            console.log(err)
             util.errorHandler(err, res);
         }
     }
@@ -171,7 +171,7 @@ router.post("/commentcollection", async (req, res) => {
         
         try {
             body = querystring.stringify(body);
-            let commentResult = await axios.post(`http://localhost:${API_PORT}/commentcollection`, body, formConfig);
+            let commentResult = await axios.post(`http://localhost:${API_PORT}/commentcollection`, body);
             if (commentResult.data.status != 200) throw new util.SystemErrorError(`${commentResult.data.status} ${commentResult.data.message}`);
 
             res.redirect(`/collections/${req.body.collid}`);

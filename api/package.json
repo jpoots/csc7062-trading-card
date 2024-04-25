@@ -16,5 +16,9 @@
     "http-errors": "^2.0.0",
     "mysql2": "^3.9.6",
     "pokemontcgsdk": "^2.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.1.1",
+    "globals": "^15.0.0"
   }
 }

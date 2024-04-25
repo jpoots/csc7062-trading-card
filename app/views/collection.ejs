@@ -5,7 +5,7 @@
 </head>
 <body>
     <%- include("partials/navbar") %>
-    <div class="container">
+    <div class="container collectioncontainer">
 
         <div class="row">
             <% if (!collection.isOwner) { %>
@@ -16,7 +16,15 @@
                 <div class="column">
                     <!-- form from milligram docs -->
                     <div class="righttext">
-                        <h4>Average Rating: <%= collection.rating %></h4>
+                        <h4>Average Rating</h4>
+                        <% if (collection.rating) { %>
+                            <% for(let star = 0; star < collection.rating; star++ ) { %>
+                                <img src="/images/star_full.png" alt="" height="30">
+                            <% } %>
+                        <% } else { %>
+                            <h4>Unrated</h4>
+                        <% } %>
+
                     </div>
                 </div>
             <% } else { %>
@@ -54,83 +62,91 @@
             <% } %>
         </div>
 
-    </div>
     
-    <% if (typeof userid === "undefined" || userid === null) { %>
-        <%- include("partials/cards") %>
-    <% } else { %>
-        <%- include("partials/collectionCards") %>
-    <% } %>
+        <% if (typeof userid === "undefined" || userid === null) { %>
+            <%- include("partials/cards") %>
+        <% } else { %>
+            <%- include("partials/collectionCards") %>
+        <% } %>
 
-    <div class="container mt20">
-        <div class="row">
-            <div class="column">
-                <% if (!collection.rated) { %>
-                    <form action="/ratecollection" class="dflex jcontspacearound mb0" method="post" class="mb0">
-                        <input type="hidden" name="collid" value="<%= collection.id  %>">
-                    
-                        <div>
-                            <input class="ratingradio" type="radio" name="rating" value="1">
-                            <label>1</label><br>
-                        </div>
-                        
-                        <div>
-                            <input class="ratingradio" type="radio" name="rating" value="2">
-                            <label>2</label><br>
-                        </div>
-                    
-                        <div>
-                            <input class="ratingradio" type="radio" name="rating" value="3">
-                            <label>3</label><br>
-                        </div>
-                    
-                        <div>
-                            <input class="ratingradio" type="radio" name="rating" value="4">
-                            <label>4</label><br>
-                        </div>
-                    
-                        <input class="button redbutton mb0" type="submit" name="ratestatus" value="Rate">
-                    </form>
-                <% } else { %>
-                    <div class="dflex colgap10">
-                        <h4>Your rating: <%= collection.yourRating %></h4>
-
-                        <form action="/ratecollection" method="post" class="mb0">
-                            <input type="hidden" name="collid" value="<%= currentCollection.collection_id %>">
-                                <input class="button redbuttonfaded mb0" type="submit" name="ratestatus" value="Undo">
-                        </form>
+        <div class="container mt20">
+            <div class="row">
+                <% if (!collection.isOwner) { %>
+                    <div class="column">
+                        <% if (!collection.rated) { %>
+                            <form action="/ratecollection" class="dflex jcontspacearound mb0" method="post" class="mb0">
+                                <input type="hidden" name="collid" value="<%= collection.id  %>">
+                            
+                                <div>
+                                    <input class="ratingradio" type="radio" name="rating" value="1">
+                                    <label>1</label><br>
+                                </div>
+                                
+                                <div>
+                                    <input class="ratingradio" type="radio" name="rating" value="2">
+                                    <label>2</label><br>
+                                </div>
+                            
+                                <div>
+                                    <input class="ratingradio" type="radio" name="rating" value="3">
+                                    <label>3</label><br>
+                                </div>
+                            
+                                <div>
+                                    <input class="ratingradio" type="radio" name="rating" value="4">
+                                    <label>4</label><br>
+                                </div>
+                            
+                                <input class="button redbutton mb0" type="submit" name="ratestatus" value="Rate">
+                            </form>
+                        <% } else { %>
+                            <div class="dflex colgap10">
+                                <div>
+                                    <% for(let star = 0; star < collection.yourRating; star++ ) { %>
+                                    <img src="/images/star_full.png" alt="" height="30">
+                                    <% } %>
+                                </div>
+        
+                                <form action="/ratecollection" method="post" class="mb0">
+                                    <input type="hidden" name="collid" value="<%= collection.id %>">
+                                        <input class="button redbuttonfaded mb0" type="submit" name="ratestatus" value="Undo">
+                                </form>
+                            </div>
+                        <% } %>
                     </div>
                 <% } %>
-            </div>
+                
 
-            <div class="column">
-                    <form action="/commentcollection" method="post" class="dflex colgap10">
-                        <input type="hidden" name="collid" value="<%= collection.id %>">
-                        <textarea name="comment" cols="30" rows="10" class="searchbar"></textarea>
-                        <input class="button yellowbutton mb0 textblack" type="submit" value="Comment">
-                    </form>
+                <div class="column">
+                        <form action="/commentcollection" method="post" class="dflex colgap10">
+                            <input type="hidden" name="collid" value="<%= collection.id %>">
+                            <textarea name="comment" cols="30" rows="10" class="searchbar"></textarea>
+                            <input class="button yellowbutton mb0 textblack" type="submit" value="Comment">
+                        </form>
+                    </div>
+                </div>
+
+            <div class="row">
+                <div class="column">
+                    <h4>Comments</h4>
                 </div>
             </div>
 
-        <div class="row">
-            <div class="column">
-                <h4>Comments</h4>
-            </div>
+            <% collection.comments.forEach(comment => { %>
+                <div class="row mb20">
+                    <div class="column column-75">
+                        <p class="breakword"><%= comment.comment_text %></p>
+                    </div>
+        
+                    <div class="column column-25">
+                        <span class="bold"><%= comment.display_name %></span> <span><%= comment.time %> <%= comment.date %></span>
+                    </div>
+                </div>
+            <% }) %>
+
         </div>
-
-        <% collection.comments.forEach(comment => { %>
-            <div class="row mb20">
-                <div class="column column-75">
-                    <p class="breakword"><%= comment.comment_text %></p>
-                </div>
-    
-                <div class="column column-25">
-                    <span class="bold"><%= comment.display_name %></span> <span><%= comment.time %> <%= comment.date %></span>
-                </div>
-            </div>
-        <% }) %>
-
     </div>
+
 
     <%- include("partials/footer") %>
 </body>

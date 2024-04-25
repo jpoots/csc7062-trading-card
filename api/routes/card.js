@@ -18,7 +18,7 @@ router.get("/cards", async (req, res) => {
 
             // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
             cardQ = `
-            SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM card 
+            SELECT card.*, COUNT(card_like_id) as "like_count" FROM card 
             LEFT JOIN card_like
             ON card_like.card_id = card.card_id
             WHERE name 
@@ -38,7 +38,7 @@ router.get("/cards", async (req, res) => {
             if (!parseInt(userID)) throw new createError.BadRequest();
 
             cardQ =
-            `SELECT card_like.card_id, name, image_url, COUNT(card_like.card_like_id) as "like_count" FROM card_like
+            `SELECT card.*, COUNT(card_like.card_like_id) as "like_count" FROM card_like
             INNER JOIN card 
             ON card.card_id = card_like.card_id
             WHERE user_id = ?
@@ -49,7 +49,7 @@ router.get("/cards", async (req, res) => {
             if (!parseInt(req.query.expansionid)) throw new createError.BadRequest();
 
             cardQ = `
-            SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM card
+            SELECT card.*, COUNT(card_like_id) as "like_count" FROM card
             LEFT JOIN card_like
             ON card_like.card_id = card.card_id
             INNER JOIN expansion
@@ -62,7 +62,7 @@ router.get("/cards", async (req, res) => {
             if (!parseInt(req.query.minlikes)) throw new createError.BadRequest();
 
             cardQ = `
-            SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+            SELECT card.*, COUNT(card_like_id) as "like_count"
             FROM card
             LEFT JOIN card_like
             ON card_like.card_id = card.card_id
@@ -74,7 +74,7 @@ router.get("/cards", async (req, res) => {
             if (!parseInt(req.query.maxhp) || !parseInt(req.query.minhp)) throw new createError.BadRequest();
 
             cardQ = `
-            SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count"
+            SELECT card.*, COUNT(card_like_id) as "like_count"
             FROM card
             LEFT JOIN card_like
             ON card_like.card_id = card.card_id
@@ -87,7 +87,7 @@ router.get("/cards", async (req, res) => {
             if (!parseInt(req.query.typeid)) throw new createError.BadRequest();
 
             cardQ = `
-            SELECT card.card_id, tcg_id, name, image_url, COUNT(card_like_id) as "like_count" FROM type
+            SELECT card.*, COUNT(card_like_id) as "like_count" FROM type
             INNER JOIN type_card
             ON type.type_id = type_card.card_id
             INNER JOIN card
@@ -100,7 +100,7 @@ router.get("/cards", async (req, res) => {
             params = [req.query.typeid];
         } else {
             cardQ = `
-            SELECT card.card_id, tcg_id, name, image_url, COUNT(card_like_id) as "like_count"
+            SELECT card.*, COUNT(card_like_id) as "like_count"
             FROM card
             LEFT JOIN card_like
             ON card_like.card_id = card.card_id
@@ -128,7 +128,7 @@ router.get("/cards/:cardid", async (req, res) => {
     let evolveFrom = "N/A";
 
     let cardQ = `
-    SELECT name, card.card_id, hp, card.tcg_id, category_name, stage_name, illustrator_name, image_url, expansion_name, evolve_from
+    SELECT card.*, category_name, stage_name, expansion_name, illustrator_name
     FROM card 
     INNER JOIN illustrator
     ON illustrator.illustrator_id = card.illustrator_id
@@ -141,13 +141,26 @@ router.get("/cards/:cardid", async (req, res) => {
     WHERE card.card_id = ?;`;
 
     let attackQ = `
-    SELECT attack_name, effect, damage FROM attack
+    SELECT attack.* FROM attack
     INNER JOIN attack_card
     ON attack_card.attack_id = attack.attack_id
     INNER JOIN card
     ON card.card_id = attack_card.card_id
     WHERE card.card_id = ?;
     `
+
+    let attackTypeQ = `
+    SELECT type.*, multiplier FROM type
+    INNER JOIN attack_type
+    ON attack_type.type_id = type.type_id   
+    WHERE attack_id = ?`
+
+    let weaknessQ = `
+    SELECT type.*, multiplier FROM weakness_card
+    INNER JOIN type
+    ON type.type_id = weakness_card.type_id
+    WHERE card_id = ?;`
+
     let typeQ = `
     SELECT type_image
     FROM type
@@ -171,13 +184,23 @@ router.get("/cards/:cardid", async (req, res) => {
 
         if (card.length === 0) throw new createError.NotFound();
         card = card[0];
+
     
         let likeCount = await db.promise().query(likeCountQ, [cardID]);
         likeCount = likeCount[0][0].like_count;
     
         let attacks = await db.promise().query(attackQ, [cardID]);
         attacks = attacks[0];
-    
+
+        let attackTypeResult;
+        for (attackInd = 0; attackInd < attacks.length; attackInd++) {
+            attackTypeResult = await db.promise().query(attackTypeQ, [attacks[attackInd].attack_id]);
+            attacks[attackInd].types = attackTypeResult[0];
+        }
+
+        let weaknessResults = await db.promise().query(weaknessQ, [cardID]);
+        weaknessResults = weaknessResults[0];
+        
         let types = await db.promise().query(typeQ, [cardID]);
         types = types[0];
 
@@ -205,7 +228,7 @@ router.get("/cards/:cardid", async (req, res) => {
     
         cardData = {
             name: card.name,
-            cardID: card.card_id,
+            id: card.card_id,
             likeCount: likeCount,
             liked: liked,
             expansion: card.expansion_name,
@@ -217,10 +240,11 @@ router.get("/cards/:cardid", async (req, res) => {
             image: card.image_url,
             types: types,
             attacks: attacks,
+            weakness: weaknessResults,
             price: price,
             priceURL: priceURL
         };
-    
+
         res.json({
             status: 200,
             message: "success",
@@ -244,7 +268,7 @@ router.post("/likecard", [admin], async (req, res) => {
     AND user_id = ?`;
 
     try {
-        if (!parseInt(cardID) || ! parseInt(userID)) throw new createError.BadRequest();
+        if (!parseInt(cardID) || !parseInt(userID)) throw new createError.BadRequest();
 
         let likeStatusResult = await db.promise().query(likeStatusQ, [cardID, userID]);
         likeStatusResult = likeStatusResult[0];

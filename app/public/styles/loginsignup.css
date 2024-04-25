@@ -1,0 +1,21 @@
+/* login and sign up pages */
+
+.logsigncontainer {
+    border: thin solid rgb(224, 225, 225);
+    max-width: 70%;
+    border-radius: 15px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.loginformfield:focus {
+    border-color: rgb(204, 0, 0) !important;
+    /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
+    box-shadow: 0px 0px 3px 2px rgb(204, 0, 0);
+}
+
+.signformfield:focus {
+    border-color: rgb(255,192,8) !important;
+    /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
+    box-shadow: 0px 0px 3px 2px rgb(255,192,8);
+}
