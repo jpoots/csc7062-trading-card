@@ -1,14 +1,10 @@
 const createError = require("http-errors");
 
-const errorHandler =  (err, res) => {
-    if (!(err instanceof createError.HttpError)) err = createError.InternalServerError();
-        
-    res.json({
-        status: err.status,
-        message: err.message
-    });
-}
+const isPositiveInt = (string) => {
+    if (parseInt(string) && parseInt(string) > 0) return true;
+    return false;
+};
 
 module.exports = {
-    errorHandler: errorHandler,
+    isPositiveInt: isPositiveInt
 };

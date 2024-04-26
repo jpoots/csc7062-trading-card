@@ -9,89 +9,48 @@
     <div class="container carddetails">
         <div class="row">
             <div class="column">
-                <h3>Filter By</h3>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="column">
-                <h5>Min HP</h5>
-                <!--https://blog.hubspot.com/website/html-slider-->
                 <form action="/filter" method="get">
-                    <input type="range" min="0" max="200" value="100" step="5" name="minhp" id="minhp" oninput="minhpValue.innerText = this.value" class="slider">
-                    <p id="minhpValue">100</p>
+                    <h5>HP</h5>
+                    <input type="number" min="0" max="200" step="5" name="minhp" id="minhp" placeholder="min" class="searchbar">
+                    <input type="number" min="0" max="200" step="5" name="maxhp" id="maxhp" placeholder="max" class="searchbar">
 
-                    <h5>Max HP</h5>
-                    <input type="range" min="0" max="200" value="100" step="5" name="maxhp" id="maxhp" oninput="maxhpValue.innerText = this.value" class="slider">
-                    <p id="maxhpValue">100</p>
-                    <input type="submit" class="button-primary bluebutton textwhite mb0" value="Filter">                  
-                </form>
-            </div>
-        </div>
+                    <h5>Likes</h5>
+                    <input type="number" name="minlikes" class="searchbar" placeholder="min" min="0">
+                    <input type="number" name="maxlikes" class="searchbar" placeholder="max" min="0">
 
-        <div class="row">
-            <div class="column">
-                <h5>Min Likes</h5>
-                <form action="/filter" method="get" class="dflex">
-                    <input type="number" name="minlikes" class="searchbar" min="0">
-                    <input type="submit" value="Filter" class="button-primary bluebutton textwhite mb0 ml10">                  
-                </form>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="column">
-                <h5>Expansion</h5>
-                <form action="/filter" method="get" class="mb0 dflex">
-                    <select id="expansionid" name="expid">
+                    <h5>Expansion</h5>
+                    <select id="expansionid" name="expid" class="dropdown">
+                        <option value="" selected>Select Expansion</option>
                         <% expansions.forEach(expansion => { %>
                             <option value=<%= expansion.expansion_id  %>><%= expansion.expansion_name  %></option>
                         <% }) %>
                     </select>
-                    <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Filter">
-                </form>
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="column">
-                <h5>Type</h5>
-                <form action="/filter" method="get" class="mb0 dflex">
-                    <select id="typeid" name="typeid">
-                        <% types.forEach(type => { %>
-                            <option value=<%= type.type_id  %>><%= type.type_name  %></option>
-                        <% }) %>
-                    </select>
-                    <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Filter">
-                </form>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="column">
-                <h5>Weakness</h5>
-                <form action="/filter" method="get" class="mb0 dflex">
-                    <select id="weaknessid" name="weaknessid">
-                        <% types.forEach(type => { %>
-                            <option value=<%= type.type_id  %>><%= type.type_name  %></option>
-                        <% }) %>
-                    </select>
-                    <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Filter">
-                </form>
-            </div>
-        </div>
-
-
-        <div class="row">
-            <div class="column">
-                <h5>Illustrator</h5>
-                <form action="/filter" method="get" class="mb0 dflex">
-                    <select id="illid" name="illid">
+                    <h5>Illustrator</h5>
+                    <select id="illid" name="illid" class="dropdown">
+                        <option value="" selected>Select Illustrator</option>
                         <% illustrators.forEach(illustrator => { %>
                             <option value=<%= illustrator.illustrator_id  %>><%= illustrator.illustrator_name  %></option>
                         <% }) %>
                     </select>
-                    <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Filter">
+                    
+                    <h5>Weakness</h5>
+                    <select id="weaknessid" name="weaknessid" class="dropdown">
+                        <option value="" selected>Select Weakness</option>
+                        <% types.forEach(type => { %>
+                            <option value=<%= type.type_id  %>><%= type.type_name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <h5>Type</h5>
+                    <select id="typeid" name="typeid" class="dropdown">
+                        <option value="" selected>Select Type</option>
+                        <% types.forEach(type => { %>
+                            <option value=<%= type.type_id  %>><%= type.type_name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <input class="button-primary bluebutton textwhite mb0 w100" type="submit" value="Filter">
                 </form>
             </div>
         </div>

@@ -1,9 +1,10 @@
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
-const db = require("../db")
+const db = require("../db");
+const errHandler = require("./err");
+const createError = require("http-errors");
 
 dotenv.config();
-const saltRounds = Number(process.env.SALT_ROUNDS);
 
 /* https://www.youtube.com/watch?v=Tw5LupcpKS4 */
 const auth = async (req, res, next) => {
@@ -24,23 +25,13 @@ const auth = async (req, res, next) => {
             }
         }
 
-        if (foundKey){
-            req.admin = foundKey.admin;
-            next();
-        } else {
-            res.json({
-                status: 403,
-                message: "access denied"
-            })
-        }
+        if (!foundKey) throw new createError.Unauthorized();
+        req.admin = foundKey.admin;
+        next();
         
-    } catch {
-            res.json({
-            status: 403,
-            message: "access denied"
-        }) 
+    } catch (err) {
+        errHandler(err, req, res, next)
     }
-
 }
 
 module.exports = auth;

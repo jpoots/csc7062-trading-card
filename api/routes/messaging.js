@@ -3,10 +3,9 @@ const router = express.Router();
 const db = require("../db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
-const util = require("../utility");
 
 
-router.post("/sendmessage", [admin], async (req, res) => {
+router.post("/sendmessage", [admin], async (req, res, next) => {
     let senderID = req.body.senderid;
     let recipientID = req.body.recipientid;
     let cardID = req.body.cardid;
@@ -26,16 +25,11 @@ router.post("/sendmessage", [admin], async (req, res) => {
             message: "success",
         });
     } catch (err){
-        if (!err.status || !err.message) err = createError.InternalServerError();
-        
-        res.json({
-            status: err.status,
-            message: err.message
-        });
+        next(err);
     }
 });
 
-router.get("/messages/:userid", [admin], async (req, res) => {
+router.get("/messages/:userid", [admin], async (req, res, next) => {
     let userID = req.params.userid;
 
     let messageQ = `
@@ -60,7 +54,7 @@ router.get("/messages/:userid", [admin], async (req, res) => {
             response: messages
         });
     } catch (err) {
-        util.errorHandler(err, res)
+        next(err);
     }
 });
 

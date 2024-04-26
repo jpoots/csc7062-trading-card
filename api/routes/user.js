@@ -5,10 +5,9 @@ const validator = require("email-validator"); // https://www.npmjs.com/package/e
 const db = require("../db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
-const util = require("../utility");
 
 
-router.post("/authenticate", [admin], async (req, res) => {
+router.post("/authenticate", [admin], async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.pass;
     const loginQ = `SELECT * FROM user WHERE email_address = ?`;
@@ -35,11 +34,11 @@ router.post("/authenticate", [admin], async (req, res) => {
         });
 
     } catch (err) {
-        util.errorHandler(err, res)
+        next(err);
     }
 });
 
-router.post("/register", [admin] , async (req, res) => {
+router.post("/register", [admin] , async (req, res, next) => {
     const saltRounds = 5;
 
     let email = req.body.email;
@@ -83,12 +82,12 @@ router.post("/register", [admin] , async (req, res) => {
             });
         }
     } catch (err) {
-        util.errorHandler(err, res)
+        next(err);
     }
 
 });
 
-router.get("/user/:userid", [admin], async (req, res) => {
+router.get("/user/:userid", [admin], async (req, res, next) => {
     let userID = req.params.userid;
 
     const accountQ = "SELECT * FROM user WHERE user_id = ?";
@@ -106,11 +105,11 @@ router.get("/user/:userid", [admin], async (req, res) => {
             response: userData
         });
     } catch (err) {
-        util.errorHandler(err, res)
+        next(err);
     }
 });
 
-router.post("/updateaccount", async (req, res) => {
+router.post("/updateaccount", async (req, res, next) => {
     let userID = req.body.userid;
     let email = req.body.email;
     let display = req.body.displayname;
@@ -154,12 +153,12 @@ router.post("/updateaccount", async (req, res) => {
             });
         }
     } catch (err) {
-        util.errorHandler(err, res)
+        next(err);
     }
 
 });
 
-router.post("/changepassword", async (req, res) => {
+router.post("/changepassword", async (req, res, next) => {
     let password = req.body.password;
     let confirmPassword = req.body.confirmpassword;
     let userID = req.body.userid;
@@ -185,8 +184,7 @@ router.post("/changepassword", async (req, res) => {
             message: "success"
         });
     } catch (err) {
-        console.log(err)
-        util.errorHandler(err, res)
+        next(err);
     }
 });
 

@@ -1,11 +1,12 @@
+const createError = require("http-errors");
+const errHandler = require("./err");
+
 const admin = async (req, res, next) => {
-    if (req.admin) {
+    try {
+        if (!req.admin) throw new createError.Unauthorized();
         next();
-    } else {
-        res.json({
-            status: 403,
-            message: "access denied"
-        });
+    } catch {
+        errHandler(err, req, res, next);
     }
 }
 

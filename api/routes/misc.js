@@ -2,9 +2,8 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const createError = require("http-errors");
-const util = require("../utility");
 
-router.get("/expansions", async (req, res) => {
+router.get("/expansions", async (req, res, next) => {
     let expansionQ;
     let params = [];
 
@@ -40,12 +39,11 @@ router.get("/expansions", async (req, res) => {
             response: expansions
         });
     } catch (err) {
-        console.log(err)
-        util.errorHandler(err, res)
+        next(err);
     }
 });
 
-router.get("/types", async (req, res) => {
+router.get("/types", async (req, res, next) => {
     let allTypeQ = 
     `SELECT type_id, type_name FROM type
     ORDER BY type_name;`;
@@ -60,11 +58,11 @@ router.get("/types", async (req, res) => {
             response: types
         });
     } catch (err) {
-        util.errorHandler(err, res)
+        next(err);
     }
 });
 
-router.get("/illustrators", async (req, res) => {
+router.get("/illustrators", async (req, res, next) => {
     let allIllQ = 
     `SELECT * FROM illustrator
     ORDER BY illustrator_name;`;
@@ -79,7 +77,7 @@ router.get("/illustrators", async (req, res) => {
             response: illustrators
         });
     } catch (err) {
-        util.errorHandler(err, res)
+        next(err);
     }
 });
 

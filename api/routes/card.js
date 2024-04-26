@@ -4,10 +4,9 @@ const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokem
 const createError = require("http-errors");
 const db = require("../db");
 const admin = require("../middleware/admin");
-const util = require("../utility");
 
 // getting a card or subset of cards
-router.get("/cards", async (req, res) => {
+router.get("/cards", async (req, res, next) => {
     let cardQ = "";
     let searchName = "";
     let params = [];
@@ -45,87 +44,6 @@ router.get("/cards", async (req, res) => {
             GROUP BY card.card_id
             ORDER BY name`;
             params = [userID];
-        } else if (req.query.expansionid){
-            if (!parseInt(req.query.expansionid)) throw new createError.BadRequest();
-
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count" FROM card
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            INNER JOIN expansion
-            ON expansion.expansion_id = card.expansion_id
-            WHERE card.expansion_id = ?
-            GROUP BY card.card_id
-            ORDER BY name`;
-            params = [req.query.expansionid];
-        } else if (req.query.minlikes){
-            if (!parseInt(req.query.minlikes)) throw new createError.BadRequest();
-
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count"
-            FROM card
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            GROUP BY card.card_id
-            HAVING COUNT(card_like_id) >= ?
-            ORDER BY COUNT(card_like_id)`;
-            params = [req.query.minlikes];
-        } else if (req.query.maxhp && req.query.minhp) {
-            if (!parseInt(req.query.maxhp) || !parseInt(req.query.minhp)) throw new createError.BadRequest();
-
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count"
-            FROM card
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            WHERE hp >= ?
-            AND hp <= ?
-            GROUP BY card.card_id
-            ORDER BY hp`;
-            params = [req.query.minhp, req.query.maxhp];
-        } else if (req.query.typeid) {
-            if (!parseInt(req.query.typeid)) throw new createError.BadRequest();
-
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count" FROM type
-            INNER JOIN type_card
-            ON type.type_id = type_card.type_id
-            INNER JOIN card
-            ON card.card_id = type_card.card_id
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            WHERE type.type_id = ?
-            GROUP BY card.card_id
-            ORDER BY name`;
-            params = [req.query.typeid];
-        } else if (req.query.illid){
-            if (!parseInt(req.query.typeid)) throw new createError.BadRequest();
-
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count" FROM card
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            INNER JOIN illustrator
-            ON illustrator.illustrator_id = card.illustrator_id
-            WHERE card.illustrator_id = ?
-            GROUP BY card.card_id
-            ORDER BY name`;
-            params = [req.query.illid];
-        } else if (req.query.weaknessid) {
-            if (!parseInt(req.query.weaknessid)) throw new createError.BadRequest();
-
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count" FROM type
-            INNER JOIN weakness_card
-            ON type.type_id = weakness_card.type_id
-            INNER JOIN card
-            ON card.card_id = weakness_card.card_id
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            WHERE type.type_id = ?
-            GROUP BY card.card_id
-            ORDER BY name`;
-            params = [req.query.weaknessid];
         } else {
             cardQ = `
             SELECT card.*, COUNT(card_like_id) as "like_count"
@@ -146,12 +64,12 @@ router.get("/cards", async (req, res) => {
 
     } catch (err) {
         console.log(err)
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
 // getting an individual card
-router.get("/cards/:cardid", async (req, res) => {
+router.get("/cards/:cardid", async (req, res, next) => {
     let cardID = req.params.cardid;
     let liked = false;
     let evolveFrom = "N/A";
@@ -281,29 +199,27 @@ router.get("/cards/:cardid", async (req, res) => {
         });
 
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
 // liking a card
-router.post("/likecard", [admin], async (req, res) => {
+router.post("/likecard", [admin], async (req, res, next) => {
     let cardID = req.body.cardid;
     let userID = req.body.userid;
 
-    let likeStatus = false;
     let likeStatusQ = `
     SELECT * FROM card_like
     WHERE card_id = ?
     AND user_id = ?`;
+    let likeQ = `INSERT INTO card_like (card_id, user_id) VALUES (?, ?)`;
 
     try {
         if (!parseInt(cardID) || !parseInt(userID)) throw new createError.BadRequest();
 
         let likeStatusResult = await db.promise().query(likeStatusQ, [cardID, userID]);
-        likeStatusResult = likeStatusResult[0];
-        if (likeStatusResult.length === 1) likeStatus = true;
-    
-        let likeQ = !likeStatus ? "INSERT INTO card_like (card_id, user_id) VALUES (?, ?)" : "DELETE FROM card_like WHERE card_id = ? AND user_id = ?;" ;
+        if (likeStatusResult[0].length === 1) throw new createError.Conflict();
+        
         let likeResult = await db.promise().query(likeQ, [cardID, userID])
 
         res.json({
@@ -311,11 +227,52 @@ router.post("/likecard", [admin], async (req, res) => {
             message: "success"
         });
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
-router.get("/filter", async (req, res) => {
+router.post("/unlikecard", async (req, res, next) => {
+    console.log("triggered")
+    let cardID = req.body.cardid;
+    let userID = req.body.userid;
+
+    let likeStatusQ = `
+    SELECT * FROM card_like
+    WHERE card_id = ?
+    AND user_id = ?`;
+    let likeQ = "DELETE FROM card_like WHERE card_id = ? AND user_id = ?;" ;
+
+    try {
+        if (!parseInt(cardID) || !parseInt(userID)) throw new createError.BadRequest();
+
+        let likeStatusResult = await db.promise().query(likeStatusQ, [cardID, userID]);
+        if (likeStatusResult[0].length !== 1) throw new createError.Conflict();
+        
+        let likeResult = await db.promise().query(likeQ, [cardID, userID])
+
+        res.json({
+            status: 200,
+            message: "success"
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get("/filter", async (req, res, next) => {
+    console.log(req.query)
+    let minHP = req.query.minhp;
+    let maxHP = req.query.maxhp;
+    let expansionID = req.query.expid;
+    let illustratorID = req.query.illustratorid;
+    let stageID = req.query.stageid;
+    let minLikes = req.query.minlikes;
+    let maxLikes = req.query.maxlikes;
+    let weaknessID = req.query.weaknessid;
+    let typeID = req.query.typeid;
+
+    console.log(req.query)
+
     let cardQ = `
     SELECT card.*, COUNT(card_like_id) as "like_count"
     FROM card
@@ -328,22 +285,88 @@ router.get("/filter", async (req, res) => {
     GROUP BY card.card_id
     ORDER BY name;`;
 
-    let cards = await db.promise().query(cardQ);
-    cards = cards[0]
+    /* figured out to add type_id to group clause using chatGPT */
+    cardQ =     
+    `SELECT card.*, type_card.type_id, weakness_card.type_id as "weakness_id", COUNT(card_like_id) as "like_count"
+    FROM card
+    INNER JOIN expansion
+    ON card.expansion_id = expansion.expansion_id
+    LEFT JOIN type_card
+    ON card.card_id = type_card.card_id
+    LEFT JOIN weakness_card
+    ON weakness_card.card_id = card.card_id
+    LEFT JOIN card_like
+    ON card_like.card_id = card.card_id
+    GROUP BY card.card_id, type_card.type_id, weakness_card.type_id
+    ORDER BY name;
+    `
 
-    if (req.query.minhp) cards = cards.filter(card => card.hp > req.query.minhp);
-    if (req.query.maxhp) cards = cards.filter(card => card.hp < req.query.maxhp);
-    if (req.query.expansionid) cards = cards.filter(card => card.expansion_id == req.query.expansionid);
-    if (req.query.illustratorid) cards = cards.filter(card => card.illustrator_id == req.query.illustratorid);
-    if (req.query.stageid) cards = cards.filter(card => card.stage_id == req.query.stageid);
-    if (req.query.minlikes) cards = cards.filter(card => card.like_count > req.query.minlikes);
-    if (req.query.maxlikes) cards = cards.filter(card => card.like_count < req.query.maxlikes);
+    try {
+        let cards = await db.promise().query(cardQ);
+        cards = cards[0]
 
-    res.json({
-        status: 200,
-        message: "sucess",
-        response: cards
-    })
+    
+        if (minHP) {
+            if (!parseInt(minHP) && !parseInt(minHP) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.hp >= minHP);
+        }
+
+    
+        if (maxHP) {
+            if (!parseInt(maxHP) && parseInt(maxHP) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.hp <= maxHP);
+        }
+    
+        if (minLikes) {
+            if (!parseInt(minLikes) && parseInt(minLikes) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.like_count >= minLikes);
+        }
+    
+        if (maxLikes) {
+            if (!parseInt(maxLikes) && parseInt(maxLikes) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.like_count <= maxLikes);
+        }
+        
+        if (expansionID) {
+            if (!parseInt(expansionID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.expansion_id == expansionID);
+        }
+    
+        if (illustratorID) {
+            if (!parseInt(illustratorID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.illustrator_id== illustratorID);
+        }
+    
+        if (stageID) {
+            if (!parseInt(stageID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.stage_id == stageID);
+        }
+
+        if (weaknessID) {
+            if (!parseInt(weaknessID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.weakness_id == weaknessID);
+        } 
+
+        if (typeID) {
+            if (!parseInt(typeID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.type_id == typeID);
+        } 
+
+        /* https://stackoverflow.com/questions/43245563/filter-array-to-unique-objects-by-object-property*/
+        cards.filter((value, index, self) => {
+            return self.findIndex(v => v.card_id === value.card_id) === index;
+          })
+
+        console.log(cards)
+
+        res.json({
+            status: 200,
+            message: "sucess",
+            response: cards
+        })
+    } catch (err) {
+        next(err);
+    }
 })
 
 module.exports = router;

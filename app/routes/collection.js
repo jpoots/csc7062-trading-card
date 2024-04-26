@@ -107,12 +107,11 @@ router.post("/addremovecard", async (req, res) => {
             userid: userID,
             cardid: req.body.cardid,
             collid: req.body.collid,
-            action: req.body.action
         }
 
         try {
             body = querystring.stringify(body);
-            let addResult = await axios.post(`${util.apiAdd}/addremovecard`, body);
+            let addResult = await axios.post(`${util.apiAdd}/${req.body.collstatus}card`, body);
 
             if (addResult.data.status === 409) {
                 res.redirect(`/card/${req.body.cardid}?error=409`);
@@ -134,6 +133,8 @@ router.post("/addremovecard", async (req, res) => {
 router.post("/ratecollection", async (req, res) => {
     let userID = req.session.userid;
 
+    console.log(req.body)
+
     if (!userID) {
         res.redirect("/login")
     } else {
@@ -145,7 +146,7 @@ router.post("/ratecollection", async (req, res) => {
 
         try {
             body = querystring.stringify(body);
-            let rateResult = await axios.post(`${util.apiAdd}/ratecollection`, body);
+            let rateResult = await axios.post(`${util.apiAdd}/${req.body.ratestatus}collection`, body);
 
             if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
 

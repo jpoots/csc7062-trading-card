@@ -4,6 +4,7 @@ const sessions = require("express-session")
 const cookieParser = require('cookie-parser');
 const dotenv = require("dotenv");
 const axios = require("axios");
+const errorHandler = require("./middleware/err")
 
 const user = require("./routes/user");
 const card = require("./routes/card");
@@ -54,6 +55,8 @@ app.use(mycards);
 app.use(collection);
 app.use(messaging)
 app.use(misc);
+
+app.use(errorHandler)
 
 // start app listening
 const PORT = process.env.APP_PORT;

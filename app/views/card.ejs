@@ -16,8 +16,8 @@
                     <!-- form from milligram docs -->
                         <form action="/addremovecard" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
                             <fieldset class="talright mb0 dflex">
-                                <input type="hidden" name="action" value="0">
-                                <input type="hidden" name="cardid" value=<%= card.cardID %>>
+                                <input type="hidden" name="cardid" value=<%= card.id %>>
+                                <input type="hidden" name="collstatus" value="add">
                                 <select id="collection" name="collid" class="dropdown">
                                     <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
                                     <option value="none" selected disabled hidden>Select Collection</option>
@@ -44,9 +44,11 @@
                         <input type="hidden" name="cardid" value="<%= card.id %>">
                         
                         <% if (!card.liked) { %>
-                            <input type="image" src="/images/like.png" class="mb0 likebutton" height=30 name="likestatus" value="like">
+                            <input type="hidden" name="likestatus" value="like">
+                            <input type="image" src="/images/like.png" class="mb0 likebutton" height=30 value="like">
                         <% } else { %>
-                            <input type="image" src="/images/liked.png" class="mb0 likebutton" height=30 name="likestatus" value="unlike">
+                            <input type="hidden" name="likestatus" value="unlike">
+                            <input type="image" src="/images/liked.png" class="mb0 likebutton" height=30 value="unlike">
                         <% } %>
                         <div><%= card.likeCount %></div>
                     </form>

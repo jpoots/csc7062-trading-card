@@ -4,6 +4,8 @@ const mysql = require("mysql2");
 const dotenv = require("dotenv");
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
 const auth = require("./middleware/auth");
+const errHandler = require("./middleware/err");
+
 
 const user = require("./routes/user")
 const card = require("./routes/card");
@@ -29,6 +31,8 @@ app.use(card);
 app.use(collection);
 app.use(messaging);
 app.use(misc);
+
+app.use(errHandler);
 
 app.listen(PORT, () => {
     console.log(`server listening on //localhost:${PORT}`);

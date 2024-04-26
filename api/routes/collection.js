@@ -3,9 +3,8 @@ const router = express.Router();
 const db = require("../db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
-const util = require("../utility");
 
-router.get("/collections", async (req, res) => {
+router.get("/collections", async (req, res, next) => {
     let collectionQ = "";
     let searchName = "";
     let params = [];
@@ -57,11 +56,11 @@ router.get("/collections", async (req, res) => {
             response: collections
         });
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
-router.get("/collections/:collid", async (req, res) => {
+router.get("/collections/:collid", async (req, res, next) => {
     let collectionID = req.params.collid;
     let userID = req.query.userid;
     let isOwner = false;
@@ -160,12 +159,52 @@ router.get("/collections/:collid", async (req, res) => {
             response: response
         });
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     };
 
 });
 
-router.post("/ratecollection", [admin], async (req, res) => {
+router.post("/ratecollection", [admin], async (req, res, next) => {
+    let userID = req.body.userid;
+    let collID = req.body.collid;
+    let rating = req.body.rating;
+
+    let ratingStatusQ = `
+    SELECT * FROM collection_rating
+    WHERE user_id = ?
+    AND collection_id = ?`;
+
+    let collectionQ = `
+    SELECT * FROM collection
+    WHERE collection_id = ?`;
+
+    let rateQ = "INSERT INTO collection_rating (user_id, collection_id, rating) VALUES (?, ?, ?)";
+
+    try {
+        if (!parseInt(userID) || !parseInt(collID)) throw new createError.BadRequest();
+        if (rating && (!parseInt(rating) || rating > 4 || rating < 1)) throw new createError.BadRequest();
+
+        let ratingStatusResult = await db.promise().query(ratingStatusQ, [userID, collID]);
+        if (ratingStatusResult[0].length === 1) throw new createError.Conflict();  
+
+        let collection = await db.promise().query(collectionQ, collID);
+        if(collection[0].length !== 1) throw new createError.NotFound();
+        
+        collection = collection[0][0];
+        if(collection.user_id == userID) throw new createError.BadRequest();
+
+        let ratingResult = await db.promise().query(rateQ, [userID, collID, rating]);
+
+        res.json({
+            status: 200,
+            message: "success"
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post("/unratecollection", [admin], async (req, res, next) => {
     let userID = req.body.userid;
     let collID = req.body.collid;
     let rating = req.body.rating;
@@ -202,11 +241,11 @@ router.post("/ratecollection", [admin], async (req, res) => {
             message: "success"
         });
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
-router.post("/commentcollection", [admin], async (req, res) => {
+router.post("/commentcollection", [admin], async (req, res, next) => {
     let collID = req.body.collid;
     let comment = req.body.comment;
     let userID = req.body.userid;
@@ -225,11 +264,11 @@ router.post("/commentcollection", [admin], async (req, res) => {
             message: "success"
         });
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
-router.post("/createcoll", [admin], async (req, res) => {
+router.post("/createcoll", [admin], async (req, res, next) => {
     let userID = req.body.userid;
     let collName = req.body.collname;
 
@@ -249,12 +288,11 @@ router.post("/createcoll", [admin], async (req, res) => {
             }
         });
     } catch (err) {
-        console.log(err)
-        util.errorHandler(err, res);
+        next(err);
     }
 })
 
-router.post("/deletecoll", [admin], async (req, res) => {
+router.post("/deletecoll", [admin], async (req, res, next) => {
     let collID = req.body.collid;
     let userID = req.body.userid;
 
@@ -282,29 +320,54 @@ router.post("/deletecoll", [admin], async (req, res) => {
             message: "success",
         });
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
-router.post("/addremovecard", [admin], async (req, res) => {
+router.post("/addcard", [admin], async (req, res, next) => {
     let cardID = req.body.cardid;
     let collID = req.body.collid;
-    let action = req.body.action;
 
-    let inCollection = false;
     let cardStatusQ = `
     SELECT * FROM collection_card
     WHERE card_id = ?
     AND collection_id = ?`;
 
+    let query = "INSERT INTO collection_card (collection_id, card_id) VALUES (?, ?);"
+
     try {
-        if (!parseInt(cardID) || !parseInt(collID) || !action || !(action == 1 || action == 0)) throw new createError.BadRequest();
+        if (!parseInt(cardID) || !parseInt(collID)) throw new createError.BadRequest();
 
         let cardStatusResult = await db.promise().query(cardStatusQ, [cardID, collID]);
-        if (cardStatusResult[0].length > 0) inCollection = true;
-    
-        let query = action == 1 ? "DELETE FROM collection_card WHERE collection_id = ? AND card_id = ?;" : "INSERT INTO collection_card (collection_id, card_id) VALUES (?, ?);"
-        if ((action == 0 && inCollection) || (action == 1 && !inCollection)) throw new createError.Conflict();
+        if (cardStatusResult[0].length > 0) throw new createError.Conflict();
+        
+        let queryResult = await db.promise().query(query, [collID, cardID]);
+
+        res.json({
+        status: 200,
+        message: "success"
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post("/removecard", [admin], async (req, res, next) => {
+    let cardID = req.body.cardid;
+    let collID = req.body.collid;
+
+    let cardStatusQ = `
+    SELECT * FROM collection_card
+    WHERE card_id = ?
+    AND collection_id = ?`;
+
+    let query = "DELETE FROM collection_card WHERE collection_id = ? AND card_id = ?;"
+
+    try {
+        if (!parseInt(cardID) || !parseInt(collID)) throw new createError.BadRequest();
+
+        let cardStatusResult = await db.promise().query(cardStatusQ, [cardID, collID]);
+        if (cardStatusResult[0].length === 0) throw new createError.Conflict();
     
         let queryResult = await db.promise().query(query, [collID, cardID]);
 
@@ -313,7 +376,7 @@ router.post("/addremovecard", [admin], async (req, res) => {
         message: "success"
         });
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 

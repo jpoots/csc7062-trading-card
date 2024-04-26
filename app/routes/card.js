@@ -5,37 +5,26 @@ const querystring = require('querystring');
 const util = require("../utility");
 
 // browse
-router.get("/browse", async (req, res) => {
+router.get("/browse", async (req, res, next) => {
     try {
         let cardQuery = `${util.apiAdd}/cards`;
 
         if (req.query.search) cardQuery = `${cardQuery}?search=${req.query.search}`;
         
         let cardResult = await axios.get(cardQuery);
+        if (cardResult.data.status != 200) throw new util.SystemError`${cardResult.data.status} ${cardResult.data.message}`();
     
-        if (cardResult.data.status !== 200){
-            res.render("error", {
-                status: cardResult.data.status,
-                message: cardResult.data.message
-            });
-        } else {
-            let cards = cardResult.data.response;
-            cards = await util.slicer(cards);
-        
-            res.render("browse", {cards: cards});
-        }
-
+        let cards = cardResult.data.response;
+        cards = await util.slicer(cards);
+    
+        res.render("browse", {cards: cards});
     } catch (err){
-        let errorMessage = err instanceof util.SystemError ? err.message : util.defaultError;
-
-        res.render("error", {
-            message: errorMessage
-        });
+        next(err)
     }
 });
 
 // card
-router.get("/card/:cardid", async (req, res) => {
+router.get("/card/:cardid", async (req, res, next) => {
     // get card id from the req
     let userID = req.session.userid;
     let cardID = req.params.cardid;
@@ -63,12 +52,12 @@ router.get("/card/:cardid", async (req, res) => {
         });
 
     } catch (err){
-        util.errorHandler(err, res);
+        next(err);
     }
 
 });
 
-router.post("/likecard", async (req, res) => {
+router.post("/likecard", async (req, res, next) => {
     if (!req.session.userid){
         res.redirect("/login");
     } else {
@@ -76,26 +65,27 @@ router.post("/likecard", async (req, res) => {
             cardid: req.body.cardid,
             userid: req.session.userid
         }
-
+        
         try {
             body = querystring.stringify(body);
-
-            let likeResult = await axios.post(`${util.apiAdd}/likecard`, body);
+            let likeResult = await axios.post(`${util.apiAdd}/${req.body.likestatus}card`, body);
             if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
             
             res.redirect(`/card/${req.body.cardid}`);
         } catch (err) {
-            util.errorHandler(err, res);
+            next(err);
         }
     }
 });
 
-router.get("/filter", async (req, res) => {
+router.get("/filter", async (req, res, next) => {
     try {
     // https://stackoverflow.com/questions/5223/length-of-a-javascript-object */https://stackoverflow.com/questions/5223/length-of-a-javascript-objects
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
     if (Object.keys(req.query).length > 0) {
-        let cardsResult = await axios.get(util.apiAdd + "/cards", {
+        let endPoint = `${util.apiAdd}/filter`;
+
+        let cardsResult = await axios.get(endPoint, {
             params: req.query
         });
 
@@ -115,7 +105,6 @@ router.get("/filter", async (req, res) => {
         let illustrators = await axios.get(util.apiAdd + "/illustrators");
         illustrators = illustrators.data.response;
 
-        /* http://localhost:3000/filter?filterby=hp&param=10 */        
         res.render("filter", {
         expansions: expansions,
         types: types,
@@ -123,7 +112,7 @@ router.get("/filter", async (req, res) => {
         });
     }
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
@@ -148,7 +137,7 @@ router.get("/compare", async (req, res) => {
                 cardTwo: cardTwo
             });
         } catch (err) {
-            util.errorHandler(err, res);
+            next(err);
         }
 
     } else {

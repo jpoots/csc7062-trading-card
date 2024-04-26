@@ -76,6 +76,7 @@
                         <% if (!collection.rated) { %>
                             <form action="/ratecollection" class="dflex jcontspacearound mb0" method="post" class="mb0">
                                 <input type="hidden" name="collid" value="<%= collection.id  %>">
+                                <input type="hidden" name="ratestatus" value="rate">
                             
                                 <div>
                                     <input class="ratingradio" type="radio" name="rating" value="1">
@@ -97,7 +98,7 @@
                                     <label>4</label><br>
                                 </div>
                             
-                                <input class="button redbutton mb0" type="submit" name="ratestatus" value="Rate">
+                                <input class="button redbutton mb0" type="submit" value="Rate">
                             </form>
                         <% } else { %>
                             <div class="dflex colgap10">
@@ -109,7 +110,8 @@
         
                                 <form action="/ratecollection" method="post" class="mb0">
                                     <input type="hidden" name="collid" value="<%= collection.id %>">
-                                        <input class="button redbuttonfaded mb0" type="submit" name="ratestatus" value="Undo">
+                                    <input type="hidden" name="ratestatus" value="unrate">
+                                    <input class="button redbuttonfaded mb0" type="submit"  value="Undo">
                                 </form>
                             </div>
                         <% } %>
