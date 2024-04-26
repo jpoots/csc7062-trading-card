@@ -128,8 +128,6 @@ router.post("/updateaccount", async (req, res, next) => {
         } else if (!validator.validate(email)){
             throw new createError(400,"Invalid email");
         } else {
-            let saltRounds = 5;
-
             display = display.trim();
             email = email.trim();
 

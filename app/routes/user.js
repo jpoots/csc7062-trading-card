@@ -113,16 +113,14 @@ router.post("/account", async (req, res) => {
             userid: userID,
             email: req.body.email,
             displayname: req.body.displayname,
-            password: req.body.password,
-            confirmpassword: req.body.confirmpassword
         };
 
         try {
             body = querystring.stringify(body);
-            let updateResult = await axios.post(`${util.apiAdd}/update`, body);
+            let updateResult = await axios.post(`${util.apiAdd}/updateaccount`, body);
 
             let userData = await axios.get(`${util.apiAdd}/user/${userID}`);
-            if (userData != 200) throw new util.SystemError(`${userData.data.status} ${userData.data.message}`);
+            if (userData.data.status != 200) throw new util.SystemError(`${userData.data.status} ${userData.data.message}`);
 
             userData = userData.data.response;
 
@@ -144,6 +142,7 @@ router.post("/account", async (req, res) => {
                 });
             }
         } catch (err){
+            console.log(err)
             util.errorHandler(err, res);
         }
     } else {

@@ -39,19 +39,27 @@
                 <img class="cardpageimg" src="<%= card.image %>" alt="">
                 <div>
 
+                        
+                        <% if (!card.liked) { %>
+
                     <form action="/likecard" method="post" class="mb0 dflex alitemscenter colgap5">
                         <a href="<%= card.priceURL %>" class="button bluebutton mb0">€<%= card.price %></a>
                         <input type="hidden" name="cardid" value="<%= card.id %>">
-                        
-                        <% if (!card.liked) { %>
-                            <input type="hidden" name="likestatus" value="like">
-                            <input type="image" src="/images/like.png" class="mb0 likebutton" height=30 value="like">
-                        <% } else { %>
-                            <input type="hidden" name="likestatus" value="unlike">
-                            <input type="image" src="/images/liked.png" class="mb0 likebutton" height=30 value="unlike">
-                        <% } %>
+                        <input type="image" src="/images/like.png" class="mb0 likebutton" height=30 value="like">
                         <div><%= card.likeCount %></div>
                     </form>
+
+                    <% } else { %>
+                    <form action="/unlikecard" method="post" class="mb0 dflex alitemscenter colgap5">
+                        <a href="<%= card.priceURL %>" class="button bluebutton mb0">€<%= card.price %></a>
+                        <input type="hidden" name="cardid" value="<%= card.id %>">
+                        <input type="hidden" name="likeid" value="<%= card.likeID %>">
+                        <input type="image" src="/images/liked.png" class="mb0 likebutton" height=30 value="unlike">
+                        <div><%= card.likeCount %></div>
+                    </form>
+                            
+                    <% } %>
+
                     
                 </div>
 

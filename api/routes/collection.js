@@ -95,7 +95,7 @@ router.get("/collections/:collid", async (req, res, next) => {
     `;
 
     let commentQ = `
-    SELECT comment_text, display_name, DATE_FORMAT(time_posted, '%d/%m/%Y') as "date", TIME_FORMAT(time_posted, '%H:%i:%s') as "time"
+    SELECT comment_text, display_name, DATE_FORMAT(time_posted, '%d/%m/%Y') as "date", TIME_FORMAT(time_posted, '%H:%i') as "time"
     FROM collection_comment
     INNER JOIN user
     ON collection_comment.user_id = user.user_id
@@ -292,9 +292,8 @@ router.post("/createcoll", [admin], async (req, res, next) => {
     }
 })
 
-router.post("/deletecoll", [admin], async (req, res, next) => {
-    let collID = req.body.collid;
-    let userID = req.body.userid;
+router.delete("/deletecoll/:collid", [admin], async (req, res, next) => {
+    let collID = req.params.collid;
 
     let deleteCollQ = `
     DELETE FROM collection
@@ -314,12 +313,14 @@ router.post("/deletecoll", [admin], async (req, res, next) => {
         if (collection[0].length != 1) throw new createError.NotFound();
 
         let deleteResult = await db.promise().query(deleteCollQ, [collID]);
+        console.log(deleteResult)
 
         res.json({
             status: 200,
             message: "success",
         });
     } catch (err) {
+        console.log(err)
         next(err);
     }
 });
@@ -352,10 +353,11 @@ router.post("/addcard", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/removecard", [admin], async (req, res, next) => {
-    let cardID = req.body.cardid;
-    let collID = req.body.collid;
+router.delete("/removecard/:collid/:cardid", [admin], async (req, res, next) => {
+    let collID = req.params.collid;
+    let cardID = req.params.cardid;
 
+    console.log(cardID, collID)
     let cardStatusQ = `
     SELECT * FROM collection_card
     WHERE card_id = ?
@@ -376,6 +378,7 @@ router.post("/removecard", [admin], async (req, res, next) => {
         message: "success"
         });
     } catch (err) {
+        console.log(err)
         next(err);
     }
 });

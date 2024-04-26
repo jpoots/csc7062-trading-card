@@ -29,18 +29,16 @@
                 </div>
             <% } else { %>
                 <div class="column">
-                    <form action="/mycards/collections" method="post" class="mb0">
-                        <fieldset class="talright mb0 dflex">
-                            <select id="collection" name="collid" class="dropdown">
-                                <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
-                                <option value="none" selected disabled hidden><%= collection.name %></option>
-                                <% collections.forEach(element => { %>
-                                    <option value=<%= element.collection_id  %>><%= element.collection_name  %></option>
-                                <% }) %>
-                            </select>
-                            <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
-                        </fieldset>
-                    </form>
+                    <!-- https://www.w3schools.com/howto/howto_css_dropdown.asp -->
+                    <div class="dropdown">
+                        <button class="bluebutton mb0 ml10">Choose collection</button>
+                        <div class="dropdown-content">
+                        <% collections.forEach(element => { %>
+                            <a href="/collections/<%= element.collection_id %>"><%= element.collection_name %></a>
+                        <% }) %>
+                        </div>
+                      </div>
+
                 </div>
     
                 <div class="column dflex">
@@ -54,7 +52,7 @@
 
 
                     <form action="/deletecoll" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
-                        <input type="hidden" name="collid" value="<%= collection.name %>">
+                        <input type="hidden" name="collid" value="<%= collection.id %>">
                         <input class="button redbutton mb0" type="submit" value="Delete">
                     </form>
                 </div>

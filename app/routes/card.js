@@ -65,14 +65,32 @@ router.post("/likecard", async (req, res, next) => {
             cardid: req.body.cardid,
             userid: req.session.userid
         }
-        
+
         try {
             body = querystring.stringify(body);
-            let likeResult = await axios.post(`${util.apiAdd}/${req.body.likestatus}card`, body);
+            let likeResult = await axios.post(`${util.apiAdd}/likecard`, body);
+
             if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
             
             res.redirect(`/card/${req.body.cardid}`);
         } catch (err) {
+            next(err);
+        }
+    }
+});
+
+router.post("/unlikecard", async (req, res, next) => {
+    if (!req.session.userid){
+        res.redirect("/login");
+    } else {
+        try {
+            let likeResult = await axios.delete(`${util.apiAdd}/likecard/${req.body.likeid}`);
+
+            if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
+            
+            res.redirect(`/card/${req.body.cardid}`);
+        } catch (err) {
+            console.log(err)
             next(err);
         }
     }
