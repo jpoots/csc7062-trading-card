@@ -38,12 +38,4 @@ router.get("/mycards/collections", async (req, res) => {
     }
 });
 
-/*
-router.post("/mycards/collections", async (req, res) => {
-    let collectionID = req.body.collid;
-    res.redirect(`/collections/${collectionID}`);
-});
-*/
-
-
 module.exports = router;

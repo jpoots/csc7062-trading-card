@@ -62,13 +62,12 @@ router.post("/likecard", async (req, res, next) => {
         res.redirect("/login");
     } else {
         let body = {
-            cardid: req.body.cardid,
             userid: req.session.userid
         }
 
         try {
             body = querystring.stringify(body);
-            let likeResult = await axios.post(`${util.apiAdd}/likecard`, body);
+            let likeResult = await axios.post(`${util.apiAdd}/cards/${req.body.cardid}/likes`, body);
 
             if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
             
@@ -80,17 +79,18 @@ router.post("/likecard", async (req, res, next) => {
 });
 
 router.post("/unlikecard", async (req, res, next) => {
-    if (!req.session.userid){
+    let userID = req.session.userid;
+
+    if (!userID){
         res.redirect("/login");
     } else {
         try {
-            let likeResult = await axios.delete(`${util.apiAdd}/likecard/${req.body.likeid}`);
+            let likeResult = await axios.delete(`${util.apiAdd}/cards/${req.body.cardid}/likes/${userID}`);
 
             if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
             
             res.redirect(`/card/${req.body.cardid}`);
         } catch (err) {
-            console.log(err)
             next(err);
         }
     }
@@ -101,7 +101,7 @@ router.get("/filter", async (req, res, next) => {
     // https://stackoverflow.com/questions/5223/length-of-a-javascript-object */https://stackoverflow.com/questions/5223/length-of-a-javascript-objects
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
     if (Object.keys(req.query).length > 0) {
-        let endPoint = `${util.apiAdd}/filter`;
+        let endPoint = `${util.apiAdd}/cards`;
 
         let cardsResult = await axios.get(endPoint, {
             params: req.query

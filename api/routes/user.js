@@ -12,6 +12,7 @@ router.post("/authenticate", [admin], async (req, res, next) => {
     const password = req.body.pass;
     const loginQ = `SELECT * FROM user WHERE email_address = ?`;
 
+
     try {
         if (!email || !password) throw new createError.BadRequest();
 
@@ -109,69 +110,67 @@ router.get("/user/:userid", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/updateaccount", async (req, res, next) => {
-    let userID = req.body.userid;
+router.put("/user/:userid/details", async (req, res, next) => {
+    let userID = req.params.userid;
     let email = req.body.email;
     let display = req.body.displayname;
     const avatarURL = `https://ui-avatars.com/api/?name=${display}`;
 
-    let updateQ = `
-    UPDATE user
-    SET email_address = ?, display_name = ?, avatar_url = ?
-    WHERE user_id = ?`
-
-    if (!parseInt(userID)) throw new createError.BadRequest();
+    let updateQ = `UPDATE user SET email_address = ?, display_name = ?, avatar_url = ? WHERE user_id = ?`;
+    let userQ = `SELECT * FROM user WHERE user_id = ?`;
 
     try {
-        if (!display || !email || display.trim().length === 0 || email.trim().length === 0){
-            throw new createError(400, "Enter all fields");
-        } else if (!validator.validate(email)){
-            throw new createError(400,"Invalid email");
-        } else {
-            display = display.trim();
-            email = email.trim();
+        if (!parseInt(userID)) throw new createError.BadRequest();
+        let user = await db.promise().query(userQ, [userID]);
+        if (user[0].length === 0) throw new createError.NotFound();
 
-            let emailSearch = `SELECT * FROM user WHERE email_address = ?`;
-            let displaySearch = `SELECT * FROM user WHERE display_name = ?`;
+        if (!display || !email || display.trim().length === 0 || email.trim().length === 0) throw new createError(400, "Enter all fields");
+        if (!validator.validate(email)) throw new createError(400,"Invalid email");
 
-            let emailUser = await db.promise().query(emailSearch, [email]);
-            emailUser = emailUser[0];
-    
-            let displayUser = await db.promise().query(displaySearch, [display]);
-            displayUser = displayUser[0];
+        display = display.trim();
+        email = email.trim();
 
-            if (emailUser.length != 0 && emailUser[0].user_id != userID) throw new createError(400,"Email in use");
-            if (displayUser.length != 0 && displayUser[0].user_id != userID) throw new createError(400,"Display name in use");
+        let emailSearch = `SELECT * FROM user WHERE email_address = ?`;
+        let displaySearch = `SELECT * FROM user WHERE display_name = ?`;
 
-            let updateResult = await db.promise().query(updateQ, [email, display, avatarURL, userID]);
+        let emailUser = await db.promise().query(emailSearch, [email]);
+        emailUser = emailUser[0];
 
-            res.json({
-                status: 200,
-                message: "success",
-            });
-        }
+        let displayUser = await db.promise().query(displaySearch, [display]);
+        displayUser = displayUser[0];
+
+        if (emailUser.length != 0 && emailUser[0].user_id != userID) throw new createError(400,"Email in use");
+        if (displayUser.length != 0 && displayUser[0].user_id != userID) throw new createError(400,"Display name in use");
+
+        let updateResult = await db.promise().query(updateQ, [email, display, avatarURL, userID]);
+
+        res.json({
+            status: 200,
+            message: "success",
+        });
+        
     } catch (err) {
         next(err);
     }
 
 });
 
-router.post("/changepassword", async (req, res, next) => {
+router.put("/user/:userid/password", async (req, res, next) => {
     let password = req.body.password;
     let confirmPassword = req.body.confirmpassword;
-    let userID = req.body.userid;
+    let userID = req.params.userid;
     const saltRounds = 5;
 
-    console.log(req.body)
+    let userQ = "SELECT * FROM user WHERE user_id = ?";
+    let changeQ = `UPDATE user SET password_hash = ? WHERE user_id = ?;`
+
 
     try {
         if (!parseInt(userID) || !confirmPassword || !password || password.trim().length === 0 || confirmPassword.trim().length === 0) throw new createError(400, "Enter all fields");
         if (password !== confirmPassword) throw new createError(400, "Passwords don't match");
 
-        let changeQ = `
-        UPDATE user
-        SET password_hash = ?
-        WHERE user_id = ?;`
+        let user = await db.promise().query(userQ, [userID]);
+        if (user[0].length === 0) throw new createError.NotFound();
 
         let hash = await bcrypt.hash(password, saltRounds);
 
@@ -179,7 +178,7 @@ router.post("/changepassword", async (req, res, next) => {
 
         res.json({
             status: 200,
-            message: "success"
+            message: "sucess"
         });
     } catch (err) {
         next(err);

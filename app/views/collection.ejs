@@ -31,7 +31,7 @@
                 <div class="column">
                     <!-- https://www.w3schools.com/howto/howto_css_dropdown.asp -->
                     <div class="dropdown">
-                        <button class="bluebutton mb0 ml10">Choose collection</button>
+                        <button class="bluebutton mb0 ml10"><%= collection.name %></button>
                         <div class="dropdown-content">
                         <% collections.forEach(element => { %>
                             <a href="/collections/<%= element.collection_id %>"><%= element.collection_name %></a>
@@ -74,7 +74,6 @@
                         <% if (!collection.rated) { %>
                             <form action="/ratecollection" class="dflex jcontspacearound mb0" method="post" class="mb0">
                                 <input type="hidden" name="collid" value="<%= collection.id  %>">
-                                <input type="hidden" name="ratestatus" value="rate">
                             
                                 <div>
                                     <input class="ratingradio" type="radio" name="rating" value="1">
@@ -106,9 +105,8 @@
                                     <% } %>
                                 </div>
         
-                                <form action="/ratecollection" method="post" class="mb0">
+                                <form action="/unratecollection" method="post" class="mb0">
                                     <input type="hidden" name="collid" value="<%= collection.id %>">
-                                    <input type="hidden" name="ratestatus" value="unrate">
                                     <input class="button redbuttonfaded mb0" type="submit"  value="Undo">
                                 </form>
                             </div>

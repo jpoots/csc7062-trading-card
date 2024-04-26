@@ -7,55 +7,118 @@ const admin = require("../middleware/admin");
 
 // getting a card or subset of cards
 router.get("/cards", async (req, res, next) => {
-    let cardQ = "";
+    let minHP = req.query.minhp;
+    let maxHP = req.query.maxhp;
+    let expansionID = req.query.expid;
+    let illustratorID = req.query.illustratorid;
+    let stageID = req.query.stageid;
+    let minLikes = req.query.minlikes;
+    let maxLikes = req.query.maxlikes;
+    let weaknessID = req.query.weaknessid;
+    let typeID = req.query.typeid;
+
     let searchName = "";
     let params = [];
+    let cardQ = "";
 
-    try {        
-        if (req.query.search){
-            searchName = `${req.query.search}`;
+    if (req.query.search){
+        searchName = `${req.query.search}`;
+        // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
+        cardQ = /* figured out to add type_id to group clause using chatGPT */     
+        `SELECT card.*, type_card.type_id, weakness_card.type_id as "weakness_id", COUNT(card_like_id) as "like_count"
+        FROM card
+        INNER JOIN expansion
+        ON card.expansion_id = expansion.expansion_id
+        LEFT JOIN type_card
+        ON card.card_id = type_card.card_id
+        LEFT JOIN weakness_card
+        ON weakness_card.card_id = card.card_id
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        WHERE name 
+        LIKE ?
+        GROUP BY card.card_id, type_card.type_id, weakness_card.type_id
+        ORDER BY
+        CASE
+        WHEN name LIKE ? THEN 1
+        WHEN name LIKE ? THEN 2
+        WHEN name LIKE ? THEN 4
+        ELSE 3
+        END;
+        `
+        params = [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`];
+    } else {
+        cardQ = /* figured out to add type_id to group clause using chatGPT */     
+        `SELECT card.*, type_card.type_id, weakness_card.type_id as "weakness_id", COUNT(card_like_id) as "like_count"
+        FROM card
+        INNER JOIN expansion
+        ON card.expansion_id = expansion.expansion_id
+        LEFT JOIN type_card
+        ON card.card_id = type_card.card_id
+        LEFT JOIN weakness_card
+        ON weakness_card.card_id = card.card_id
+        LEFT JOIN card_like
+        ON card_like.card_id = card.card_id
+        GROUP BY card.card_id, type_card.type_id, weakness_card.type_id
+        ORDER BY name;
+        `
+    }
 
-            // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count" FROM card 
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            WHERE name 
-            LIKE ?
-            GROUP BY card.card_id
-            ORDER BY
-            CASE
-            WHEN name LIKE ? THEN 1
-            WHEN name LIKE ? THEN 2
-            WHEN name LIKE ? THEN 4
-            ELSE 3
-            END;`;
-            params = [`%${searchName}%`, `${searchName}`, `${searchName}%`, `%${searchName}`];
-
-        } else if (req.query.likedby){
-            userID = req.query.likedby;
-            if (!parseInt(userID)) throw new createError.BadRequest();
-
-            cardQ =
-            `SELECT card.*, COUNT(card_like.card_like_id) as "like_count" FROM card_like
-            INNER JOIN card 
-            ON card.card_id = card_like.card_id
-            WHERE user_id = ?
-            GROUP BY card.card_id
-            ORDER BY name`;
-            params = [userID];
-        } else {
-            cardQ = `
-            SELECT card.*, COUNT(card_like_id) as "like_count"
-            FROM card
-            LEFT JOIN card_like
-            ON card_like.card_id = card.card_id
-            GROUP BY card.card_id
-            ORDER BY name;`;
-        }
-
+    try {   
         let cards = await db.promise().query(cardQ, params);
         cards = cards[0];
+
+        if (minHP) {
+            if (!parseInt(minHP) && !parseInt(minHP) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.hp >= minHP);
+        }
+
+    
+        if (maxHP) {
+            if (!parseInt(maxHP) && parseInt(maxHP) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.hp <= maxHP);
+        }
+    
+        if (minLikes) {
+            if (!parseInt(minLikes) && parseInt(minLikes) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.like_count >= minLikes);
+        }
+    
+        if (maxLikes) {
+            if (!parseInt(maxLikes) && parseInt(maxLikes) !== 0) throw new createError.BadRequest();
+            cards = cards.filter(card => card.like_count <= maxLikes);
+        }
+        
+        if (expansionID) {
+            if (!parseInt(expansionID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.expansion_id == expansionID);
+        }
+    
+        if (illustratorID) {
+            if (!parseInt(illustratorID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.illustrator_id== illustratorID);
+        }
+    
+        if (stageID) {
+            if (!parseInt(stageID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.stage_id == stageID);
+        }
+
+        if (weaknessID) {
+            if (!parseInt(weaknessID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.weakness_id == weaknessID);
+        } 
+
+        if (typeID) {
+            if (!parseInt(typeID)) throw new createError.BadRequest();
+            cards = cards.filter(card => card.type_id == typeID);
+        }
+
+        /* https://stackoverflow.com/questions/43245563/filter-array-to-unique-objects-by-object-property*/
+        cards = cards.filter((value, index, self) => {
+            return self.findIndex(v => v.card_id === value.card_id) === index;
+        })
+
         res.json({
             status: 200,
             message: "success",
@@ -67,6 +130,36 @@ router.get("/cards", async (req, res, next) => {
         next(err);
     }
 });
+
+router.get("/users/:userid/likedcards", async (req, res, next) => {
+    let userID = req.params.userid;
+    let userQ = `SELECT * FROM user WHERE user_id = ?`;
+
+    let cardQ =
+    `SELECT card.*, COUNT(card_like.card_like_id) as "like_count" FROM card_like
+    INNER JOIN card 
+    ON card.card_id = card_like.card_id
+    WHERE user_id = ?
+    GROUP BY card.card_id
+    ORDER BY name`;
+
+
+    try {
+        let user = await db.promise().query(userQ, [userID]);
+        if (user[0].length === 0) throw new createError.NotFound();
+
+        let cards = await db.promise().query(cardQ, [userID]);
+
+        res.json({
+            status: 200,
+            message: "success",
+            response: cards[0]
+        });
+
+    } catch (err) {
+        next (err);
+    }
+})
 
 // getting an individual card
 router.get("/cards/:cardid", async (req, res, next) => {
@@ -132,7 +225,6 @@ router.get("/cards/:cardid", async (req, res, next) => {
 
         if (card.length === 0) throw new createError.NotFound();
         card = card[0];
-
     
         let likeCount = await db.promise().query(likeCountQ, [cardID]);
         likeCount = likeCount[0][0].like_count;
@@ -210,18 +302,23 @@ router.get("/cards/:cardid", async (req, res, next) => {
 });
 
 // liking a card
-router.post("/likecard", [admin], async (req, res, next) => {
-    let cardID = req.body.cardid;
+router.post("/cards/:cardid/likes", [admin], async (req, res, next) => {
+    let cardID = req.params.cardid;
     let userID = req.body.userid;
 
-    let likeStatusQ = `
-    SELECT * FROM card_like
-    WHERE card_id = ?
-    AND user_id = ?`;
+    let likeStatusQ = `SELECT * FROM card_like WHERE card_id = ? AND user_id = ?`;
     let likeQ = `INSERT INTO card_like (card_id, user_id) VALUES (?, ?)`;
+    let cardQ = "SELECT * FROM card WHERE card_id = ?";
+    let userQ = "SELECT * FROM user WHERE user_id = ?"
 
     try {
         if (!parseInt(cardID) || !parseInt(userID)) throw new createError.BadRequest();
+
+        let card = await db.promise().query(cardQ, [cardID]);
+        if (card[0].length === 0) throw new createError.NotFound();
+
+        let user = await db.promise().query(userQ, [userID]);
+        if (user[0].length === 0) throw new createError.NotFound();
 
         let likeStatusResult = await db.promise().query(likeStatusQ, [cardID, userID]);
         if (likeStatusResult[0].length === 1) throw new createError.Conflict();
@@ -237,14 +334,21 @@ router.post("/likecard", [admin], async (req, res, next) => {
     }
 });
 
-router.delete("/likecard/:likeid", async (req, res, next) => {
-    let likeID = req.params.likeid;
-    let likeQ = "DELETE FROM card_like WHERE card_like_id = ?";
+
+router.delete("/cards/:cardid/likes/:userid", async (req, res, next) => {
+    let cardID = req.params.cardid;
+    let userID = req.params.userid;
+    
+    let findLikeQ = "SELECT * FROM card_like WHERE card_id = ? AND user_id = ?";
+    let likeQ = "DELETE FROM card_like WHERE card_id = ? AND user_id = ?";
 
     try {
-        if (!parseInt(likeID)) throw new createError.BadRequest();
+        if (!parseInt(cardID) || !parseInt(cardID)) throw new createError.BadRequest();
 
-        let likeResult = await db.promise().query(likeQ, [likeID])
+        let findLikeResult = await db.promise().query(findLikeQ, [cardID, userID])
+        if (findLikeResult[0].length === 0) throw new createError.NotFound();
+
+        let likeResult = await db.promise().query(likeQ, [cardID, userID])
 
         res.json({
             status: 200,
@@ -254,115 +358,5 @@ router.delete("/likecard/:likeid", async (req, res, next) => {
         next(err);
     }
 });
-
-router.get("/filter", async (req, res, next) => {
-    console.log(req.query)
-    let minHP = req.query.minhp;
-    let maxHP = req.query.maxhp;
-    let expansionID = req.query.expid;
-    let illustratorID = req.query.illustratorid;
-    let stageID = req.query.stageid;
-    let minLikes = req.query.minlikes;
-    let maxLikes = req.query.maxlikes;
-    let weaknessID = req.query.weaknessid;
-    let typeID = req.query.typeid;
-
-    console.log(req.query)
-
-    let cardQ = `
-    SELECT card.*, COUNT(card_like_id) as "like_count"
-    FROM card
-    INNER JOIN expansion
-    ON card.expansion_id = expansion.expansion_id
-    INNER JOIN illustrator
-    ON card.illustrator_id = illustrator.illustrator_id
-    LEFT JOIN card_like
-    ON card_like.card_id = card.card_id
-    GROUP BY card.card_id
-    ORDER BY name;`;
-
-    /* figured out to add type_id to group clause using chatGPT */
-    cardQ =     
-    `SELECT card.*, type_card.type_id, weakness_card.type_id as "weakness_id", COUNT(card_like_id) as "like_count"
-    FROM card
-    INNER JOIN expansion
-    ON card.expansion_id = expansion.expansion_id
-    LEFT JOIN type_card
-    ON card.card_id = type_card.card_id
-    LEFT JOIN weakness_card
-    ON weakness_card.card_id = card.card_id
-    LEFT JOIN card_like
-    ON card_like.card_id = card.card_id
-    GROUP BY card.card_id, type_card.type_id, weakness_card.type_id
-    ORDER BY name;
-    `
-
-    try {
-        let cards = await db.promise().query(cardQ);
-        cards = cards[0]
-
-    
-        if (minHP) {
-            if (!parseInt(minHP) && !parseInt(minHP) !== 0) throw new createError.BadRequest();
-            cards = cards.filter(card => card.hp >= minHP);
-        }
-
-    
-        if (maxHP) {
-            if (!parseInt(maxHP) && parseInt(maxHP) !== 0) throw new createError.BadRequest();
-            cards = cards.filter(card => card.hp <= maxHP);
-        }
-    
-        if (minLikes) {
-            if (!parseInt(minLikes) && parseInt(minLikes) !== 0) throw new createError.BadRequest();
-            cards = cards.filter(card => card.like_count >= minLikes);
-        }
-    
-        if (maxLikes) {
-            if (!parseInt(maxLikes) && parseInt(maxLikes) !== 0) throw new createError.BadRequest();
-            cards = cards.filter(card => card.like_count <= maxLikes);
-        }
-        
-        if (expansionID) {
-            if (!parseInt(expansionID)) throw new createError.BadRequest();
-            cards = cards.filter(card => card.expansion_id == expansionID);
-        }
-    
-        if (illustratorID) {
-            if (!parseInt(illustratorID)) throw new createError.BadRequest();
-            cards = cards.filter(card => card.illustrator_id== illustratorID);
-        }
-    
-        if (stageID) {
-            if (!parseInt(stageID)) throw new createError.BadRequest();
-            cards = cards.filter(card => card.stage_id == stageID);
-        }
-
-        if (weaknessID) {
-            if (!parseInt(weaknessID)) throw new createError.BadRequest();
-            cards = cards.filter(card => card.weakness_id == weaknessID);
-        } 
-
-        if (typeID) {
-            if (!parseInt(typeID)) throw new createError.BadRequest();
-            cards = cards.filter(card => card.type_id == typeID);
-        } 
-
-        /* https://stackoverflow.com/questions/43245563/filter-array-to-unique-objects-by-object-property*/
-        cards.filter((value, index, self) => {
-            return self.findIndex(v => v.card_id === value.card_id) === index;
-          })
-
-        console.log(cards)
-
-        res.json({
-            status: 200,
-            message: "sucess",
-            response: cards
-        })
-    } catch (err) {
-        next(err);
-    }
-})
 
 module.exports = router;

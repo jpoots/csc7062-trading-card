@@ -58,13 +58,12 @@ router.post("/createcoll", async (req, res, next) => {
 
     if (userID) {
         let body = {
-            userid: userID,
             collname: req.body.collname
         };
 
         try {
             body = querystring.stringify(body);
-            let createResult = await axios.post(`${util.apiAdd}/createcoll`, body);
+            let createResult = await axios.post(`${util.apiAdd}/users/${userID}/collections`, body);
             if (createResult.data.status !== 200) throw new util.SystemError(`${createResult.data.status} ${createResult.data.message}`);
 
             res.redirect(`/collections/${createResult.data.response.id}`);
@@ -78,9 +77,8 @@ router.post("/createcoll", async (req, res, next) => {
 
 router.post("/deletecoll", async (req, res, next) => {
     if (req.session.userid) {
-        
         try {
-            let deleteResult = await axios.delete(`${util.apiAdd}/deletecoll/${req.body.collid}`);
+            let deleteResult = await axios.delete(`${util.apiAdd}/users/${req.session.userid}/collections/${req.body.collid}`);
             if (deleteResult.data.status != 200) throw new util.SystemError(`${deleteResult.data.status} ${deleteResult.data.message}`);
 
             res.redirect("/mycards/collections")
@@ -94,19 +92,17 @@ router.post("/deletecoll", async (req, res, next) => {
 });
 
 
-router.post("/addremovecard", async (req, res, next) => {
+router.post("/addcard", async (req, res, next) => {
     let userID = req.session.userid;
 
     if (userID){
         let body = {
-            userid: userID,
             cardid: req.body.cardid,
-            collid: req.body.collid,
         }
 
         try {
             body = querystring.stringify(body);
-            let addResult = await axios.post(`${util.apiAdd}/${req.body.collstatus}card`, body);
+            let addResult = await axios.post(`${util.apiAdd}/users/${userID}/collections/${req.body.collid}`, body);
 
             if (addResult.data.status === 409) {
                 res.redirect(`/card/${req.body.cardid}?error=409`);
@@ -131,14 +127,14 @@ router.post("/removecard", async (req, res, next) => {
     if (userID){
 
         try {
-            let removeResult = await axios.delete(`${util.apiAdd}/removecard/${req.body.collid}/${req.body.cardid}`);
+            let removeResult = await axios.delete(`${util.apiAdd}/users/${userID}/collections/${req.body.collid}/card/${req.body.cardid}`);
 
-            if (removeResult.data.status != 200){
-                throw new util.SystemError(`${addResult.data.status} ${addResult.data.message}`);
-            }
+            if (removeResult.data.status != 200) throw new util.SystemError(`${removeResult.data.status} ${removeResult.data.message}`);
+            
         
             res.redirect(`/collections/${req.body.collid}`)
         } catch (err) {
+            console.log(err)
             next(err);     
         }
     }
@@ -151,15 +147,31 @@ router.post("/ratecollection", async (req, res, next) => {
         res.redirect("/login")
     } else {
         let body = {
-            collid: req.body.collid,
             userid: userID,
             rating: req.body.rating
         };
 
         try {
             body = querystring.stringify(body);
-            let rateResult = await axios.post(`${util.apiAdd}/${req.body.ratestatus}collection`, body);
+            let rateResult = await axios.post(`${util.apiAdd}/collections/${req.body.collid}/ratings`, body);
 
+            if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
+
+            res.redirect(`/collections/${req.body.collid}`);
+        } catch (err) {
+            next(err);
+        }
+    }
+});
+
+router.post("/unratecollection", async (req, res, next) => {
+    let userID = req.session.userid;
+
+    if (!userID) {
+        res.redirect("/login")
+    } else {
+        try {
+            let rateResult = await axios.delete(`${util.apiAdd}/collections/${req.body.collid}/ratings/${userID}`);
             if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
 
             res.redirect(`/collections/${req.body.collid}`);
@@ -177,18 +189,16 @@ router.post("/commentcollection", async (req, res, next) => {
     } else {
         let body = {
             userid: userID,
-            collid: req.body.collid,
             comment: req.body.comment
         };
         
         try {
             body = querystring.stringify(body);
-            let commentResult = await axios.post(`${util.apiAdd}/commentcollection`, body);
+            let commentResult = await axios.post(`${util.apiAdd}/collections/${req.body.collid}/comments`, body);
             if (commentResult.data.status != 200) throw new util.SystemError(`${commentResult.data.status} ${commentResult.data.message}`);
 
             res.redirect(`/collections/${req.body.collid}`);
         } catch (err){
-            console.log(err)
             next(err);
         }
     }

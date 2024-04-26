@@ -60,11 +60,13 @@ router.get("/collections", async (req, res, next) => {
     }
 });
 
+
 router.get("/collections/:collid", async (req, res, next) => {
     let collectionID = req.params.collid;
     let userID = req.query.userid;
     let isOwner = false;
     let rated = false;
+    let ratingID = null;
     let yourRating = null;
     let ownerID = null;
     let rating = "Unrated"
@@ -103,7 +105,7 @@ router.get("/collections/:collid", async (req, res, next) => {
     ORDER BY time_posted DESC;`;
 
     let youRatedQ = `
-    SELECT rating FROM collection_rating
+    SELECT * FROM collection_rating
     WHERE user_id = ?
     AND collection_id = ?;`;
 
@@ -135,6 +137,7 @@ router.get("/collections/:collid", async (req, res, next) => {
         if (youRatedResults[0].length > 0) {
             rated = true;
             yourRating = youRatedResults[0][0].rating;
+            ratingID = youRatedResults[0][0].collection_rating_id;
         }
     
         let ratingResult = await db.promise().query(ratingQ, [collectionID]);
@@ -147,6 +150,7 @@ router.get("/collections/:collid", async (req, res, next) => {
             isOwner:isOwner,
             ownerID: ownerID,
             rated: rated,
+            ratingID: ratingID,
             rating: rating,
             yourRating: yourRating,
             comments: comments,
@@ -164,19 +168,15 @@ router.get("/collections/:collid", async (req, res, next) => {
 
 });
 
-router.post("/ratecollection", [admin], async (req, res, next) => {
+router.post("/collections/:collid/ratings", [admin], async (req, res, next) => {
     let userID = req.body.userid;
-    let collID = req.body.collid;
+    let collID = req.params.collid;
     let rating = req.body.rating;
 
-    let ratingStatusQ = `
-    SELECT * FROM collection_rating
-    WHERE user_id = ?
-    AND collection_id = ?`;
+    let ratingStatusQ = `SELECT * FROM collection_rating WHERE user_id = ? AND collection_id = ?`;
 
-    let collectionQ = `
-    SELECT * FROM collection
-    WHERE collection_id = ?`;
+    let collectionQ = `SELECT * FROM collection WHERE collection_id = ?`;
+    let userQ = `SELECT * FROM user WHERE user_id = ?`;
 
     let rateQ = "INSERT INTO collection_rating (user_id, collection_id, rating) VALUES (?, ?, ?)";
 
@@ -187,8 +187,11 @@ router.post("/ratecollection", [admin], async (req, res, next) => {
         let ratingStatusResult = await db.promise().query(ratingStatusQ, [userID, collID]);
         if (ratingStatusResult[0].length === 1) throw new createError.Conflict();  
 
+        let user = await db.promise().query(userQ, [userID]);
+        if (user[0].length === 0) throw new createError.NotFound();
+
         let collection = await db.promise().query(collectionQ, collID);
-        if(collection[0].length !== 1) throw new createError.NotFound();
+        if(collection[0].length === 0) throw new createError.NotFound();
         
         collection = collection[0][0];
         if(collection.user_id == userID) throw new createError.BadRequest();
@@ -204,37 +207,20 @@ router.post("/ratecollection", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/unratecollection", [admin], async (req, res, next) => {
-    let userID = req.body.userid;
-    let collID = req.body.collid;
-    let rating = req.body.rating;
+router.delete("/collections/:collid/ratings/:userid", [admin], async (req, res, next) => {
+    let userID = req.params.userid;
+    let collID = req.params.collid;
 
-    let ratingStatus = false;
-    let ratingStatusQ = `
-    SELECT * FROM collection_rating
-    WHERE user_id = ?
-    AND collection_id = ?`;
+    let checkRatingQ = `SELECT * FROM collection_rating WHERE collection_id = ? AND user_id = ?`;
 
-    let collectionQ = `
-    SELECT * FROM collection
-    WHERE collection_id = ?`;
+    let rateQ = "DELETE FROM collection_rating WHERE collection_id = ? AND user_id = ?";
 
     try {
         if (!parseInt(userID) || !parseInt(collID)) throw new createError.BadRequest();
-        if (rating && (!parseInt(rating) || rating > 4 || rating < 1)) throw new createError.BadRequest();
+        let rating = await db.promise().query(checkRatingQ, [collID, userID]);
+        if (rating[0].length === 0) throw new createError.NotFound();
 
-        let ratingStatusResult = await db.promise().query(ratingStatusQ, [userID, collID]);
-        if (ratingStatusResult[0].length === 1) ratingStatus = true;
-
-        let collection = await db.promise().query(collectionQ, collID);
-
-        if(collection[0].length != 1) throw new createError.NotFound();
-        
-        collection = collection[0][0];
-        if(collection.user_id == userID) throw new createError.BadRequest();
-
-        let rateQ = ratingStatus ? "DELETE FROM collection_rating WHERE user_id = ? AND collection_id = ?;" : "INSERT INTO collection_rating (user_id, collection_id, rating) VALUES (?, ?, ?)";
-        let ratingResult = await db.promise().query(rateQ, [userID, collID, rating]);
+        let ratingResult = await db.promise().query(rateQ, [collID, userID]);
 
         res.json({
             status: 200,
@@ -245,17 +231,23 @@ router.post("/unratecollection", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/commentcollection", [admin], async (req, res, next) => {
-    let collID = req.body.collid;
+router.post("/collections/:collid/comments", [admin], async (req, res, next) => {
+    let collID = req.params.collid;
     let comment = req.body.comment;
     let userID = req.body.userid;
 
-    let commentQ = `
-    INSERT INTO collection_comment (comment_text, collection_id, user_id)
-    VALUES (?, ?, ?);`;
+    let commentQ = `INSERT INTO collection_comment (comment_text, collection_id, user_id) VALUES (?, ?, ?);`;
+    let userQ = `SELECT * FROM user WHERE user_id = ?`;
+    let collectionQ = `SELECT * FROM collection WHERE collection_id = ?`;
 
     try {
         if (!parseInt(collID) || !parseInt(userID) || !comment || comment.trim().length === 0) throw new createError.BadRequest();
+
+        let collection = await db.promise().query(collectionQ, [collID]);
+        if (collection[0].length === 0) throw new createError.NotFound();
+
+        let user = await db.promise().query(userQ, [userID]);
+        if (user[0].length === 0) throw new createError.NotFound();
 
         let commentResult = await db.promise().query(commentQ, [comment, collID, userID]);
 
@@ -268,12 +260,11 @@ router.post("/commentcollection", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/createcoll", [admin], async (req, res, next) => {
-    let userID = req.body.userid;
+router.post("/users/:userid/collections", [admin], async (req, res, next) => {
+    let userID = req.params.userid;
     let collName = req.body.collname;
 
-    let insertQuery = `INSERT INTO collection (collection_name, user_id) 
-    VALUES (?, ?);`
+    let insertQuery = `INSERT INTO collection (collection_name, user_id) VALUES (?, ?);`
 
     try {
         if (!parseInt(userID) || !collName || collName.trim().length === 0) throw new createError.BadRequest();
@@ -292,52 +283,44 @@ router.post("/createcoll", [admin], async (req, res, next) => {
     }
 })
 
-router.delete("/deletecoll/:collid", [admin], async (req, res, next) => {
+router.delete("/users/:userid/collections/:collid", [admin], async (req, res, next) => {
     let collID = req.params.collid;
+    let userID = req.params.userid;
 
-    let deleteCollQ = `
-    DELETE FROM collection
-    WHERE collection_id = ?;
-    `;
-
-    let collectionQ = `
-    SELECT * FROM collection
-    WHERE collection_id = ?;
-    `;
+    let collectionQ = `SELECT * FROM collection WHERE user_id = ? AND collection_id = ?;`;
+    let deleteCollQ = `DELETE FROM collection WHERE user_id = ? AND collection_id = ?;`;
 
     try{
-        if (!parseInt(collID)) throw new createError.BadRequest();
+        if (!parseInt(collID) || !parseInt(userID)) throw new createError.BadRequest();
 
-        let collection = await db.promise().query(collectionQ, [collID]);
-
+        let collection = await db.promise().query(collectionQ, [userID, collID]);
         if (collection[0].length != 1) throw new createError.NotFound();
 
-        let deleteResult = await db.promise().query(deleteCollQ, [collID]);
-        console.log(deleteResult)
+        let deleteResult = await db.promise().query(deleteCollQ, [userID, collID]);
 
         res.json({
             status: 200,
             message: "success",
         });
     } catch (err) {
-        console.log(err)
         next(err);
     }
 });
 
-router.post("/addcard", [admin], async (req, res, next) => {
+router.post("/users/:userid/collections/:collid", [admin], async (req, res, next) => {
     let cardID = req.body.cardid;
-    let collID = req.body.collid;
+    let collID = req.params.collid;
+    let userID = req.params.userid;
 
-    let cardStatusQ = `
-    SELECT * FROM collection_card
-    WHERE card_id = ?
-    AND collection_id = ?`;
-
-    let query = "INSERT INTO collection_card (collection_id, card_id) VALUES (?, ?);"
+    let collQ = "SELECT * FROM collection WHERE user_id = ? AND collection_id = ?"
+    let cardStatusQ = `SELECT * FROM collection_card WHERE collection_id = ? AND card_id = ?`;
+    let query = "INSERT INTO collection_card (collection_id, card_id) VALUES (?, ?)";
 
     try {
-        if (!parseInt(cardID) || !parseInt(collID)) throw new createError.BadRequest();
+        if (!parseInt(cardID) || !parseInt(collID) || !parseInt(userID)) throw new createError.BadRequest();
+
+        let collection = await db.promise().query(collQ, [userID, collID]);
+        if (collection[0].length === 0) throw new createError.NotFound();
 
         let cardStatusResult = await db.promise().query(cardStatusQ, [cardID, collID]);
         if (cardStatusResult[0].length > 0) throw new createError.Conflict();
@@ -353,23 +336,23 @@ router.post("/addcard", [admin], async (req, res, next) => {
     }
 });
 
-router.delete("/removecard/:collid/:cardid", [admin], async (req, res, next) => {
+router.delete("/users/:userid/collections/:collid/card/:cardid", [admin], async (req, res, next) => {
     let collID = req.params.collid;
     let cardID = req.params.cardid;
+    let userID = req.params.userid;
 
-    console.log(cardID, collID)
-    let cardStatusQ = `
-    SELECT * FROM collection_card
-    WHERE card_id = ?
-    AND collection_id = ?`;
-
+    let collectionQ = "SELECT * FROM collection WHERE user_id = ? AND collection_id = ?";
+    let cardStatusQ = `SELECT * FROM collection_card WHERE card_id = ? AND collection_id = ?`;
     let query = "DELETE FROM collection_card WHERE collection_id = ? AND card_id = ?;"
 
     try {
         if (!parseInt(cardID) || !parseInt(collID)) throw new createError.BadRequest();
 
+        let collectionResult = await db.promise().query(collectionQ, [userID, collID])
+        if (collectionResult[0].length === 0) throw new createError.NotFound();
+
         let cardStatusResult = await db.promise().query(cardStatusQ, [cardID, collID]);
-        if (cardStatusResult[0].length === 0) throw new createError.Conflict();
+        if (cardStatusResult[0].length === 0) throw new createError.NotFound();
     
         let queryResult = await db.promise().query(query, [collID, cardID]);
 
@@ -382,7 +365,6 @@ router.delete("/removecard/:collid/:cardid", [admin], async (req, res, next) => 
         next(err);
     }
 });
-
 
 module.exports = router;
 
