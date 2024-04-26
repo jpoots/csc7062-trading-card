@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+
+    <div class="container carddetails">
+        <div class="row">
+            <div class="column">
+                <h3>Compare</h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="column">
+                <form action="/compare" method="get" class="mb0 dflex fdcol">
+                    <h5>Card One</h5>
+                    <select id="typeid" name="cardoneid">
+                        <% cards.forEach(card => { %>
+                            <option value=<%= card.card_id  %>><%= card.name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <h5>Card Two</h5>
+                    <select id="typeid" name="cardtwoid">
+                        <% cards.forEach(card => { %>
+                            <option value=<%= card.card_id  %>><%= card.name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <input class="button-primary bluebutton textwhite mb0" type="submit" value="Filter">
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <%- include("partials/footer") %>
+</body>
+</html>

@@ -18,9 +18,12 @@ router.get("/expansions/:expansionid", async (req, res) => {
 });
 
 router.get("/expansions", async (req, res) => {
+    let endPoint = `${util.apiAdd}/expansions`;
+
+    if (req.query.search) endPoint = `${endPoint}?search=${req.query.search}`
 
     try {
-        let expansions = await axios.get(`${util.apiAdd}/expansions`);
+        let expansions = await axios.get(endPoint);
         if (expansions.data.status != 200) throw new util.SystemError(`${expansions.data.status} ${expansions.data.message}`);
 
         expansions = expansions.data.response;

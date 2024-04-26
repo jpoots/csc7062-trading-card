@@ -48,8 +48,6 @@ router.post("/register", [admin] , async (req, res) => {
     const confirmPassword = req.body.confirmpassword;
     const avatarURL = `https://ui-avatars.com/api/?name=${display}`;
 
-    let message = "";
-
     try {
         if (!display || !email || !password || !confirmPassword || display.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0 || confirmPassword.trim().length === 0){
             throw new createError(400, "Enter all fields");
@@ -108,6 +106,86 @@ router.get("/user/:userid", [admin], async (req, res) => {
             response: userData
         });
     } catch (err) {
+        util.errorHandler(err, res)
+    }
+});
+
+router.post("/updateaccount", async (req, res) => {
+    let userID = req.body.userid;
+    let email = req.body.email;
+    let display = req.body.displayname;
+    const avatarURL = `https://ui-avatars.com/api/?name=${display}`;
+
+    let updateQ = `
+    UPDATE user
+    SET email_address = ?, display_name = ?, avatar_url = ?
+    WHERE user_id = ?`
+
+    if (!parseInt(userID)) throw new createError.BadRequest();
+
+    try {
+        if (!display || !email || display.trim().length === 0 || email.trim().length === 0){
+            throw new createError(400, "Enter all fields");
+        } else if (!validator.validate(email)){
+            throw new createError(400,"Invalid email");
+        } else {
+            let saltRounds = 5;
+
+            display = display.trim();
+            email = email.trim();
+
+            let emailSearch = `SELECT * FROM user WHERE email_address = ?`;
+            let displaySearch = `SELECT * FROM user WHERE display_name = ?`;
+
+            let emailUser = await db.promise().query(emailSearch, [email]);
+            emailUser = emailUser[0];
+    
+            let displayUser = await db.promise().query(displaySearch, [display]);
+            displayUser = displayUser[0];
+
+            if (emailUser.length != 0 && emailUser[0].user_id != userID) throw new createError(400,"Email in use");
+            if (displayUser.length != 0 && displayUser[0].user_id != userID) throw new createError(400,"Display name in use");
+
+            let updateResult = await db.promise().query(updateQ, [email, display, avatarURL, userID]);
+
+            res.json({
+                status: 200,
+                message: "success",
+            });
+        }
+    } catch (err) {
+        util.errorHandler(err, res)
+    }
+
+});
+
+router.post("/changepassword", async (req, res) => {
+    let password = req.body.password;
+    let confirmPassword = req.body.confirmpassword;
+    let userID = req.body.userid;
+    const saltRounds = 5;
+
+    console.log(req.body)
+
+    try {
+        if (!parseInt(userID) || !confirmPassword || !password || password.trim().length === 0 || confirmPassword.trim().length === 0) throw new createError(400, "Enter all fields");
+        if (password !== confirmPassword) throw new createError(400, "Passwords don't match");
+
+        let changeQ = `
+        UPDATE user
+        SET password_hash = ?
+        WHERE user_id = ?;`
+
+        let hash = await bcrypt.hash(password, saltRounds);
+
+        let updateResult = await db.promise().query(changeQ, [hash, userID]);
+
+        res.json({
+            status: 200,
+            message: "success"
+        });
+    } catch (err) {
+        console.log(err)
         util.errorHandler(err, res)
     }
 });

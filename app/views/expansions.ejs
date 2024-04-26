@@ -6,6 +6,20 @@
 <body>
     <%- include("partials/navbar") %>
 
+    <div class="row">
+        <div class="column">
+            <!-- form from milligram docs -->
+            <div class="container mt10">
+                <form action="/expansions" method="get" class="mb0 dflex rowgap5 colgap5 fdcol">
+                    <fieldset class="talright mb0 dflex">
+                        <input type="text" placeholder="Search" name="search" id="searchField" class="wauto mb0 searchbar">
+                        <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <% expansions.forEach(row => { %>
             <div class="row mt20 dflex rowgap5">

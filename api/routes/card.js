@@ -89,7 +89,7 @@ router.get("/cards", async (req, res) => {
             cardQ = `
             SELECT card.*, COUNT(card_like_id) as "like_count" FROM type
             INNER JOIN type_card
-            ON type.type_id = type_card.card_id
+            ON type.type_id = type_card.type_id
             INNER JOIN card
             ON card.card_id = type_card.card_id
             LEFT JOIN card_like
@@ -98,6 +98,34 @@ router.get("/cards", async (req, res) => {
             GROUP BY card.card_id
             ORDER BY name`;
             params = [req.query.typeid];
+        } else if (req.query.illid){
+            if (!parseInt(req.query.typeid)) throw new createError.BadRequest();
+
+            cardQ = `
+            SELECT card.*, COUNT(card_like_id) as "like_count" FROM card
+            LEFT JOIN card_like
+            ON card_like.card_id = card.card_id
+            INNER JOIN illustrator
+            ON illustrator.illustrator_id = card.illustrator_id
+            WHERE card.illustrator_id = ?
+            GROUP BY card.card_id
+            ORDER BY name`;
+            params = [req.query.illid];
+        } else if (req.query.weaknessid) {
+            if (!parseInt(req.query.weaknessid)) throw new createError.BadRequest();
+
+            cardQ = `
+            SELECT card.*, COUNT(card_like_id) as "like_count" FROM type
+            INNER JOIN weakness_card
+            ON type.type_id = weakness_card.type_id
+            INNER JOIN card
+            ON card.card_id = weakness_card.card_id
+            LEFT JOIN card_like
+            ON card_like.card_id = card.card_id
+            WHERE type.type_id = ?
+            GROUP BY card.card_id
+            ORDER BY name`;
+            params = [req.query.weaknessid];
         } else {
             cardQ = `
             SELECT card.*, COUNT(card_like_id) as "like_count"
@@ -117,6 +145,7 @@ router.get("/cards", async (req, res) => {
         });
 
     } catch (err) {
+        console.log(err)
         util.errorHandler(err, res);
     }
 });
@@ -285,5 +314,36 @@ router.post("/likecard", [admin], async (req, res) => {
         util.errorHandler(err, res);
     }
 });
+
+router.get("/filter", async (req, res) => {
+    let cardQ = `
+    SELECT card.*, COUNT(card_like_id) as "like_count"
+    FROM card
+    INNER JOIN expansion
+    ON card.expansion_id = expansion.expansion_id
+    INNER JOIN illustrator
+    ON card.illustrator_id = illustrator.illustrator_id
+    LEFT JOIN card_like
+    ON card_like.card_id = card.card_id
+    GROUP BY card.card_id
+    ORDER BY name;`;
+
+    let cards = await db.promise().query(cardQ);
+    cards = cards[0]
+
+    if (req.query.minhp) cards = cards.filter(card => card.hp > req.query.minhp);
+    if (req.query.maxhp) cards = cards.filter(card => card.hp < req.query.maxhp);
+    if (req.query.expansionid) cards = cards.filter(card => card.expansion_id == req.query.expansionid);
+    if (req.query.illustratorid) cards = cards.filter(card => card.illustrator_id == req.query.illustratorid);
+    if (req.query.stageid) cards = cards.filter(card => card.stage_id == req.query.stageid);
+    if (req.query.minlikes) cards = cards.filter(card => card.like_count > req.query.minlikes);
+    if (req.query.maxlikes) cards = cards.filter(card => card.like_count < req.query.maxlikes);
+
+    res.json({
+        status: 200,
+        message: "sucess",
+        response: cards
+    })
+})
 
 module.exports = router;

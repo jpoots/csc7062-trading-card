@@ -84,8 +84,14 @@
 
                     <% card.attacks.forEach(attack => { %>
                         <div class="row carddetailsrow attacktop">
-                            <div class="column">
+                            <div class="column dflex colgap5">
                                 <h5 class="mb2 bold"><%= attack.attack_name %></h5>
+                                <% for(let attackType = 0; attackType < attack.types.length; attackType++ ) { %>
+                                    <img src="<%= attack.types[attackType].type_image %>" alt="" height="30">
+                                    <% if (attack.types[attackType].multiplier > 0) { %>
+                                        <span>X<%= attack.types[attackType].multiplier %></span>
+                                    <% } %>
+                                <% } %>
                             </div>
 
                             <div class="column">
@@ -98,20 +104,6 @@
                             <div class="column">
                                 <div><%= attack.effect %></div>
                             </div>
-
-                            <div class="column">
-                                <p class="cardinfocol dflex mb0">
-                                    <% for(let attackType = 0; attackType < attack.types.length; attackType++ ) { %>
-                                        <img src="<%= attack.types[attackType].type_image %>" alt="" height="30">
-                                        <% if (attack.types[attackType].multiplier > 0) { %>
-                                            <span>X<%= attack.types[attackType].multiplier %></span>
-                                        <% } %>
-                                    <% } %>
-                                </p>
-     
-                            </div>
-
-                                
                         </div>
                     <% }) %>
 

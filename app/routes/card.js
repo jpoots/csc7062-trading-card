@@ -63,7 +63,7 @@ router.get("/card/:cardid", async (req, res) => {
         });
 
     } catch (err){
-        util.errorHandler(err, res)
+        util.errorHandler(err, res);
     }
 
 });
@@ -72,8 +72,6 @@ router.post("/likecard", async (req, res) => {
     if (!req.session.userid){
         res.redirect("/login");
     } else {
-        console.log(req.body)
-
         let body = {
             cardid: req.body.cardid,
             userid: req.session.userid
@@ -87,8 +85,7 @@ router.post("/likecard", async (req, res) => {
             
             res.redirect(`/card/${req.body.cardid}`);
         } catch (err) {
-            console.log(err)
-            util.errorHandler(err, res)
+            util.errorHandler(err, res);
         }
     }
 });
@@ -115,14 +112,49 @@ router.get("/filter", async (req, res) => {
         let types = await axios.get(util.apiAdd + "/types");
         types = types.data.response;
 
+        let illustrators = await axios.get(util.apiAdd + "/illustrators");
+        illustrators = illustrators.data.response;
+
         /* http://localhost:3000/filter?filterby=hp&param=10 */        
         res.render("filter", {
         expansions: expansions,
-        types: types
+        types: types,
+        illustrators: illustrators
         });
     }
     } catch (err) {
-        util.errorHandler(err, res)
+        util.errorHandler(err, res);
+    }
+});
+
+router.get("/compare", async (req, res) => {
+    let cards = await axios.get(`${util.apiAdd}/cards`)
+    let cardOneID = req.query.cardoneid;
+    let cardTwoID = req.query.cardtwoid;
+    
+    if (cardOneID && cardTwoID) {
+        try {
+            let cardOne = await axios.get(`${util.apiAdd}/cards/${cardOneID}`);
+            let cardTwo = await axios.get(`${util.apiAdd}/cards/${cardTwoID}`);
+    
+            if (cardOne.data.status != 200) throw new util.SystemError(`${cardOne.data.status} ${cardOne.data.message}`);
+            if (cardTwo.data.status != 200) throw new util.SystemError(`${cardTwo.data.status} ${cardTwo.data.message}`);
+    
+            cardOne = cardOne.data.response;
+            cardTwo = cardTwo.data.response;
+    
+            res.render("comparison", {
+                cardOne: cardOne,
+                cardTwo: cardTwo
+            });
+        } catch (err) {
+            util.errorHandler(err, res);
+        }
+
+    } else {
+        res.render("compare", {
+            cards: cards.data.response
+        });
     }
 });
 

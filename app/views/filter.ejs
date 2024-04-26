@@ -67,6 +67,35 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="column">
+                <h5>Weakness</h5>
+                <form action="/filter" method="get" class="mb0 dflex">
+                    <select id="weaknessid" name="weaknessid">
+                        <% types.forEach(type => { %>
+                            <option value=<%= type.type_id  %>><%= type.type_name  %></option>
+                        <% }) %>
+                    </select>
+                    <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Filter">
+                </form>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="column">
+                <h5>Illustrator</h5>
+                <form action="/filter" method="get" class="mb0 dflex">
+                    <select id="illid" name="illid">
+                        <% illustrators.forEach(illustrator => { %>
+                            <option value=<%= illustrator.illustrator_id  %>><%= illustrator.illustrator_name  %></option>
+                        <% }) %>
+                    </select>
+                    <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Filter">
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <%- include("partials/footer") %>

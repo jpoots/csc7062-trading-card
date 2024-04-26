@@ -256,6 +256,7 @@ router.post("/createcoll", [admin], async (req, res) => {
 
 router.post("/deletecoll", [admin], async (req, res) => {
     let collID = req.body.collid;
+    let userID = req.body.userid;
 
     let deleteCollQ = `
     DELETE FROM collection

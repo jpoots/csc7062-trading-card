@@ -59,17 +59,19 @@ router.post("/register", async (req, res) => {
         body = querystring.stringify(body);
 
         let registrationResult = await axios.post(`${util.apiAdd}/register`, body);
-        if (registrationResult.data.status === 200) throw new util.SystemError(`${registrationResult.data.status} ${registrationResult.data.message}`);
         
-        if(registrationResult.data.status != 200){
+        if(registrationResult.data.status == 400){
             res.render("register", {
                 message: registrationResult.data.message
             });
+        } else if (registrationResult.data.status != 200) {
+            throw new util.SystemError(`${registrationResult.data.status} ${registrationResult.data.message}`);
         } else {
             req.session.userid = registrationResult.data.response;
             res.redirect("/mycards");
         }
     } catch (err){
+        console.log(err)
         util.errorHandler(err, res);
     }
 });
@@ -87,23 +89,130 @@ router.get("/account", async (req, res) => {
         try {
             let accountResult = await axios.get(`${util.apiAdd}/user/${req.session.userid}`);
 
-            if (accountResult.data.status != 200) {
-                res.render("error", {
-                    status: accountResult.data.status,
-                    message: accountResult.data.message
-                })
-            } else {
-                let userData = accountResult.data.response;
-    
-                res.render("account", {
-                    email: userData.email_address,
-                    displayName: userData.display_name,
-                    avatar: userData.avatar_url
-                });
-            }
+            if (accountResult.data.status != 200) util.SystemError(`${accountResult.data.status} ${accountResult.data.message}`);
+
+            let userData = accountResult.data.response;
+
+            res.render("account", {
+                email: userData.email_address,
+                displayName: userData.display_name,
+                avatar: userData.avatar_url
+            });
+            
         } catch (err) {
             util.errorHandler(err, res);
         }
+    }
+});
+
+router.post("/account", async (req, res) => {
+    let userID = req.session.userid;
+
+    if (userID) {
+        let body = {
+            userid: userID,
+            email: req.body.email,
+            displayname: req.body.displayname,
+            password: req.body.password,
+            confirmpassword: req.body.confirmpassword
+        };
+
+        try {
+            body = querystring.stringify(body);
+            let updateResult = await axios.post(`${util.apiAdd}/update`, body);
+
+            let userData = await axios.get(`${util.apiAdd}/user/${userID}`);
+            if (userData != 200) throw new util.SystemError(`${userData.data.status} ${userData.data.message}`);
+
+            userData = userData.data.response;
+
+            if(updateResult.data.status == 400){
+                res.render("account", {
+                    email: userData.email_address,
+                    displayName: userData.display_name,
+                    avatar: userData.avatar_url,
+                    message:updateResult.data.message
+                });
+            } else if (updateResult.data.status != 200) {
+                throw new util.SystemError(`${updateResult.data.status} ${updateResult.data.message}`);
+            } else {
+                res.render("account", {
+                    email: userData.email_address,
+                    displayName: userData.display_name,
+                    avatar: userData.avatar_url,
+                    message: "Success!"
+                });
+            }
+        } catch (err){
+            util.errorHandler(err, res);
+        }
+    } else {
+        res.redirect("/login");
+    }
+});
+
+router.post("/changepassword", async (req, res) => {
+    let userID = req.session.userid;
+
+    if (userID) {
+        try {
+            let userData = await axios.get(`${util.apiAdd}/user/${userID}`);
+            userData = userData.data.response;
+    
+            let credentials = {
+                email: userData.email_address,
+                pass: req.body.currentpassword
+            };
+
+            console.log(credentials)
+        
+            /* https://axios-http.com/docs/urlencoded */
+            credentials = querystring.stringify(credentials);
+            let authenticateResult = await axios.post(`${util.apiAdd}/authenticate`, credentials);
+            if (authenticateResult.data.status === 401){
+                res.render("account", {
+                    email: userData.email_address,
+                    displayName: userData.display_name,
+                    avatar: userData.avatar_url,
+                    message: "Incorrect username or password"
+                });
+            } else {
+                if (authenticateResult.data.status != 200) throw new util.SystemError(`${authenticateResult.data.status} ${authenticateResult.data.message}`);
+
+                let updateBody = {
+                    userid: userID,
+                    password: req.body.password,
+                    confirmpassword: req.body.confirmpassword
+                };
+
+                /* https://axios-http.com/docs/urlencoded */
+                updateBody = querystring.stringify(updateBody);
+                let updateResult = await axios.post(`${util.apiAdd}/changepassword`, updateBody);
+    
+                if (updateResult.data.status === 400) {
+                    res.render("account", {
+                        email: userData.email_address,
+                        displayName: userData.display_name,
+                        avatar: userData.avatar_url,
+                        message: updateResult.data.message
+                    });
+                } else {
+                    if (updateResult.data.status != 200) throw new util.SystemError("Incorrect yo");
+        
+                    res.render("account", {
+                        email: userData.email_address,
+                        displayName: userData.display_name,
+                        avatar: userData.avatar_url,
+                        message: "Success!"
+                    });
+                }
+            }
+        } catch (err) {
+            console.log(err)
+            util.errorHandler(err, res);
+        }
+    } else {
+        res.redirect("/login");
     }
 });
 

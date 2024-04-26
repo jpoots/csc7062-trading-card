@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+
+    <div class="container carddetails">
+        <div class="row">
+            <div class="column centertext">
+                <img class="comparisonimg" src="<%= cardOne.image %>" alt="">
+
+                <div ><span class="bold">HP: </span><%= cardOne.hp %></div>
+
+                <div class="column centertext dflex alitemscenter jcontcenter colgap5">
+                    <span class="bold">Type: </span>
+                    <% cardOne.types.forEach(type => { %>
+                        <img src="<%= type.type_image %>" height="30" alt="">
+                    <% }) %>
+                </div>
+
+                <div class="centertext dflex alitemscenter jcontcenter colgap5">
+                    <span class="bold">Weakness: </span>
+                    <% cardOne.weakness.forEach(weak => { %>
+                        <img src="<%= weak.type_image %>" alt="" height="30">
+                        <% if (weak.multiplier > 0) { %>
+                            <span>X<%= weak.multiplier %></span>
+                        <% } %>
+                    <% }) %>
+                </div>
+
+                <div><span class="bold">Stage: </span> <%= cardOne.stage  %></div>
+
+                <div><span class="bold">Expansion: </span><%= cardOne.expansion  %></div>
+
+                <div><span class="bold">Illustrator: </span> <%= cardOne.illustrator  %></div>
+
+            </div>
+
+
+            <div class="column centertext">
+                <img class="comparisonimg" src="<%= cardTwo.image %>" alt="">
+
+                <div ><span class="bold">HP: </span><%= cardTwo.hp %></div>
+
+                <div class="column centertext dflex alitemscenter jcontcenter colgap5">
+                    <span class="bold">Type: </span>
+                    <% cardTwo.types.forEach(type => { %>
+                        <img src="<%= type.type_image %>" height="30" alt="">
+                    <% }) %>
+                </div>
+
+                <div class="centertext dflex alitemscenter jcontcenter colgap5">
+                    <span class="bold">Weakness: </span>
+                    <% cardTwo.weakness.forEach(weak => { %>
+                        <img src="<%= weak.type_image %>" alt="" height="30">
+                        <% if (weak.multiplier > 0) { %>
+                            <span>X<%= weak.multiplier %></span>
+                        <% } %>
+                    <% }) %>
+                </div>
+
+                <div><span class="bold">Stage: </span> <%= cardTwo.stage  %></div>
+
+                <div><span class="bold">Expansion: </span></a><%= cardTwo.expansion  %></div>
+
+                <div><span class="bold">Illustrator: </span> <%= cardTwo.illustrator  %></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <%- include("partials/footer") %>
+</body>
+</html>
