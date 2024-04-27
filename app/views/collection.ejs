@@ -6,17 +6,23 @@
 <body>
     <%- include("partials/navbar") %>
     <div class="container collectioncontainer">
-
-        <div class="row">
+        <div class="container">
             <% if (!collection.isOwner) { %>
-                <div class="column">
-                    <h4><%= collection.name %></h4>
+                <div class="row mb20">
+                    <div class="column cardleft dflex colgap10 alitemscenter">
+                        <img src="<%= owner.avatar_url  %>" class="avatar" alt="">
+                        <h4 class="mb0"><%= owner.display_name %></h4>
+                    </div>
                 </div>
-    
-                <div class="column">
-                    <!-- form from milligram docs -->
-                    <div class="righttext">
-                        <h4>Average Rating</h4>
+
+                <div class="row carddetailsrow">
+                    <div class="column dflex cardleft">
+                        <h4 class="bold"><%= collection.name %></h4>
+                    </div>
+
+                    <div class="column dflex colgap5 cardright">
+                        <!-- form from milligram docs -->
+                        <h4>Rating:</h4>
                         <% if (collection.rating) { %>
                             <% for(let star = 0; star < collection.rating; star++ ) { %>
                                 <img src="/images/star_full.png" alt="" height="30">
@@ -24,41 +30,40 @@
                         <% } else { %>
                             <h4>Unrated</h4>
                         <% } %>
-
                     </div>
                 </div>
-            <% } else { %>
-                <div class="column">
-                    <!-- https://www.w3schools.com/howto/howto_css_dropdown.asp -->
-                    <div class="dropdown">
-                        <button class="bluebutton mb0 ml10"><%= collection.name %></button>
-                        <div class="dropdown-content">
-                        <% collections.forEach(element => { %>
-                            <a href="/collections/<%= element.collection_id %>"><%= element.collection_name %></a>
-                        <% }) %>
-                        </div>
-                      </div>
 
-                </div>
-    
-                <div class="column dflex">
-                    <!-- form from milligram docs -->
-                        <form action="/createcoll" method="post" class="mb0 dflex rowgap5 colgap5 fdcol w75">
-                            <fieldset class="talright mb0 dflex">
+            <% } else { %>
+                <div class="row carddetailsrow">
+
+                    <div class="column dflex colgap5 dropdowncol">
+                        <!-- https://www.w3schools.com/howto/howto_css_dropdown.asp -->
+                        <div class="dropdown">
+                            <button class="bluebutton"><%= collection.name %></button>
+                            <div class="dropdown-content">
+                            <% collections.forEach(element => { %>
+                                <a href="/collections/<%= element.collection_id %>"><%= element.collection_name %></a>
+                            <% }) %>
+                            </div>
+                        </div>
+
+                        <form action="/deletecoll" method="post">
+                            <input type="hidden" name="collid" value="<%= collection.id %>">
+                            <input class="button redbutton mb0" type="submit" value="Delete">
+                        </form>
+                    </div>
+
+                    <div class="column ">
+                        <form action="/createcoll" method="post" class="mb0 dflex rowgap5 colgap5">
                                 <input type="text" placeholder="Name" name="collname" id="searchField" class="wauto mb0 searchbar">
                                 <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
-                            </fieldset>
                         </form>
-
-
-                    <form action="/deletecoll" method="post" class="mb0 dflex rowgap5 colgap5 fdcol">
-                        <input type="hidden" name="collid" value="<%= collection.id %>">
-                        <input class="button redbutton mb0" type="submit" value="Delete">
-                    </form>
+                    </div>
                 </div>
 
             <% } %>
         </div>
+            
 
     
         <% if (typeof userid === "undefined" || userid === null) { %>
@@ -70,32 +75,35 @@
         <div class="container mt20">
             <div class="row">
                 <% if (!collection.isOwner) { %>
-                    <div class="column">
+                    <div class="column mb20">
                         <% if (!collection.rated) { %>
-                            <form action="/ratecollection" class="dflex jcontspacearound mb0" method="post" class="mb0">
+                            <form action="/ratecollection" class="dflex mb0 h100 fdcol jcontbetween" method="post">
                                 <input type="hidden" name="collid" value="<%= collection.id  %>">
-                            
-                                <div>
-                                    <input class="ratingradio" type="radio" name="rating" value="1">
-                                    <label>1</label><br>
-                                </div>
+                                <div class="dflex jcontspacearound">
+                                    <div>
+                                        <input class="ratingradio" type="radio" name="rating" value="1">
+                                        <label>1</label>
+                                    </div>
+                                    
+                                    <div>
+                                        <input class="ratingradio" type="radio" name="rating" value="2">
+                                        <label>2</label>
+                                    </div>
                                 
-                                <div>
-                                    <input class="ratingradio" type="radio" name="rating" value="2">
-                                    <label>2</label><br>
+                                    <div>
+                                        <input class="ratingradio" type="radio" name="rating" value="3">
+                                        <label>3</label>
+                                    </div>
+                                
+                                    <div>
+                                        <input class="ratingradio" type="radio" name="rating" value="4">
+                                        <label>4</label>
+                                    </div>
                                 </div>
-                            
+
                                 <div>
-                                    <input class="ratingradio" type="radio" name="rating" value="3">
-                                    <label>3</label><br>
+                                    <input class="button redbutton mb0 w100" type="submit" value="Rate">
                                 </div>
-                            
-                                <div>
-                                    <input class="ratingradio" type="radio" name="rating" value="4">
-                                    <label>4</label><br>
-                                </div>
-                            
-                                <input class="button redbutton mb0" type="submit" value="Rate">
                             </form>
                         <% } else { %>
                             <div class="dflex colgap10">
@@ -116,19 +124,22 @@
                 
 
                 <div class="column">
-                        <form action="/commentcollection" method="post" class="dflex colgap10">
+                        <form action="/commentcollection" method="post" class="dflex colgap10 mb0 fdcol">
                             <input type="hidden" name="collid" value="<%= collection.id %>">
                             <textarea name="comment" cols="30" rows="10" class="searchbar"></textarea>
                             <input class="button yellowbutton mb0 textblack" type="submit" value="Comment">
                         </form>
                     </div>
                 </div>
-
-            <div class="row">
-                <div class="column">
-                    <h4>Comments</h4>
+            
+            <% if (collection.comments.length > 0) { %>
+                <div class="row">
+                    <div class="column">
+                        <h4>Comments</h4>
+                    </div>
                 </div>
-            </div>
+            <% } %>
+
 
             <% collection.comments.forEach(comment => { %>
                 <div class="row mb20">

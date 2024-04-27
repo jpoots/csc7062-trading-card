@@ -1,12 +1,20 @@
 /* utility */
 
 /* margins */
+.m0 {
+    margin: 0;
+}
+
 .mt20{
     margin-top: 20px;
 }
 
 .mt10{
     margin-top: 10px;
+}
+
+.mb0{
+    margin-bottom: 0;
 }
 
 .mb2{
@@ -17,13 +25,15 @@
     margin-bottom: 5px;
 }
 
+.mb10 {
+    margin-bottom: 10px;
+}
+
 .mb20 {
     margin-bottom: 20px;
 }
 
-.mb0{
-    margin-bottom: 0;
-}
+
 
 .ml10 {
     margin-left: 10px;
@@ -60,6 +70,14 @@
 
 .jcontspacearound {
     justify-content: space-around;
+}
+
+.jconteven {
+    justify-content: space-evenly;
+}
+
+.jcontbetween {
+    justify-content: space-between;
 }
 
 .rowgap5{
@@ -101,7 +119,7 @@
 
 /* width */
 .w100 {
-    width: 100%;
+    width: 100% !important;
 }
 
 .w50 {

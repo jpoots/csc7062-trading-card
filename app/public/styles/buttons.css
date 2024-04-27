@@ -40,3 +40,7 @@
     border-color: rgb(52, 102, 175);
     color: black !important;
 }
+
+.pokedexbutton {
+    width: 165px;
+}

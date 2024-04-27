@@ -24,6 +24,7 @@ router.get("/collections", async (req, res, next) => {
 
 router.get("/collections/:collid", async (req, res, next) => {
     try {
+        let owner = [];
         let collectionEnd = `${util.apiAdd}/collections/${req.params.collid}`;
         let collectionsEnd = `${util.apiAdd}/collections` 
 
@@ -33,7 +34,13 @@ router.get("/collections/:collid", async (req, res, next) => {
         } 
 
         let collection = await axios.get(collectionEnd);
-        if (collection.data.status !== 200) throw new util.SystemError(`${collection.data.status} ${collection.data.message}`); 
+        if (collection.data.status !== 200) throw new util.SystemError(`${collection.data.status} ${collection.data.message}`);
+
+        if (!collection.data.response.isOwner) {
+            owner = await axios.get(`${util.apiAdd}/user/${collection.data.response.ownerID}`);
+            if (owner.data.status !== 200) throw new util.SystemError(`${owner.data.status} ${owner.data.message}`);
+            owner = owner.data.response;
+        }
 
         collection = collection.data.response;
         collection.cards = await util.slicer(collection.cards);
@@ -46,7 +53,8 @@ router.get("/collections/:collid", async (req, res, next) => {
         res.render("collection", {
             cards: collection.cards,
             collection: collection,
-            collections: collections
+            collections: collections,
+            owner: owner
         });
     } catch (err) {
         next(err);

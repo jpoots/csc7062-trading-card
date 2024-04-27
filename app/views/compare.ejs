@@ -17,14 +17,14 @@
             <div class="column">
                 <form action="/compare" method="get" class="mb0 dflex fdcol">
                     <h5>Card One</h5>
-                    <select id="typeid" name="cardoneid">
+                    <select id="typeid" name="cardoneid" class="dropdown">
                         <% cards.forEach(card => { %>
                             <option value=<%= card.card_id  %>><%= card.name  %></option>
                         <% }) %>
                     </select>
 
                     <h5>Card Two</h5>
-                    <select id="typeid" name="cardtwoid">
+                    <select id="typeid" name="cardtwoid" class="dropdown">
                         <% cards.forEach(card => { %>
                             <option value=<%= card.card_id  %>><%= card.name  %></option>
                         <% }) %>

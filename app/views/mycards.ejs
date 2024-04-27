@@ -5,18 +5,40 @@
 </head>
 <body>
   <%- include("partials/navbar")  %>
-  <div class="homehead textwhite dflex fdcol alitemscenter w100 mycards">
-    <img src="images/pokeball_straight.png" alt="" height="80">
-    <h1>My Cards</h1>
-    <div><p class="centertext">You can view your cards here!</p></div>
-    <div><p class="centertext">Explore the Pokevérse through the All Cards tab</p></div>
 
-    <div class="homepagebuttons dflex flexwrap">
-      <a href="/mycards/collections" class="button redbutton ml10 mb0">My Collections</a>
-      <a href="/mycards/liked" class="button yellowbutton mb0 ml10 textblack">My Liked Cards</a>
-      <a href="/messages" class="button button-primary bluebutton textwhite mb0 ml10">My Messages</a>
+  <div class="container homehead textwhite w100 mycards">
+
+    <div class="row">
+      <div class="column centertext">
+        <img src="images/pokeball_straight.png" alt="" height="80">
+      </div>
     </div>
 
+    <div class="row">
+      <div class="column centertext">
+        <h1>Pokédex</h1>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="column centertext">
+        <div>You can view your cards here!</div>
+      </div>
+    </div>
+
+        <div class="row">
+      <div class="column centertext">
+        <div>Explore the Pokevérse through the Browse tab</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="column centertext mt10">
+        <a href="/mycollections" class="button redbutton pokedexbutton ml10">My Collections</a>
+        <a href="/likedcard" class="button yellowbutton pokedexbutton ml10 textblack">My Liked Cards</a>
+        <a href="/messages" class="button bluebutton pokedexbutton textwhite ml10">My Messages</a>
+      </div>
+    </div>
   </div>
 
   </div>

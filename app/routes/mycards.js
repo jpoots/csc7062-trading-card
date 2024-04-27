@@ -12,7 +12,7 @@ router.get("/mycards", (req, res) => {
     }
 });
 
-router.get("/mycards/collections", async (req, res) => {
+router.get("/mycollections", async (req, res) => {
     if (!req.session.userid){
         res.redirect("/login")
     } else {
@@ -35,6 +35,29 @@ router.get("/mycards/collections", async (req, res) => {
         } catch (err){
             util.errorHandler(err, res);
         }
+    }
+});
+
+router.get("/likedcards", async (req, res, next) => {
+    let userID = req.session.userid;
+
+    if (userID) {
+        try {
+            let cards = await axios.get(`${util.apiAdd}/users/${userID}/likedcards`)
+            if (cards.data.status !== 200) throw new util.SystemError(`${cards.data.status} ${cards.data.message}`);
+
+            cards = await util.slicer(cards.data.response);
+    
+            res.render("browse", {
+                cards: cards
+            });
+
+        } catch (err) {
+            next(err);
+        }
+
+    } else {
+        res.redirect("/login");
     }
 });
 

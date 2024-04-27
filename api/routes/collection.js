@@ -66,7 +66,6 @@ router.get("/collections/:collid", async (req, res, next) => {
     let userID = req.query.userid;
     let isOwner = false;
     let rated = false;
-    let ratingID = null;
     let yourRating = null;
     let ownerID = null;
     let rating = "Unrated"
@@ -137,7 +136,6 @@ router.get("/collections/:collid", async (req, res, next) => {
         if (youRatedResults[0].length > 0) {
             rated = true;
             yourRating = youRatedResults[0][0].rating;
-            ratingID = youRatedResults[0][0].collection_rating_id;
         }
     
         let ratingResult = await db.promise().query(ratingQ, [collectionID]);
@@ -150,7 +148,6 @@ router.get("/collections/:collid", async (req, res, next) => {
             isOwner:isOwner,
             ownerID: ownerID,
             rated: rated,
-            ratingID: ratingID,
             rating: rating,
             yourRating: yourRating,
             comments: comments,

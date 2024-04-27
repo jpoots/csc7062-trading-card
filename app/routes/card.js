@@ -7,12 +7,13 @@ const util = require("../utility");
 // browse
 router.get("/browse", async (req, res, next) => {
     try {
-        let cardQuery = `${util.apiAdd}/cards`;
+        let endPoint = `${util.apiAdd}/cards`;
 
-        if (req.query.search) cardQuery = `${cardQuery}?search=${req.query.search}`;
-        
-        let cardResult = await axios.get(cardQuery);
-        if (cardResult.data.status != 200) throw new util.SystemError`${cardResult.data.status} ${cardResult.data.message}`();
+        let cardResult = await axios.get(endPoint, {
+            params: req.query
+        });
+
+        if (cardResult.data.status != 200) throw new util.SystemError(`${cardResult.data.status} ${cardResult.data.message}`);
     
         let cards = cardResult.data.response;
         cards = await util.slicer(cards);
@@ -98,22 +99,6 @@ router.post("/unlikecard", async (req, res, next) => {
 
 router.get("/filter", async (req, res, next) => {
     try {
-    // https://stackoverflow.com/questions/5223/length-of-a-javascript-object */https://stackoverflow.com/questions/5223/length-of-a-javascript-objects
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
-    if (Object.keys(req.query).length > 0) {
-        let endPoint = `${util.apiAdd}/cards`;
-
-        let cardsResult = await axios.get(endPoint, {
-            params: req.query
-        });
-
-        if (cardsResult.data.status != 200) throw new util.SystemError(`${cardsResult.data.status} ${cardsResult.data.message}`);
-
-        let cards = await util.slicer(cardsResult.data.response);
-
-        res.render("browse", {cards: cards});
-    } else {
-
         let expansions = await axios.get(util.apiAdd + "/expansions");
         expansions = expansions.data.response;
 
@@ -128,7 +113,6 @@ router.get("/filter", async (req, res, next) => {
         types: types,
         illustrators: illustrators
         });
-    }
     } catch (err) {
         next(err);
     }

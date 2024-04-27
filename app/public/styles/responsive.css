@@ -14,9 +14,6 @@
         justify-content: center;
     }
 
-    .navsection {
-        justify-content: center;
-    }
 
     .card{
         width: 70%;
@@ -31,8 +28,8 @@
     }
 
     .cardimgcol{
-        width: 50% !important;
-        max-width: 50% !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
 
     .carddetailsrow {
@@ -48,8 +45,44 @@
     overflow-x: initial;
     }
 
+
+
+    .browsebuttons {
+        text-align: center;
+    }
+
+    .dropdowncol {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 43rem) {
     .navlinks {
         flex-direction: column;
     }
-    
+
+    .navsection {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .navrow {
+        flex-direction: column;
+    }
+}
+
+
+
+@media (max-width: 30rem) {
+    .carddetailsrow {
+        flex-direction: column;
+    }
+
+    .cardright {
+        justify-content: center;
+    }
+
+    .cardleft {
+        justify-content: center;
+    }
 }

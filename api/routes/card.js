@@ -165,7 +165,6 @@ router.get("/users/:userid/likedcards", async (req, res, next) => {
 router.get("/cards/:cardid", async (req, res, next) => {
     let cardID = req.params.cardid;
     let liked = false;
-    let likeID = null;
     let evolveFrom = "N/A";
 
     let cardQ = `
@@ -263,10 +262,8 @@ router.get("/cards/:cardid", async (req, res, next) => {
 
             let likeResult = await db.promise().query(likeStatusQ, [cardID, req.query.userid]);
             likeResult = likeResult[0];
-            if(likeResult.length > 0){
-                liked = true;
-                likeID = likeResult[0].card_like_id;
-            } 
+            if(likeResult.length > 0) liked = true;
+
         }
     
         cardData = {
@@ -274,7 +271,6 @@ router.get("/cards/:cardid", async (req, res, next) => {
             id: card.card_id,
             likeCount: likeCount,
             liked: liked,
-            likeID: likeID,
             expansion: card.expansion_name,
             category: card.category_name,
             evolveFrom: evolveFrom,
