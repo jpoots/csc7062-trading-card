@@ -7,6 +7,7 @@
     <%- include("partials/navbar") %>
     <div class="container collectioncontainer">
         <div class="container">
+
             <% if (!collection.isOwner) { %>
                 <div class="row mb20">
                     <div class="column cardleft dflex colgap10 alitemscenter">
@@ -55,7 +56,7 @@
 
                     <div class="column ">
                         <form action="/createcoll" method="post" class="mb0 dflex rowgap5 colgap5">
-                                <input type="text" placeholder="Name" name="collname" id="searchField" class="wauto mb0 searchbar">
+                                <input type="text" placeholder="Name" name="collname" id="searchField" class="wauto mb0 searchbar" maxlength="20" required>
                                 <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
                         </form>
                     </div>
@@ -81,22 +82,22 @@
                                 <input type="hidden" name="collid" value="<%= collection.id  %>">
                                 <div class="dflex jcontspacearound">
                                     <div>
-                                        <input class="ratingradio" type="radio" name="rating" value="1">
+                                        <input class="ratingradio" type="radio" name="rating" value="1" required>
                                         <label>1</label>
                                     </div>
                                     
                                     <div>
-                                        <input class="ratingradio" type="radio" name="rating" value="2">
+                                        <input class="ratingradio" type="radio" name="rating" value="2" required>
                                         <label>2</label>
                                     </div>
                                 
                                     <div>
-                                        <input class="ratingradio" type="radio" name="rating" value="3">
+                                        <input class="ratingradio" type="radio" name="rating" value="3" required>
                                         <label>3</label>
                                     </div>
                                 
                                     <div>
-                                        <input class="ratingradio" type="radio" name="rating" value="4">
+                                        <input class="ratingradio" type="radio" name="rating" value="4" required>
                                         <label>4</label>
                                     </div>
                                 </div>
@@ -126,14 +127,15 @@
                 <div class="column">
                         <form action="/commentcollection" method="post" class="dflex colgap10 mb0 fdcol">
                             <input type="hidden" name="collid" value="<%= collection.id %>">
-                            <textarea name="comment" cols="30" rows="10" class="searchbar"></textarea>
+                            <textarea name="comment" id="textarea" cols="30" rows="10" class="searchbar" placeholder="Write something nice..." maxlength="200" required></textarea>
+                            <div id="charcount">200</div>
                             <input class="button yellowbutton mb0 textblack" type="submit" value="Comment">
                         </form>
                     </div>
                 </div>
             
             <% if (collection.comments.length > 0) { %>
-                <div class="row">
+                <div class="row mt10">
                     <div class="column">
                         <h4>Comments</h4>
                     </div>
@@ -143,12 +145,12 @@
 
             <% collection.comments.forEach(comment => { %>
                 <div class="row mb20">
-                    <div class="column column-75">
+                    <div class="column column-75 commentleft">
                         <p class="breakword"><%= comment.comment_text %></p>
                     </div>
         
-                    <div class="column column-25">
-                        <span class="bold"><%= comment.display_name %></span> <span><%= comment.time %> <%= comment.date %></span>
+                    <div class="column column-25 dflex colgap5 flexwrap commentright">
+                        <div class="bold"><%= comment.display_name %></div> <div>AT: <%= comment.time %> </div> <div><%= comment.date %></div>
                     </div>
                 </div>
             <% }) %>
@@ -156,7 +158,18 @@
         </div>
     </div>
 
-
     <%- include("partials/footer") %>
+
+    <script>
+        /* https://stackoverflow.com/questions/14086398/count-textarea-characters */
+        const textarea = document.getElementById("textarea");
+        const charCount = document.getElementById("charcount");
+
+        textarea.addEventListener("input", () => {
+            const target = event.currentTarget;
+            const max = target.getAttribute("maxlength");
+            charCount.innerHTML = max - target.value.length;
+        });
+    </script>
 </body>
 </html>

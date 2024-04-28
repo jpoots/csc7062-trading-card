@@ -44,18 +44,21 @@ router.post("/register", [admin] , async (req, res, next) => {
 
     let email = req.body.email;
     let display = req.body.displayname;
+    
+    // https://www.w3resource.com/javascript/form/password-validation.php
+    let expression = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
     const password = req.body.password;
     const confirmPassword = req.body.confirmpassword;
     const avatarURL = `https://ui-avatars.com/api/?name=${display}`;
 
     try {
-        if (!display || !email || !password || !confirmPassword || display.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0 || confirmPassword.trim().length === 0){
-            throw new createError(400, "Enter all fields");
-        } else if (!validator.validate(email)){
-            throw new createError(400,"Invalid email");
-        } else if (password !== confirmPassword){
-            throw new createError(400,"Passwords do not match");
-        } else {
+        if (!display || !email || !password || !confirmPassword || display.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0 || confirmPassword.trim().length === 0) throw new createError(400, "Enter all fields");
+        else if (!validator.validate(email)) throw new createError(400,"Invalid email");
+        else if (password !== confirmPassword) throw new createError(400,"Passwords do not match");
+        else if (!password.match(expression)) throw new createError(400, "Invalid password");
+        else {
+
+
             display = display.trim();
             email = email.trim();
     

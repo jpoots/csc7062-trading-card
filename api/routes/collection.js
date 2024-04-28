@@ -238,7 +238,7 @@ router.post("/collections/:collid/comments", [admin], async (req, res, next) => 
     let collectionQ = `SELECT * FROM collection WHERE collection_id = ?`;
 
     try {
-        if (!parseInt(collID) || !parseInt(userID) || !comment || comment.trim().length === 0) throw new createError.BadRequest();
+        if (!parseInt(collID) || !parseInt(userID) || !comment || comment.trim().length === 0 || comment.length > 200) throw new createError.BadRequest();
 
         let collection = await db.promise().query(collectionQ, [collID]);
         if (collection[0].length === 0) throw new createError.NotFound();
@@ -264,7 +264,7 @@ router.post("/users/:userid/collections", [admin], async (req, res, next) => {
     let insertQuery = `INSERT INTO collection (collection_name, user_id) VALUES (?, ?);`
 
     try {
-        if (!parseInt(userID) || !collName || collName.trim().length === 0) throw new createError.BadRequest();
+        if (!parseInt(userID) || !collName || collName.trim().length === 0 || collName.length > 20) throw new createError.BadRequest();
 
         let insertResult = await db.promise().query(insertQuery, [collName, userID]);
 

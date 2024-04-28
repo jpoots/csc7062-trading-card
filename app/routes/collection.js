@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const querystring = require('querystring');
 const util = require("../utility");
+const auth = require("../middleware/auth");
 
 //https://blog.logrocket.com/using-axios-set-request-headers/
 
@@ -61,154 +62,124 @@ router.get("/collections/:collid", async (req, res, next) => {
     }
 });
 
-router.post("/createcoll", async (req, res, next) => {
+router.post("/createcoll", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
-    if (userID) {
-        let body = {
-            collname: req.body.collname
-        };
+    let body = {
+        collname: req.body.collname
+    };
 
-        try {
-            body = querystring.stringify(body);
-            let createResult = await axios.post(`${util.apiAdd}/users/${userID}/collections`, body);
-            if (createResult.data.status !== 200) throw new util.SystemError(`${createResult.data.status} ${createResult.data.message}`);
+    try {
+        body = querystring.stringify(body);
+        let createResult = await axios.post(`${util.apiAdd}/users/${userID}/collections`, body);
+        if (createResult.data.status !== 200) throw new util.SystemError(`${createResult.data.status} ${createResult.data.message}`);
 
-            res.redirect(`/collections/${createResult.data.response.id}`);
-        } catch (err){
-            next(err);
-        }
-    } else {
-        res.redirect("/login");
+        res.redirect(`/collections/${createResult.data.response.id}`);
+    } catch (err){
+        next(err);
     }
 });
 
-router.post("/deletecoll", async (req, res, next) => {
-    if (req.session.userid) {
-        try {
-            let deleteResult = await axios.delete(`${util.apiAdd}/users/${req.session.userid}/collections/${req.body.collid}`);
-            if (deleteResult.data.status != 200) throw new util.SystemError(`${deleteResult.data.status} ${deleteResult.data.message}`);
+router.post("/deletecoll", [auth], async (req, res, next) => {
+    try {
+        let deleteResult = await axios.delete(`${util.apiAdd}/users/${req.session.userid}/collections/${req.body.collid}`);
+        if (deleteResult.data.status != 200) throw new util.SystemError(`${deleteResult.data.status} ${deleteResult.data.message}`);
 
-            res.redirect("/mycards/collections")
-        } catch (err) {
-            next(err);
-        }
-
-    } else {
-        res.redirect("/login");
+        res.redirect("/mycards/collections")
+    } catch (err) {
+        next(err);
     }
 });
 
 
-router.post("/addcard", async (req, res, next) => {
+router.post("/addcard", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
-    if (userID){
-        let body = {
-            cardid: req.body.cardid,
+    let body = {
+        cardid: req.body.cardid,
+    }
+
+    try {
+        body = querystring.stringify(body);
+        let addResult = await axios.post(`${util.apiAdd}/users/${userID}/collections/${req.body.collid}`, body);
+
+        if (addResult.data.status === 409) {
+            res.redirect(`/card/${req.body.cardid}?error=409`);
+            return;
+        } else if (addResult.data.status != 200){
+            throw new util.SystemError(`${addResult.data.status} ${addResult.data.message}`);
         }
+    
+        res.redirect(`/collections/${req.body.collid}`)
+    } catch (err) {
+        next(err);     
+    }
+});
 
-        try {
-            body = querystring.stringify(body);
-            let addResult = await axios.post(`${util.apiAdd}/users/${userID}/collections/${req.body.collid}`, body);
+router.post("/removecard", [auth], async (req, res, next) => {
+    let userID = req.session.userid;
 
-            if (addResult.data.status === 409) {
-                res.redirect(`/card/${req.body.cardid}?error=409`);
-                return;
-            } else if (addResult.data.status != 200){
-                throw new util.SystemError(`${addResult.data.status} ${addResult.data.message}`);
-            }
+    try {
+        let removeResult = await axios.delete(`${util.apiAdd}/users/${userID}/collections/${req.body.collid}/card/${req.body.cardid}`);
+
+        if (removeResult.data.status != 200) throw new util.SystemError(`${removeResult.data.status} ${removeResult.data.message}`);
         
-            res.redirect(`/collections/${req.body.collid}`)
-        } catch (err) {
-            next(err);     
-        }
-
-    } else {
-        res.redirect("/login")
+    
+        res.redirect(`/collections/${req.body.collid}`)
+    } catch (err) {
+        next(err);     
     }
 });
 
-router.post("/removecard", async (req, res, next) => {
+router.post("/ratecollection", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
-    if (userID){
+    let body = {
+        userid: userID,
+        rating: req.body.rating
+    };
 
-        try {
-            let removeResult = await axios.delete(`${util.apiAdd}/users/${userID}/collections/${req.body.collid}/card/${req.body.cardid}`);
+    try {
+        body = querystring.stringify(body);
+        let rateResult = await axios.post(`${util.apiAdd}/collections/${req.body.collid}/ratings`, body);
 
-            if (removeResult.data.status != 200) throw new util.SystemError(`${removeResult.data.status} ${removeResult.data.message}`);
-            
-        
-            res.redirect(`/collections/${req.body.collid}`)
-        } catch (err) {
-            console.log(err)
-            next(err);     
-        }
+        if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
+
+        res.redirect(`/collections/${req.body.collid}`);
+    } catch (err) {
+        next(err);
     }
 });
 
-router.post("/ratecollection", async (req, res, next) => {
+router.post("/unratecollection", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
-    if (!userID) {
-        res.redirect("/login")
-    } else {
-        let body = {
-            userid: userID,
-            rating: req.body.rating
-        };
+    try {
+        let rateResult = await axios.delete(`${util.apiAdd}/collections/${req.body.collid}/ratings/${userID}`);
+        if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
 
-        try {
-            body = querystring.stringify(body);
-            let rateResult = await axios.post(`${util.apiAdd}/collections/${req.body.collid}/ratings`, body);
-
-            if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
-
-            res.redirect(`/collections/${req.body.collid}`);
-        } catch (err) {
-            next(err);
-        }
+        res.redirect(`/collections/${req.body.collid}`);
+    } catch (err) {
+        next(err);
     }
 });
 
-router.post("/unratecollection", async (req, res, next) => {
+router.post("/commentcollection", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
-    if (!userID) {
-        res.redirect("/login")
-    } else {
-        try {
-            let rateResult = await axios.delete(`${util.apiAdd}/collections/${req.body.collid}/ratings/${userID}`);
-            if (rateResult.data.status !== 200) throw new util.SystemError(`${rateResult.data.status} ${rateResult.data.message}`);
+    let body = {
+        userid: userID,
+        comment: req.body.comment
+    };
+    
+    try {
+        body = querystring.stringify(body);
+        let commentResult = await axios.post(`${util.apiAdd}/collections/${req.body.collid}/comments`, body);
+        if (commentResult.data.status != 200) throw new util.SystemError(`${commentResult.data.status} ${commentResult.data.message}`);
 
-            res.redirect(`/collections/${req.body.collid}`);
-        } catch (err) {
-            next(err);
-        }
-    }
-});
-
-router.post("/commentcollection", async (req, res, next) => {
-    let userID = req.session.userid;
-
-    if (!userID) {
-        res.redirect("/login");
-    } else {
-        let body = {
-            userid: userID,
-            comment: req.body.comment
-        };
-        
-        try {
-            body = querystring.stringify(body);
-            let commentResult = await axios.post(`${util.apiAdd}/collections/${req.body.collid}/comments`, body);
-            if (commentResult.data.status != 200) throw new util.SystemError(`${commentResult.data.status} ${commentResult.data.message}`);
-
-            res.redirect(`/collections/${req.body.collid}`);
-        } catch (err){
-            next(err);
-        }
+        res.redirect(`/collections/${req.body.collid}`);
+    } catch (err){
+        next(err);
     }
 });
 

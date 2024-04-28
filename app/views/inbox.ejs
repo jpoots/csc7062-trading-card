@@ -20,7 +20,9 @@
                 </div>
     
                 <div class="column column-25">
-                    <span class="bold"><%= message.sender %></span> <span><%= message.time %> <%= message.date %></span>
+                    <div>
+                        <span class="bold"><%= message.sender %></span> <span>AT: <%= message.time %> <%= message.date %></span>
+                    </div>
 
                     <form action="/sendmessage" method="get" class="mb0">
                         <input type="hidden" name="recipientid" value="<%= message.sender_id %>">

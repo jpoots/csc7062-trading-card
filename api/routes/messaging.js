@@ -16,7 +16,7 @@ router.post("/messages", [admin], async (req, res, next) => {
     let userQ = `SELECT * FROM user WHERE user_id = ?`;
 
     try {
-        if (!parseInt(senderID) || !parseInt(recipientID) || !parseInt(cardID) || !subject || !body || body.trim().length === 0 || subject.trim().length === 0) throw new createError.BadRequest();
+        if (!parseInt(senderID) || !parseInt(recipientID) || !parseInt(cardID) || !subject || !body || body.trim().length === 0 || subject.trim().length === 0 || body.length > 200 || subject.length > 100) throw new createError.BadRequest();
 
         let sender = await db.promise().query(userQ, [senderID]);
         if (sender[0].length === 0) throw new createError.NotFound();

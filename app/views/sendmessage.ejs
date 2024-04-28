@@ -25,7 +25,8 @@
 
         <div class="row jcontcenter">
             <div class="column formcolumn">
-                <textarea name="body" cols="30" rows="10" placeholder="Write your message!" class="messagebody"></textarea>
+                <textarea name="body" id="textarea" cols="30" rows="10" placeholder="Write your message!" class="messagebody mb0" maxlength="200" required></textarea>
+                <div id="charcount">200</div>
             </div>
         </div>
 
@@ -38,5 +39,17 @@
 
     </form>
     <%- include("partials/footer")  %>
+
+    <script>
+        /* https://stackoverflow.com/questions/14086398/count-textarea-characters */
+        const textarea = document.getElementById("textarea");
+        const charCount = document.getElementById("charcount");
+
+        textarea.addEventListener("input", () => {
+            const target = event.currentTarget;
+            const max = target.getAttribute("maxlength");
+            charCount.innerHTML = max - target.value.length;
+        })
+    </script>
 </body>
 </html>

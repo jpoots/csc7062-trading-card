@@ -45,14 +45,23 @@
     overflow-x: initial;
     }
 
-
-
     .browsebuttons {
         text-align: center;
     }
 
     .dropdowncol {
         justify-content: center;
+    }
+
+    .commentright {
+        flex-direction: row;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .commentleft {
+        width: 100% !important;
+        max-width: 100% !important;
     }
 }
 

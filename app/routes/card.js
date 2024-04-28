@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const querystring = require('querystring');
 const util = require("../utility");
+const auth = require("../middleware/auth");
 
 // browse
 router.get("/browse", async (req, res, next) => {
@@ -58,42 +59,58 @@ router.get("/card/:cardid", async (req, res, next) => {
 
 });
 
-router.post("/likecard", async (req, res, next) => {
-    if (!req.session.userid){
-        res.redirect("/login");
-    } else {
-        let body = {
-            userid: req.session.userid
-        }
-
-        try {
-            body = querystring.stringify(body);
-            let likeResult = await axios.post(`${util.apiAdd}/cards/${req.body.cardid}/likes`, body);
-
-            if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
-            
-            res.redirect(`/card/${req.body.cardid}`);
-        } catch (err) {
-            next(err);
-        }
+router.post("/likecard", [auth], async (req, res, next) => {
+    let body = {
+        userid: req.session.userid
     }
+
+    try {
+        body = querystring.stringify(body);
+        let likeResult = await axios.post(`${util.apiAdd}/cards/${req.body.cardid}/likes`, body);
+
+        if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
+        
+        res.redirect(`/card/${req.body.cardid}`);
+    } catch (err) {
+        next(err);
+    }
+
 });
 
-router.post("/unlikecard", async (req, res, next) => {
+router.post("/likecardjs", [auth], async (req, res, next) => {
+    let body = {
+        userid: req.session.userid
+    }
+
+    console.log(body)
+
+    try {
+        body = querystring.stringify(body);
+        let likeResult = await axios.post(`${util.apiAdd}/cards/${req.body.cardid}/likes`, body);
+
+        if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
+        
+        res.json({
+            status: 200,
+            message: "success"
+        });
+    } catch (err) {
+        next(err);
+    }
+
+});
+
+router.post("/unlikecard", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
-    if (!userID){
-        res.redirect("/login");
-    } else {
-        try {
-            let likeResult = await axios.delete(`${util.apiAdd}/cards/${req.body.cardid}/likes/${userID}`);
+    try {
+        let likeResult = await axios.delete(`${util.apiAdd}/cards/${req.body.cardid}/likes/${userID}`);
 
-            if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
-            
-            res.redirect(`/card/${req.body.cardid}`);
-        } catch (err) {
-            next(err);
-        }
+        if (likeResult.data.status != 200) throw new util.SystemError(`${likeResult.data.status} ${likeResult.data.message}`);
+        
+        res.redirect(`/card/${req.body.cardid}`);
+    } catch (err) {
+        next(err);
     }
 });
 
