@@ -2,7 +2,7 @@ const mysql = require("mysql2");
 const dotenv = require("dotenv");
 
 /* https://stackoverflow.com/questions/69879425/setting-dotenv-path-outside-of-root-directory-is-not-working */
-dotenv.config("/.env");
+dotenv.config({ path: "../.env" })
 
 // establish db connection
 const db = mysql.createPool({

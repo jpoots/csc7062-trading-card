@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 
 // API address
-dotenv.config("/.env");
+dotenv.config({ path: "../.env" })
 const apiAdd = process.env.API_ADDRESS;
 
 // slicing function

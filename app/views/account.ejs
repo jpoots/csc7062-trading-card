@@ -31,13 +31,13 @@
 
         <div class="row formrow">
             <div class="column formcolumn">
-                    <input type="email" placeholder="Email" value="<%= email %>" name="email" class="signformfield">
+                    <input type="email" placeholder="Email" maxlength="254" value="<%= email %>" name="email" class="signformfield" required>
             </div>
         </div>
 
         <div class="row formrow">
             <div class="column formcolumn">
-                    <input type="text" placeholder="Display Name" value="<%= displayName %>" name="displayname" class="signformfield">
+                    <input type="text" placeholder="Display Name" maxlength="15" value="<%= displayName %>" name="displayname" class="signformfield" required>
             </div>
         </div>
 
@@ -53,21 +53,21 @@
         <div class="row jcontcenter">
             <div class="column formcolumn">
                 <!--  lines adapted from skeleton doc-->
-                    <input type="password" placeholder="current password" name="currentpassword" class="loginformfield">
+                    <input type="password" placeholder="current password" name="currentpassword" class="loginformfield" required>
             </div>
         </div>
 
         <div class="row jcontcenter">
             <div class="column formcolumn">
                 <!--  lines adapted from skeleton doc-->
-                    <input type="password" placeholder="password" name="password" class="loginformfield">
+                    <input type="password" placeholder="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"  class="loginformfield" required>
             </div>
         </div>
 
         <div class="row jcontcenter">
             <div class="column formcolumn">
                 <!--  lines adapted from skeleton doc-->
-                    <input type="password" placeholder="confirm password" name="confirmpassword" class="loginformfield">
+                    <input type="password" placeholder="confirm password" name="confirmpassword" class="loginformfield" required>
             </div>
         </div>
 

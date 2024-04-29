@@ -1,4 +1,4 @@
-const util = require("../utility");
+const util = require("../serverfuncs/utility");
 
 // error handling
 const defaultError = "500 Internal server error";

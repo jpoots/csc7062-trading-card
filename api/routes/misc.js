@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const db = require("../serverfuncs/db");
 const createError = require("http-errors");
 
 router.get("/expansions", async (req, res, next) => {

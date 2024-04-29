@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const querystring = require('querystring');
-const util = require("../utility");
+const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
 //https://blog.logrocket.com/using-axios-set-request-headers/
@@ -38,7 +38,7 @@ router.get("/collections/:collid", async (req, res, next) => {
         if (collection.data.status !== 200) throw new util.SystemError(`${collection.data.status} ${collection.data.message}`);
 
         if (!collection.data.response.isOwner) {
-            owner = await axios.get(`${util.apiAdd}/user/${collection.data.response.ownerID}`);
+            owner = await axios.get(`${util.apiAdd}/users/${collection.data.response.ownerID}`);
             if (owner.data.status !== 200) throw new util.SystemError(`${owner.data.status} ${owner.data.message}`);
             owner = owner.data.response;
         }

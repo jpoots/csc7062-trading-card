@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
 const createError = require("http-errors");
-const db = require("../db");
+const db = require("../serverfuncs/db");
 const admin = require("../middleware/admin");
 
 // getting a card or subset of cards
@@ -126,7 +126,7 @@ router.get("/cards", async (req, res, next) => {
         });
 
     } catch (err) {
-        console.log(err)
+        console.log(err);
         next(err);
     }
 });

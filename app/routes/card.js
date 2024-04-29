@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const querystring = require('querystring');
-const util = require("../utility");
+const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
 // browse
@@ -21,6 +21,7 @@ router.get("/browse", async (req, res, next) => {
     
         res.render("browse", {cards: cards});
     } catch (err){
+        console.log(err);
         next(err)
     }
 });
@@ -81,8 +82,6 @@ router.post("/likecardjs", [auth], async (req, res, next) => {
     let body = {
         userid: req.session.userid
     }
-
-    console.log(body)
 
     try {
         body = querystring.stringify(body);

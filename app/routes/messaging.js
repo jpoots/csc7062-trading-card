@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const querystring = require('querystring');
-const util = require("../utility");
+const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
 router.get("/messages", [auth], async (req, res, next) => {
@@ -22,7 +22,7 @@ router.get("/messages", [auth], async (req, res, next) => {
 
 router.get("/sendmessage", [auth], async (req, res, next) => {
     try {
-        let recipient = await axios.get(`${util.apiAdd}/user/${req.query.recipientid}`);
+        let recipient = await axios.get(`${util.apiAdd}/users/${req.query.recipientid}`);
         if (recipient.data.status != 200) throw new util.SystemError(`${response.data.status} ${response.data.message}`);
         recipient = recipient.data.response;
 

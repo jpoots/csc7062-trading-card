@@ -1,10 +1,8 @@
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
-const db = require("../db");
+const db = require("../serverfuncs/db");
 const errHandler = require("./err");
 const createError = require("http-errors");
-
-dotenv.config();
 
 /* https://www.youtube.com/watch?v=Tw5LupcpKS4 */
 const auth = async (req, res, next) => {

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const db = require("../serverfuncs/db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
 

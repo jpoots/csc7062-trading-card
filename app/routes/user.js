@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const querystring = require('querystring');
-const util = require("../utility");
+const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 const unauth = require("../middleware/unauth");
 
@@ -85,7 +85,7 @@ router.get("/logout", (req, res) => {
 
 router.get("/account", [auth], async (req, res, next) => {
     try {
-        let accountResult = await axios.get(`${util.apiAdd}/user/${req.session.userid}`);
+        let accountResult = await axios.get(`${util.apiAdd}/users/${req.session.userid}`);
 
         if (accountResult.data.status != 200) util.SystemError(`${accountResult.data.status} ${accountResult.data.message}`);
 
@@ -112,9 +112,9 @@ router.post("/account", [auth], async (req, res, next) => {
 
     try {
         body = querystring.stringify(body);
-        let updateResult = await axios.put(`${util.apiAdd}/user/${userID}/details`, body);
+        let updateResult = await axios.put(`${util.apiAdd}/users/${userID}/details`, body);
 
-        let userData = await axios.get(`${util.apiAdd}/user/${userID}`);
+        let userData = await axios.get(`${util.apiAdd}/users/${userID}`);
         if (userData.data.status != 200) throw new util.SystemError(`${userData.data.status} ${userData.data.message}`);
 
         userData = userData.data.response;
@@ -145,7 +145,7 @@ router.post("/changepassword", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
     try {
-        let userData = await axios.get(`${util.apiAdd}/user/${userID}`);
+        let userData = await axios.get(`${util.apiAdd}/users/${userID}`);
         if (userData.data.status !== 200) throw new util.SystemError(`${userData.data.status} ${userData.data.message}`);
 
         userData = userData.data.response;
@@ -175,7 +175,7 @@ router.post("/changepassword", [auth], async (req, res, next) => {
 
             /* https://axios-http.com/docs/urlencoded */
             updateBody = querystring.stringify(updateBody);
-            let updateResult = await axios.put(`${util.apiAdd}/user/${userID}/password`, updateBody);
+            let updateResult = await axios.put(`${util.apiAdd}/users/${userID}/password`, updateBody);
 
             if (updateResult.data.status === 400) {
                 res.render("account", {

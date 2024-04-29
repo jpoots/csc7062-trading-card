@@ -3,22 +3,16 @@ const path = require("path");
 const mysql = require("mysql2");
 const dotenv = require("dotenv");
 const pokemon = require("pokemontcgsdk"); // https://github.com/PokemonTCG/pokemon-tcg-sdk-javascript
-const auth = require("./middleware/auth");
-const errHandler = require("./middleware/err");
-
-
-const user = require("./routes/user")
-const card = require("./routes/card");
-const collection = require("./routes/collection")
-const messaging = require("./routes/messaging");
-const misc = require("./routes/misc");
+const auth = require("../middleware/auth");
+const errHandler = require("../middleware/err");
+const router = require("./routes")
 
 // set up app
 const app = express();
 app.set('view engine', 'ejs');
 
 // setup dotenv and pokemon api
-dotenv.config();
+dotenv.config({ path: "../.env" });
 pokemon.configure({apiKey: process.env.TCG_KEY});
 const PORT = process.env.API_PORT;
 
@@ -26,11 +20,7 @@ const PORT = process.env.API_PORT;
 app.use(express.urlencoded({ extended: true }));
 app.use(auth);
 
-app.use(user);
-app.use(card);
-app.use(collection);
-app.use(messaging);
-app.use(misc);
+app.use(router);
 
 app.use(errHandler);
 

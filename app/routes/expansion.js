@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const util = require("../utility");
+const util = require("../serverfuncs/utility");
 
 router.get("/expansions/:expansionid", async (req, res) => {
     let expansionID = req.params.expansionid;
