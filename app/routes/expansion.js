@@ -7,7 +7,7 @@ router.get("/expansions/:expansionid", async (req, res) => {
     let expansionID = req.params.expansionid;
 
     try {
-        let cards = await axios.get(`${util.apiAdd}/cards?expansionid=${expansionID}`);
+        let cards = await axios.get(`${util.apiAdd}/cards?expid=${expansionID}`);
         if (cards.data.status != 200) throw new util.SystemError(`${cards.data.status} ${cards.data.message}`);
 
         cards = await util.slicer(cards.data.response);

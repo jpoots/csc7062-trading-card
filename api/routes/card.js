@@ -166,28 +166,30 @@ router.get("/cards/:cardid", async (req, res, next) => {
     let cardID = req.params.cardid;
     let liked = false;
     let evolveFrom = "N/A";
+    let ability = {};
 
     let cardQ = `
-    SELECT card.*, category_name, stage_name, expansion_name, illustrator_name
+    SELECT card.*, stage_name, expansion_name, illustrator_name, ability_name, description, ability_variant, rarity_name
     FROM card 
     INNER JOIN illustrator
     ON illustrator.illustrator_id = card.illustrator_id
     INNER JOIN expansion
     ON expansion.expansion_id = card.expansion_id
-    INNER JOIN category
-    ON category.category_id = card.category_id
     INNER JOIN stage
     ON stage.stage_id = card.stage_id
+    INNER JOIN rarity
+    ON rarity.rarity_id = card.rarity_id
+    LEFT JOIN ability
+    ON ability.card_id = card.card_id
+    LEFT JOIN ability_variant
+    ON ability_variant.ability_variant_id = ability.ability_variant_id
     WHERE card.card_id = ?;`;
 
     let attackQ = `
     SELECT attack.* FROM attack
-    INNER JOIN attack_card
-    ON attack_card.attack_id = attack.attack_id
     INNER JOIN card
-    ON card.card_id = attack_card.card_id
-    WHERE card.card_id = ?;
-    `
+    ON card.card_id = attack.card_id
+    WHERE card.card_id = ?`;
 
     let attackTypeQ = `
     SELECT type.*, multiplier FROM type
@@ -224,6 +226,15 @@ router.get("/cards/:cardid", async (req, res, next) => {
 
         if (card.length === 0) throw new createError.NotFound();
         card = card[0];
+
+        if (card.ability_name){
+            ability = {
+                name: card.ability_name, 
+                description: card.description,
+                type: card.ability_variant
+            };
+        }
+
     
         let likeCount = await db.promise().query(likeCountQ, [cardID]);
         likeCount = likeCount[0][0].like_count;
@@ -263,7 +274,6 @@ router.get("/cards/:cardid", async (req, res, next) => {
             let likeResult = await db.promise().query(likeStatusQ, [cardID, req.query.userid]);
             likeResult = likeResult[0];
             if(likeResult.length > 0) liked = true;
-
         }
     
         cardData = {
@@ -272,14 +282,16 @@ router.get("/cards/:cardid", async (req, res, next) => {
             likeCount: likeCount,
             liked: liked,
             expansion: card.expansion_name,
-            category: card.category_name,
             evolveFrom: evolveFrom,
             stage: card.stage_name,
+            rarity: card.rarity_name,
             hp: card.hp,
             illustrator: card.illustrator_name,
             image: card.image_url,
+            cardNumber: card.card_number,
             types: types,
             attacks: attacks,
+            ability: ability,
             weakness: weaknessResults,
             price: price,
             priceURL: priceURL

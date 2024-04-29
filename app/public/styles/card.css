@@ -12,12 +12,12 @@ td, th {
     border: 0;
 }
 
-.attack {
-    border-top: thin solid rgb(204, 0, 0);
+.attacktop {
+    border-bottom: thin solid rgb(204, 0, 0);
 }
 
 .attackbottom {
-    border-bottom: thin solid rgb(204, 0, 0);
+    border-top: thin solid rgb(204, 0, 0);
 }
 
 .cardright{

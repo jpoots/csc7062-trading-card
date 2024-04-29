@@ -79,10 +79,10 @@
                         </div>
                     </div>
 
-                    <div class="row carddetailsrow mb10">
+                    <div class="row carddetailsrow mb10 attacktop">
                         
                         <div class="column cardleft dflex alitemscenter">
-                            <div><%= card.category %></div>
+                            <div><%= card.rarity %></div>
                         </div>
 
                         <div class="column cardright dflex alitemscenter">
@@ -90,15 +90,28 @@
                         </div>
                     </div>
 
+                    <% if (card.ability.type) { %>
+                        <div class="row carddetailsrow mb10">
+                            <div class="column dflex alitemscenter colgap5">
+                                <h5 class="bold mb0 textred"><%= card.ability.type %></h5> <h5 class="bold mb0"><%= card.ability.name %></h5>
+                            </div>
+                        </div>
+    
+                        <div class="row carddetailsrow mb10">
+                            <div class="column">
+                                <div><%= card.ability.description %></div>
+                            </div>
+                        </div>
+                    <% } %>
+
                     <% card.attacks.forEach(attack => { %>
 
-                        <div class="row carddetailsrow attack mb10">
+                        <div class="row carddetailsrow mb10">
                             <div class="column cardleft dflex alitemscenter colgap5">
                                 <h5 class="bold mb0"><%= attack.attack_name %></h5>
                                 <% for(let attackType = 0; attackType < attack.types.length; attackType++ ) { %>
-                                    <img src="<%= attack.types[attackType].type_image %>" alt="" height="30">
-                                    <% if (attack.types[attackType].multiplier > 0) { %>
-                                        <span>X<%= attack.types[attackType].multiplier %></span>
+                                    <% for(let mult = 0; mult < attack.types[attackType].multiplier; mult++ ) { %>
+                                        <img src="<%= attack.types[attackType].type_image %>" alt="" height="30">
                                     <% } %>
                                 <% } %>
                             </div>
@@ -108,14 +121,14 @@
                             </div>
                         </div>
 
-                        <div class="row carddetailsrow attackbottom mb10">
+                        <div class="row carddetailsrow mb10">
                             <div class="column">
                                 <div><%= attack.effect %></div>
                             </div>
                         </div>
                     <% }) %>
 
-                    <div class="row mb10">
+                    <div class="row mb10 attackbottom">
                         <div class="column dflex jconteven">
                             <div>
                                 <div class="bold centertext">Evolves From</div>
@@ -140,8 +153,8 @@
                                 <div class="dflex jcontcenter colgap5">
                                     <% card.weakness.forEach(weak => { %>
                                         <img src="<%= weak.type_image %>" alt="" height="30">
-                                        <% if (weak.multiplier > 0) { %>
-                                            <span>X<%= weak.multiplier %></span>
+                                        <% if (weak.multiplier) { %>
+                                            <span><%= weak.multiplier %></span>
                                         <% } %>
                                     <% }) %>
                                 </div>
