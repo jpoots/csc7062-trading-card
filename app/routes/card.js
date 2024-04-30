@@ -160,7 +160,7 @@ router.get("/compare", async (req, res) => {
         }
 
     } else {
-        res.render("compare", {
+        res.render("cardcol/compare", {
             cards: cards.data.response
         });
     }

@@ -10,7 +10,14 @@ const router = require("./routes")
 // set up app
 const app = express();
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', [
+    path.join(__dirname, '../views'),
+    path.join(__dirname, '../views/cardcoll'),
+    path.join(__dirname, '../views/messaging'),
+    path.join(__dirname, '../views/misc'),
+    path.join(__dirname, '../views/mycards'),
+    path.join(__dirname, '../views/user'),
+]);
 
 // setup dotenv
 dotenv.config({ path: "../.env" })
