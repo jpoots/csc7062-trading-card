@@ -22,7 +22,6 @@
                     </div>
 
                     <div class="column dflex colgap5 cardright">
-                        <!-- form from milligram docs -->
                         <h4>Rating:</h4>
                         <% if (collection.rating) { %>
                             <% for(let star = 0; star < collection.rating; star++ ) { %>
@@ -116,7 +115,7 @@
         
                                 <form action="/unratecollection" method="post" class="mb0">
                                     <input type="hidden" name="collid" value="<%= collection.id %>">
-                                    <input class="button redbuttonfaded mb0" type="submit"  value="Undo">
+                                    <input class="redoutlinebutton button button-outline mb0" type="submit"  value="Undo">
                                 </form>
                             </div>
                         <% } %>

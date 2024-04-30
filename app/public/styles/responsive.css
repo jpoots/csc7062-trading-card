@@ -94,4 +94,16 @@
     .cardleft {
         justify-content: center;
     }
+
+    .browsecol {
+        max-width: 50%;
+        width: 50%;
+    }
+}
+
+@media (max-width: 80rem) {
+    .browsecol {
+        max-width: 50%;
+        width: 50%;
+    }
 }

@@ -85,7 +85,7 @@ router.post("/deletecoll", [auth], async (req, res, next) => {
         let deleteResult = await axios.delete(`${util.apiAdd}/users/${req.session.userid}/collections/${req.body.collid}`);
         if (deleteResult.data.status != 200) throw new util.SystemError(`${deleteResult.data.status} ${deleteResult.data.message}`);
 
-        res.redirect("/mycards/collections")
+        res.redirect("/mycollections")
     } catch (err) {
         next(err);
     }

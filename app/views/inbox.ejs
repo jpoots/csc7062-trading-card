@@ -12,27 +12,36 @@
             </div>
         </div>
 
-        <% messages.forEach(message => { %>
-            <div class="row mb20 message">
-                <div class="column column-75">
-                    <p class="breakword bold"> Subject : <%= message.subject %></p>
-                    <p class="breakword"><%= message.body %></p>
-                </div>
-    
-                <div class="column column-25">
-                    <div>
-                        <span class="bold"><%= message.sender %></span> <span>AT: <%= message.time %> <%= message.date %></span>
+        <% if (messages.length > 0) { %>
+            <% messages.forEach(message => { %>
+                <div class="row mb20 message">
+                    <div class="column column-75">
+                        <p class="breakword bold"> Subject : <%= message.subject %></p>
+                        <p class="breakword"><%= message.body %></p>
                     </div>
-
-                    <form action="/sendmessage" method="get" class="mb0">
-                        <input type="hidden" name="recipientid" value="<%= message.sender_id %>">
-                        <input type="hidden" name="cardid" value="<%= message.card_id  %>">
-                        <input class="button button-primary bluebutton textwhite mb0" type="submit" value="Reply">
-                    </form>
-
+        
+                    <div class="column column-25">
+                        <div>
+                            <span class="bold"><%= message.sender %></span> <span>AT: <%= message.time %> <%= message.date %></span>
+                        </div>
+    
+                        <form action="/sendmessage" method="get" class="mb0">
+                            <input type="hidden" name="recipientid" value="<%= message.sender_id %>">
+                            <input type="hidden" name="cardid" value="<%= message.card_id  %>">
+                            <input class="button button-primary bluebutton textwhite mb0" type="submit" value="Reply">
+                        </form>
+                    </div>
+                </div>
+                <% }) %>
+        <% } else { %>
+            <div class="row">
+                <div class="column">
+                    <h4 class="centertext mt10"> Nothing to display. Wow such empty!</h4>
                 </div>
             </div>
-            <% }) %>
+        <% } %> 
+
+
     </div>
     <%- include("partials/footer")  %>
 </body>

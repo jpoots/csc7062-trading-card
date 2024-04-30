@@ -10,39 +10,39 @@
     <form action="/account" method="post" class="container logsigncontainer mt20">
 
         <% if (typeof message !== "undefined") { %>
-            <div class="row jcontcenter centertext">
-                <div class="column formcolumn">
-                    <h4 class="textred"><%= message  %></h4>
+            <div class="row">
+                <div class="column">
+                    <h4 class="textred centertext"><%= message  %></h4>
                 </div>
             </div>
         <% } %>
 
-        <div class="row formrow centertext">
-            <div class="column formcolumn">
+        <div class="row centertext">
+            <div class="column">
                 <h3>My Account</h1>
             </div>
         </div>
 
-        <div class="row formrow">
-            <div class="column formcolumn centertext">
+        <div class="row">
+            <div class="column centertext">
                 <img src="<%= avatar  %>" alt="" width="72" class="avatar">
             </div>
         </div>
 
         <div class="row formrow">
-            <div class="column formcolumn">
+            <div class="column">
                     <input type="email" placeholder="Email" maxlength="254" value="<%= email %>" name="email" class="signformfield" required>
             </div>
         </div>
 
         <div class="row formrow">
-            <div class="column formcolumn">
+            <div class="column">
                     <input type="text" placeholder="Display Name" maxlength="15" value="<%= displayName %>" name="displayname" class="signformfield" required>
             </div>
         </div>
 
-        <div class="row jcontcenter centertext">
-            <div class="column formcolumn">
+        <div class="row">
+            <div class="column centertext">
                 <input class="yellowbutton button w100 textblack" type="submit" value="Update Account">      
             </div>
         </div>
@@ -50,33 +50,29 @@
     </form>
 
     <form action="/changepassword" method="post" class="container logsigncontainer mt20">
-        <div class="row jcontcenter">
-            <div class="column formcolumn">
-                <!--  lines adapted from skeleton doc-->
-                    <input type="password" placeholder="current password" name="currentpassword" class="loginformfield" required>
+        <div class="row">
+            <div class="column">
+                <input type="password" placeholder="current password" name="currentpassword" class="loginformfield" required>
             </div>
         </div>
 
-        <div class="row jcontcenter">
-            <div class="column formcolumn">
-                <!--  lines adapted from skeleton doc-->
-                    <input type="password" placeholder="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"  class="loginformfield" required>
+        <div class="row">
+            <div class="column">
+                <input type="password" placeholder="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"  class="loginformfield" required>
             </div>
         </div>
 
-        <div class="row jcontcenter">
-            <div class="column formcolumn">
-                <!--  lines adapted from skeleton doc-->
-                    <input type="password" placeholder="confirm password" name="confirmpassword" class="loginformfield" required>
+        <div class="row">
+            <div class="column">
+                <input type="password" placeholder="confirm password" name="confirmpassword" class="loginformfield" required>
             </div>
         </div>
 
-        <div class="row jcontcenter centertext">
-            <div class="column formcolumn">
+        <div class="row">
+            <div class="column">
                 <input class="redbutton button w100 textblack" type="submit" value="Change Password">      
             </div>
         </div>
-        
 
     </form>
 

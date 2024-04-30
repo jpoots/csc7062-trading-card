@@ -44,3 +44,25 @@
 .pokedexbutton {
     width: 165px;
 }
+
+.redoutlinebutton {
+    color: rgb(204, 0, 0) !important;
+    border-color: rgb(204, 0, 0) !important;
+}
+
+.yellowoutlinebutton{
+    color: rgb(255,192,8) !important;
+    border-color: rgb(255,192,8);
+}
+
+.redoutlinebutton:hover {
+    background-color: rgb(204, 0, 0) !important;
+    border-color: rgb(204, 0, 0) !important;;
+    color: white !important;
+}
+
+.yellowoutlinebutton:hover {
+    background-color: rgb(255,192,8) !important;
+    border-color: rgb(255,192,8) !important;;
+    color: black !important;
+}

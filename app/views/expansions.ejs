@@ -8,13 +8,10 @@
 
     <div class="row">
         <div class="column">
-            <!-- form from milligram docs -->
             <div class="container mt10">
-                <form action="/expansions" method="get" class="mb0 dflex rowgap5 colgap5 fdcol">
-                    <fieldset class="talright mb0 dflex">
-                        <input type="text" placeholder="Search" name="search" id="searchField" class="wauto mb0 searchbar" required>
-                        <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
-                    </fieldset>
+                <form action="/expansions" method="get" class="mb0 dflex colgap5">
+                    <input type="text" placeholder="Search" name="search" id="searchField" class="mb0 searchbar" required>
+                    <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
                 </form>
             </div>
         </div>
@@ -25,12 +22,9 @@
             <div class="row mt20 dflex rowgap5">
                 <% row.forEach(expansion => { %>
                     <div class="column browsecol dflex jcontcenter">
-                        <div class="card dflex fdcol w100 jcontcenter tester">
+                        <div class="card dflex fdcol w100 jcontcenter">
                             <a href="/expansions/<%= expansion.expansion_id %>" class="textblack centertext">
                                 <img src="<%= expansion.logo_url %>" alt="" width="" class="cardimg">
-                                <div class="test">
-                                    <h6 class="mb0"><%= expansion.expansion_name %></h6>
-                                </div>
                             </a>
                         </div>
                     </div>

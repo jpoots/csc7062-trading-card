@@ -43,7 +43,7 @@ router.post("/sendmessage", [auth], async (req, res, next) => {
     let senderID = req.session.userid;
 
     try {
-        let card = await axios.get(`${util.apiAdd}/cards/${req.query.cardid}`);
+        let card = await axios.get(`${util.apiAdd}/cards/${req.body.cardid}`);
         if (card.data.status != 200) throw new util.SystemError(`${card.data.status} ${card.data.message}`);
 
         subject = `Trading for ${card.data.response.name}`;
@@ -57,7 +57,7 @@ router.post("/sendmessage", [auth], async (req, res, next) => {
         };
 
         body = querystring.stringify(body);
-        let messageResult = await axios.post(`${util.apiAdd}/sendmessage`, body);
+        let messageResult = await axios.post(`${util.apiAdd}/messages`, body);
 
         if (messageResult.data.status !== 200) throw new util.SystemError(`${messageResult.data.status} ${messageResult.data.message}`);
         res.redirect("/");

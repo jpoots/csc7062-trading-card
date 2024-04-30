@@ -16,47 +16,18 @@
 
             <div class="column mt10 browsebuttons">
                 <!-- form from milligram docs -->
-                    <form action="/browse" method="get">
-                        <fieldset class="talright mb0 dflex">
-                            <input type="text" placeholder="Search All Cards" name="search" id="searchField" class="wauto mb0 searchbar" required>
-                            <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
-                        </fieldset>
-                    </form>
+                <form action="/browse" method="get">
+                    <fieldset class="talright mb0 dflex">
+                        <input type="text" placeholder="Search All Cards" name="search" id="searchField" class="mb0 searchbar" required>
+                        <input class="button-primary bluebutton textwhite mb0 ml10" type="submit" value="Search">
+                    </fieldset>
+                </form>
             </div>
         </div>
 
     </div>
 
-    <div class="container browsecontainer">
-
-        <% if (cards.length > 0){ %>
-            <% cards.forEach(row => { %>
-                <div class="row mt20">
-                    <% row.forEach(card => { %>
-                        <div class="column browsecol dflex jcontcenter">
-                            <div class="card dflex fdcol w100 jcontcenter">
-                                <a href="/card/<%= card.card_id %>" class="textblack">
-                                    <img src="<%= card.image_url %>" alt="" width="" class="cardimg">
-                                    <h6 class="centertext browseinfo mb2 bold"><%= card.name %></h6>
-    
-                                    <div class="centertext browseinfo"><%= card.card_number %></div>
-    
-                                    <div class="dflex jcontcenter colgap10">
-                                        <img src="/images/liked.png" alt="" height="30">
-                                        <div>
-                                            <%= card.like_count %>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    <% }) %>
-                </div>
-            <% }) %>
-        <% } else { %>
-            <h5>Nothing to display!</h5>
-        <% } %>
-    </div>
+    <%- include("partials/cards")  %>
 
     <%- include("partials/footer") %>
 </body>

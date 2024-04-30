@@ -167,7 +167,7 @@ router.get("/cards/:cardid", async (req, res, next) => {
     let liked = false;
     let evolveFrom = "N/A";
     let ability = {};
-
+    
     let cardQ = `
     SELECT card.*, stage_name, expansion_name, illustrator_name, ability_name, description, ability_variant, rarity_name
     FROM card 
