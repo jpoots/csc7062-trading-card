@@ -5,9 +5,11 @@ const validator = require("email-validator"); // https://www.npmjs.com/package/e
 const db = require("../serverfuncs/db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
+const dotenv = require("dotenv");
 
+dotenv.config({ path: "../.env" });
 
-router.post("/authenticate", [admin], async (req, res, next) => {
+router.post("/users/authenticate", [admin], async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.pass;
     const loginQ = `SELECT * FROM user WHERE email_address = ?`;
@@ -39,8 +41,8 @@ router.post("/authenticate", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/register", [admin] , async (req, res, next) => {
-    const saltRounds = 5;
+router.post("/users", [admin] , async (req, res, next) => {
+    const saltRounds = parseInt(process.env.SALT_ROUNDS);
 
     let email = req.body.email;
     let display = req.body.displayname;
@@ -167,7 +169,7 @@ router.put("/users/:userid/password", async (req, res, next) => {
     let password = req.body.password;
     let confirmPassword = req.body.confirmpassword;
     let userID = req.params.userid;
-    const saltRounds = 5;
+    const saltRounds = parseInt(process.env.SALT_ROUNDS);
 
     let userQ = "SELECT * FROM user WHERE user_id = ?";
     let changeQ = `UPDATE user SET password_hash = ? WHERE user_id = ?;`
@@ -177,7 +179,7 @@ router.put("/users/:userid/password", async (req, res, next) => {
         if (!parseInt(userID) || !confirmPassword || !password || password.trim().length === 0 || confirmPassword.trim().length === 0) throw new createError(400, "Enter all fields");
         if (password !== confirmPassword) throw new createError(400, "Passwords don't match");
         if (!password.match(expression)) throw new createError(400, "Invalid password");
-c
+        
         let user = await db.promise().query(userQ, [userID]);
         if (user[0].length === 0) throw new createError.NotFound();
 

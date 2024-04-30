@@ -14,6 +14,7 @@ router.post("/messages", [admin], async (req, res, next) => {
 
     let messageQ = `INSERT INTO message (sender_id, recipient_id, card_id, subject, body) VALUES (?, ?, ?, ?, ?);`;
     let userQ = `SELECT * FROM user WHERE user_id = ?`;
+    let cardQ = `SELECT * FROM card WHERE card_id = ?`;
 
     try {
         if (!parseInt(senderID) || !parseInt(recipientID) || !parseInt(cardID) || !subject || !body || body.trim().length === 0 || subject.trim().length === 0 || body.length > 200 || subject.length > 100) throw new createError.BadRequest();
@@ -23,6 +24,9 @@ router.post("/messages", [admin], async (req, res, next) => {
 
         let recipient = await db.promise().query(userQ, [recipientID]);
         if (recipient[0].length === 0) throw new createError.NotFound();
+
+        let card = await db.promise().query(cardQ, [cardID]);
+        if (card[0].length === 0) throw new createError.NotFound();
 
         let messageResult = await db.promise().query(messageQ, [senderID, recipientID, cardID, subject, body]);
 

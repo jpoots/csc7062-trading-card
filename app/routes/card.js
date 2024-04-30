@@ -21,8 +21,7 @@ router.get("/browse", async (req, res, next) => {
     
         res.render("browse", {cards: cards});
     } catch (err){
-        console.log(err);
-        next(err)
+        next(err);
     }
 });
 
@@ -78,6 +77,7 @@ router.post("/likecard", [auth], async (req, res, next) => {
 
 });
 
+/* experimenting with client side js
 router.post("/likecardjs", [auth], async (req, res, next) => {
     let body = {
         userid: req.session.userid
@@ -98,6 +98,7 @@ router.post("/likecardjs", [auth], async (req, res, next) => {
     }
 
 });
+*/
 
 router.post("/unlikecard", [auth], async (req, res, next) => {
     let userID = req.session.userid;

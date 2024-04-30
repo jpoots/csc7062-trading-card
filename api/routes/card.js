@@ -126,7 +126,6 @@ router.get("/cards", async (req, res, next) => {
         });
 
     } catch (err) {
-        console.log(err);
         next(err);
     }
 });
@@ -145,6 +144,8 @@ router.get("/users/:userid/likedcards", async (req, res, next) => {
 
 
     try {
+        if (!parseInt(userID)) throw new createError.BadRequest();
+
         let user = await db.promise().query(userQ, [userID]);
         if (user[0].length === 0) throw new createError.NotFound();
 
@@ -221,6 +222,8 @@ router.get("/cards/:cardid", async (req, res, next) => {
     `;
 
     try {
+        if (!parseInt(cardID)) throw new createError.BadRequest();
+
         let card = await db.promise().query(cardQ, [cardID])
         card = card[0];
 
@@ -234,7 +237,6 @@ router.get("/cards/:cardid", async (req, res, next) => {
                 type: card.ability_variant
             };
         }
-
     
         let likeCount = await db.promise().query(likeCountQ, [cardID]);
         likeCount = likeCount[0][0].like_count;

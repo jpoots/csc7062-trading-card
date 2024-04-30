@@ -21,7 +21,7 @@ router.post("/login", [unauth], async (req, res, next) => {
         /* https://axios-http.com/docs/urlencoded */
         credentials = querystring.stringify(credentials);
     
-        let authenticateResult = await axios.post(`${util.apiAdd}/authenticate`, credentials);
+        let authenticateResult = await axios.post(`${util.apiAdd}/users/authenticate`, credentials);
 
         if (authenticateResult.data.status === 200){
             req.session.userid = authenticateResult.data.response.id;
@@ -60,7 +60,7 @@ router.post("/register", [unauth], async (req, res, next) => {
     try{ 
         body = querystring.stringify(body);
 
-        let registrationResult = await axios.post(`${util.apiAdd}/register`, body);
+        let registrationResult = await axios.post(`${util.apiAdd}/users`, body);
         
         if(registrationResult.data.status == 400){
             res.render("register", {
@@ -119,23 +119,10 @@ router.post("/account", [auth], async (req, res, next) => {
 
         userData = userData.data.response;
 
-        if(updateResult.data.status == 400){
-            res.render("account", {
-                email: userData.email_address,
-                displayName: userData.display_name,
-                avatar: userData.avatar_url,
-                message:updateResult.data.message
-            });
-        } else if (updateResult.data.status != 200) {
-            throw new util.SystemError(`${updateResult.data.status} ${updateResult.data.message}`);
-        } else {
-            res.render("account", {
-                email: userData.email_address,
-                displayName: userData.display_name,
-                avatar: userData.avatar_url,
-                message: "Success!"
-            });
-        }
+        if(updateResult.data.status == 400) util.renderAccountMessage(res, userData, updateResult.data.message);
+        else if (updateResult.data.status != 200) throw new util.SystemError(`${updateResult.data.status} ${updateResult.data.message}`);
+        else util.renderAccountMessage(res, userData, "Success!");
+
     } catch (err){
         next(err);
     }
@@ -157,15 +144,9 @@ router.post("/changepassword", [auth], async (req, res, next) => {
     
         /* https://axios-http.com/docs/urlencoded */
         credentials = querystring.stringify(credentials);
-        let authenticateResult = await axios.post(`${util.apiAdd}/authenticate`, credentials);
-        if (authenticateResult.data.status === 401){
-            res.render("account", {
-                email: userData.email_address,
-                displayName: userData.display_name,
-                avatar: userData.avatar_url,
-                message: "Incorrect password"
-            });
-        } else {
+        let authenticateResult = await axios.post(`${util.apiAdd}/users/authenticate`, credentials);
+        if (authenticateResult.data.status === 401) util.renderAccountMessage(res, userData, "Incorrect password");
+        else {
             if (authenticateResult.data.status != 200) throw new util.SystemError(`${authenticateResult.data.status} ${authenticateResult.data.message}`);
 
             let updateBody = {
@@ -177,22 +158,10 @@ router.post("/changepassword", [auth], async (req, res, next) => {
             updateBody = querystring.stringify(updateBody);
             let updateResult = await axios.put(`${util.apiAdd}/users/${userID}/password`, updateBody);
 
-            if (updateResult.data.status === 400) {
-                res.render("account", {
-                    email: userData.email_address,
-                    displayName: userData.display_name,
-                    avatar: userData.avatar_url,
-                    message: updateResult.data.message
-                });
-            } else {
+            if (updateResult.data.status === 400) util.renderAccountMessage(res, userData, updateResult.data.message);
+            else {
                 if (updateResult.data.status != 200) throw new util.SystemError(`${updateResult.data.status} ${updateResult.data.message}`);
-    
-                res.render("account", {
-                    email: userData.email_address,
-                    displayName: userData.display_name,
-                    avatar: userData.avatar_url,
-                    message: "Success!"
-                });
+                util.renderAccountMessage(res, userData, "Success!");
             }
         }
     } catch (err) {

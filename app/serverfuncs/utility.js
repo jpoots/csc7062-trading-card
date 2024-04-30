@@ -34,9 +34,19 @@ const errorHandler = (err, res) => {
     });     
 };
 
+const renderAccountMessage = (res, userData, message) => {
+    res.render("account", {
+        email: userData.email_address,
+        displayName: userData.display_name,
+        avatar: userData.avatar_url,
+        message: message
+    });
+};
+
 module.exports = {
     slicer: slicer,
     SystemError: SystemError,
     errorHandler: errorHandler,
-    apiAdd: apiAdd
+    apiAdd: apiAdd,
+    renderAccountMessage: renderAccountMessage
 };

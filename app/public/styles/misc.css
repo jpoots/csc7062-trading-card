@@ -4,35 +4,16 @@ html, body {
     margin: 0;
 }
 
-/* my cards */
 .mycards {
     background-image: url(../images/mycardsbackground.jpg) !important;
 }
 
-/* account */
 .avatar {
     border-radius: 50%;
 }
 
-/* filtering */
 .slider {
     width: 100%;
-}
-
-/* messages */
-.message {
-    border-bottom: thin solid rgb(224, 225, 225);
-}
-
-.messagecontainer {
-    border: thin solid rgb(224, 225, 225);
-    border-radius: 15px;
-}
-
-.messagebody:focus {
-    border-color: rgb(204, 0, 0) !important;
-    /* adapted from https://developer.mozilla.org/en-US/docs/Learn/CSS/Howto/Add_a_shadow */
-    box-shadow: 0px 0px 2px 1px rgb(204, 0, 0);
 }
 
 .searchbar:focus {
@@ -46,3 +27,8 @@ html, body {
     /* adapted from the default miligram styling */
     background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 8" width="30"><path fill="blue"%20d="M0,0l6,8l6-8"/></svg>') center right no-repeat;
 }
+
+.comparisonimg {
+    width: 50%
+}
+

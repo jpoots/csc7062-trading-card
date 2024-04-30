@@ -1,4 +1,5 @@
 /* responsive design */
+
 @media (max-width: 40rem) {
 
     .logincontainer{
@@ -14,17 +15,12 @@
         justify-content: center;
     }
 
-
     .card{
         width: 70%;
     }
 
     .browsecol {
         max-width: 100% !important;
-    }
-
-    fieldset {
-        text-align: center;
     }
 
     .cardimgcol{
@@ -38,11 +34,6 @@
 
     .cardimgrow {
         align-items: center;
-    }
-
-    table {
-    display: table;
-    overflow-x: initial;
     }
 
     .browsebuttons {
@@ -63,6 +54,11 @@
         width: 100% !important;
         max-width: 100% !important;
     }
+
+    .messageinfo {
+        width: 100%;
+        max-width: 100% !important;
+    }
 }
 
 @media (max-width: 43rem) {
@@ -77,10 +73,9 @@
 
     .navrow {
         flex-direction: column;
+        padding-bottom: 10px;
     }
 }
-
-
 
 @media (max-width: 30rem) {
     .carddetailsrow {
@@ -95,13 +90,6 @@
         justify-content: center;
     }
 
-    .browsecol {
-        max-width: 50%;
-        width: 50%;
-    }
-}
-
-@media (max-width: 80rem) {
     .browsecol {
         max-width: 50%;
         width: 50%;

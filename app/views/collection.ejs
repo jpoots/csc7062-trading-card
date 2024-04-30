@@ -34,8 +34,7 @@
                 </div>
 
             <% } else { %>
-                <div class="row carddetailsrow">
-
+                <div class="row">
                     <div class="column dflex colgap5 dropdowncol">
                         <!-- https://www.w3schools.com/howto/howto_css_dropdown.asp -->
                         <div class="dropdown">
@@ -53,9 +52,9 @@
                         </form>
                     </div>
 
-                    <div class="column ">
+                    <div class="column">
                         <form action="/createcoll" method="post" class="mb0 dflex rowgap5 colgap5">
-                                <input type="text" placeholder="Name" name="collname" id="searchField" class="wauto mb0 searchbar" maxlength="20" required>
+                                <input type="text" placeholder="Name" name="collname" id="searchField" class="mb0 searchbar" maxlength="20" required>
                                 <input class="button yellowbutton mb0 ml10 textblack" type="submit" value="Create">
                         </form>
                     </div>

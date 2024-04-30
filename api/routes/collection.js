@@ -15,12 +15,15 @@ router.get("/collections", async (req, res, next) => {
             searchName = `${req.query.search}`
             // order by from https://www.codexworld.com/how-to/sort-results-order-by-best-match-using-like-in-mysql/
             collectionQ = `
-            SELECT collection.collection_id, collection_name, display_name, avatar_url
+            SELECT collection.collection_id, collection_name, display_name, avatar_url, ROUND(AVG(rating)) as "rating"
             FROM collection 
             INNER JOIN user
             ON user.user_id = collection.user_id
+            LEFT JOIN collection_rating
+            ON collection.collection_id = collection_rating.collection_id
             WHERE collection_name
             LIKE ?
+            GROUP BY collection.collection_id
             ORDER BY
             CASE
                 WHEN collection_name LIKE ? THEN 1
@@ -60,7 +63,6 @@ router.get("/collections", async (req, res, next) => {
     }
 });
 
-
 router.get("/collections/:collid", async (req, res, next) => {
     let collectionID = req.params.collid;
     let userID = req.query.userid;
@@ -73,7 +75,7 @@ router.get("/collections/:collid", async (req, res, next) => {
     let id = null;
     
     let cardQuery = `
-    SELECT card.card_id, name, image_url, COUNT(card_like_id) as "like_count" FROM collection_card
+    SELECT card.card_id, name, image_url, card_number, COUNT(card_like_id) as "like_count" FROM collection_card
     INNER JOIN card
     ON collection_card.card_id = card.card_id
     LEFT JOIN card_like
@@ -320,7 +322,7 @@ router.post("/users/:userid/collections/:collid", [admin], async (req, res, next
         if (collection[0].length === 0) throw new createError.NotFound();
 
         let cardStatusResult = await db.promise().query(cardStatusQ, [cardID, collID]);
-        if (cardStatusResult[0].length > 0) throw new createError.Conflict();
+        if (cardStatusResult[0].length > 0) console.log("conflict");
         
         let queryResult = await db.promise().query(query, [collID, cardID]);
 
@@ -364,4 +366,3 @@ router.delete("/users/:userid/collections/:collid/card/:cardid", [admin], async 
 });
 
 module.exports = router;
-
