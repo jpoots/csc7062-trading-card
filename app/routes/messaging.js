@@ -9,7 +9,7 @@ router.get("/messages", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
     try {
-        let messages = await axios.get(`${util.apiAdd}/messages/${userID}`);
+        let messages = await axios.get(`${util.apiAdd}/users/${userID}messages`);
         if (messages.data.status != 200) throw new util.SystemError(`${messages.data.status} ${messages.data.message}`);
 
         messages = messages.data.response;

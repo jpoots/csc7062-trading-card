@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const user = require("../routes/user");
+const account = require("../routes/account");
 const card = require("../routes/card");
 const expansion = require("../routes/expansion");
 const mycards = require("../routes/mycards");
@@ -10,9 +10,8 @@ const messaging = require("../routes/messaging");
 const misc = require("../routes/misc");
 
 
-router.use('/', user);
 router.use('/', card);
-router.use('/', user);
+router.use('/', account);
 router.use('/', card);
 router.use('/', expansion);
 router.use('/', mycards);

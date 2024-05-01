@@ -33,10 +33,13 @@ router.get("/card/:cardid", async (req, res, next) => {
     let error = req.query.error;
     
     let collections = [];
+
+    if (error == 409) error = "Already in collection";
+
     try {
         let endpoint = `${util.apiAdd}/cards/${cardID}`
         if (userID) {
-            let collectionsResult = await axios.get(`${util.apiAdd}/collections?userid=${userID}`);
+            let collectionsResult = await axios.get(`${util.apiAdd}/users/${userID}/collections`);
 
             if (collectionsResult.data.status != 200) throw new util.SystemError(`${collections.data.status} ${collections.data.message}`);
             collections = collectionsResult.data.response;
@@ -160,7 +163,7 @@ router.get("/compare", async (req, res) => {
         }
 
     } else {
-        res.render("cardcol/compare", {
+        res.render("compare", {
             cards: cards.data.response
         });
     }

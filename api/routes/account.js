@@ -23,7 +23,6 @@ router.post("/users/authenticate", [admin], async (req, res, next) => {
     
         if (user.length !== 1) throw new createError.Unauthorized();
 
-        // https://www.npmjs.com/package/bcrypt?activeTab=readme
         const match = await bcrypt.compare(password, user[0].password_hash);
 
         if (!match) throw new createError.Unauthorized();

@@ -5,8 +5,6 @@ const querystring = require('querystring');
 const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
-//https://blog.logrocket.com/using-axios-set-request-headers/
-
 router.get("/collections", async (req, res, next) => {
     try {
         let collectionQ = req.query.search ? `${util.apiAdd}/collections?search=${req.query.search}` : `${util.apiAdd}/collections`;
@@ -26,12 +24,12 @@ router.get("/collections", async (req, res, next) => {
 router.get("/collections/:collid", async (req, res, next) => {
     try {
         let owner = [];
+        let collections = [];
         let collectionEnd = `${util.apiAdd}/collections/${req.params.collid}`;
-        let collectionsEnd = `${util.apiAdd}/collections` 
+        let collectionsEnd = `${util.apiAdd}/users/${req.session.userid}/collections` 
 
         if (req.session.userid){
-            collectionEnd = `${collectionEnd}?userid=${req.session.userid}`;
-            collectionsEnd = `${collectionsEnd}?userid=${req.session.userid}`
+            collectionEnd = `${collectionEnd}?userid=${req.session.userid}`;    
         } 
 
         let collection = await axios.get(collectionEnd);
@@ -41,15 +39,14 @@ router.get("/collections/:collid", async (req, res, next) => {
             owner = await axios.get(`${util.apiAdd}/users/${collection.data.response.ownerID}`);
             if (owner.data.status !== 200) throw new util.SystemError(`${owner.data.status} ${owner.data.message}`);
             owner = owner.data.response;
+        } else {
+            collections = await axios.get(collectionsEnd);
+            if (collections.data.status !== 200) throw new util.SystemError(`${collections.data.status} ${collections.data.message}`); 
+            collections = collections.data.response;
         }
 
         collection = collection.data.response;
         collection.cards = await util.slicer(collection.cards);
-    
-        let collections = await axios.get(collectionsEnd);
-        if (collections.data.status !== 200) throw new util.SystemError(`${collections.data.status} ${collections.data.message}`); 
-
-        collections = collections.data.response;
     
         res.render("collection", {
             cards: collection.cards,

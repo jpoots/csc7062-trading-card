@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const util = require("../serverfuncs/utility");
 
-router.get("/expansions/:expansionid", async (req, res) => {
+router.get("/expansions/:expansionid", async (req, res, next) => {
     let expansionID = req.params.expansionid;
 
     try {
@@ -13,11 +13,11 @@ router.get("/expansions/:expansionid", async (req, res) => {
         cards = await util.slicer(cards.data.response);
         res.render("browse", {cards: cards});
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 
-router.get("/expansions", async (req, res) => {
+router.get("/expansions", async (req, res, next) => {
     let endPoint = `${util.apiAdd}/expansions`;
 
     if (req.query.search) endPoint = `${endPoint}?search=${req.query.search}`
@@ -30,7 +30,7 @@ router.get("/expansions", async (req, res) => {
         expansions = await util.slicer(expansions);
         res.render("expansions", {expansions: expansions});
     } catch (err) {
-        util.errorHandler(err, res);
+        next(err);
     }
 });
 

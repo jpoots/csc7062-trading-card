@@ -10,7 +10,7 @@ router.get("/cards", async (req, res, next) => {
     let minHP = req.query.minhp;
     let maxHP = req.query.maxhp;
     let expansionID = req.query.expid;
-    let illustratorID = req.query.illustratorid;
+    let illustratorID = req.query.illid;
     let stageID = req.query.stageid;
     let minLikes = req.query.minlikes;
     let maxLikes = req.query.maxlikes;
@@ -306,7 +306,6 @@ router.get("/cards/:cardid", async (req, res, next) => {
         });
 
     } catch (err) {
-        console.log(err)
         next(err);
     }
 });

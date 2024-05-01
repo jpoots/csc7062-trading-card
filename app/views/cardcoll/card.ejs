@@ -7,7 +7,14 @@
     <%- include("partials/navbar") %>
 
     <div class="container mt20">
-        
+        <% if (error) { %>
+            <div class="row">
+                <div class="column">
+                    <div class="textred"><%= error %></div>
+                </div>
+            </div>
+        <% } %>
+
         <div class="row">
 
             <% if (typeof userid != "undefined" && userid != null) { %>
@@ -17,7 +24,6 @@
                             <input type="hidden" name="cardid" value=<%= card.id %>>
                             <input type="hidden" name="collstatus">
                             <select name="collid" class="dropdown" required>
-                                <!--https://www.geeksforgeeks.org/how-to-set-the-default-value-for-an-html-select-element/-->
                                 <option value="" selected>Select Collection</option>
                                 <% collections.forEach(element => { %>
                                     <option value= "<%= element.collection_id  %>"><%= element.collection_name  %></option>
@@ -123,7 +129,7 @@
                     <% }) %>
 
                     <div class="row mb10 attackbottom">
-                        <div class="column dflex jconteven">
+                        <div class="column dflex jcontspacearound">
                             <div>
                                 <div class="bold centertext">Evolves From</div>
                                 <div class="centertext"><%= card.evolveFrom %></div>
@@ -136,7 +142,7 @@
                         </div>
 
 
-                        <div class="column dflex jconteven">
+                        <div class="column dflex jcontspacearound">
                             <div>
                                 <div class="bold centertext">Illustrator</div>
                                 <div class="centertext"><%= card.illustrator %></div>

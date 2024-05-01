@@ -6,6 +6,8 @@ const dotenv = require("dotenv");
 const axios = require("axios");
 const errorHandler = require("../middleware/err")
 const router = require("./routes")
+const userid = require("../middleware/userid")
+ 
 
 // set up app
 const app = express();
@@ -36,11 +38,7 @@ app.use(sessions ({
     resave: false
 }));
 
-// https://stackoverflow.com/questions/37183766/how-to-get-the-session-value-in-ejs
-app.use(function(req, res, next) {
-    res.locals.userid = req.session.userid;
-    next();
-});
+app.use(userid);
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(express.urlencoded({extended : true}));

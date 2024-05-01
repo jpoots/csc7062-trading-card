@@ -5,8 +5,12 @@ const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
 // mycards
-router.get("/mycards", [auth], (req, res) => {
-    res.render("mycards")
+router.get("/mycards", [auth], (req, res, next) => {
+    try {
+        res.render("mycards");
+    } catch (err) {
+        next(err);
+    }
 });
 
 router.get("/mycollections", [auth], async (req, res, next) => {
@@ -14,7 +18,7 @@ router.get("/mycollections", [auth], async (req, res, next) => {
         
     try {
         // get collections to populate drop down
-        let collections = await axios.get(`${util.apiAdd}/collections?userid=${userID}`);
+        let collections = await axios.get(`${util.apiAdd}/users/${userID}/collections`);
         if (collections.data.status != 200) throw new util.SystemError(collections.data.message);
 
         collections = collections.data.response;

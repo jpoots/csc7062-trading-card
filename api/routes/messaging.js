@@ -39,7 +39,7 @@ router.post("/messages", [admin], async (req, res, next) => {
     }
 });
 
-router.get("/messages/:userid", [admin], async (req, res, next) => {
+router.get("/users/:userid/messages", [admin], async (req, res, next) => {
     let userID = req.params.userid;
 
     let messageQ = `

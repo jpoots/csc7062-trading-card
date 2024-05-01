@@ -6,8 +6,12 @@ const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 const unauth = require("../middleware/unauth");
 
-router.get("/login", [unauth], (req, res) => {
-    res.render("login");
+router.get("/login", [unauth], (req, res, next) => {
+    try {
+        res.render("login");
+    } catch (err) {
+        next(err);
+    }
 });
 
 // login
