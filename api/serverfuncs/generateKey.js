@@ -14,7 +14,7 @@ const generate = async () => {
         // https://stackoverflow.com/questions/63920296/generate-unique-api-keys-for-user-in-node-js-application-for-access-to-your-apis
         const apiKey = crypto.randomUUID();
         const hashedKey = await bcrypt.hash(apiKey, saltRounds);
-        const admin = true; 
+        const admin = priv == 1 ? true : false; 
 
         const insertQ = `
         INSERT INTO api_user (api_key, admin) VALUES (?, ?)`

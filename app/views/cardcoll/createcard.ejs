@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+
+    <div class="container carddetails">
+        <div class="row">
+            <div class="column">
+                <form action="/createcard" method="post">
+                    <h5>Pokemon Name</h5>
+                    <input type="text" name="name" class="searchbar" required>
+
+                    <h5>HP</h5>
+                    <input type="number" min="0" max="200" step="5" name="hp" class="searchbar" required>
+
+                    <h5>Card Number</h5>
+                    <input type="text" name="cardnumber" class="searchbar" required>
+
+                    <h5>Image URL</h5>
+                    <input type="url" name="img" class="searchbar">
+
+                    <h5>Expansion</h5>
+                    <select id="expansionid" name="expid" class="dropdown" required>
+                        <option value="" selected>Select Expansion</option>
+                        <% expansions.forEach(expansion => { %>
+                            <option value=<%= expansion.expansion_id  %>><%= expansion.expansion_name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <h5>Illustrator Name</h5>
+                    <input type="text" name="illustrator" class="searchbar" required>
+
+                    <h5>Weakness</h5>
+                    <select id="weaknessid" name="weaknessid" class="dropdown" required>
+                        <option value="" selected>Select Weakness</option>
+                        <% types.forEach(type => { %>
+                            <option value=<%= type.type_id  %>><%= type.type_name  %></option>
+                        <% }) %>
+                    </select>
+                    <input type="number" min="0" max="3" step="1" placeholder="multiplier" name="multiplier" class="searchbar" required>
+
+                    <h5>Type</h5>
+                    <select id="typeid" name="typeid" class="dropdown" required>
+                        <option value="" selected>Select Type</option>
+                        <% types.forEach(type => { %>
+                            <option value=<%= type.type_id  %>><%= type.type_name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <h5>Attack</h5>
+                    <input type="text" name="name" placeholder="name" class="searchbar" required>
+                    <input type="text" name="damage" placeholder="damage" class="searchbar" required>
+                    <textarea name="effect" id="" cols="30" rows="10"></textarea>
+
+                    <select  name="attacktwoid" class="dropdown">
+                        <option value="" selected>Select Attack</option>
+                        <% attacks.forEach(attack => { %>
+                            <option value=<%= attack.type_id  %>><%= attack.attack_name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <h5>Stage</h5>
+                    <select name="stageid" class="dropdown" required>
+                        <option value="" selected>Select Stage</option>
+                        <% stages.forEach(stage => { %>
+                            <option value=<%= stage.stage_id  %>><%= stage.stage_name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <h5>Rarity</h5>
+                    <select name="rarity" class="dropdown" required>
+                        <option value="" selected>Select Rarity</option>
+                        <% rarities.forEach(rarity => { %>
+                            <option value=<%= rarity.rarity_id  %>><%= rarity.rarity_name  %></option>
+                        <% }) %>
+                    </select>
+
+                    <input class="button-primary bluebutton textwhite mb0 w100" type="submit" value="Create">
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <%- include("partials/footer") %>
+</body>
+</html>

@@ -6,7 +6,7 @@ const admin = async (req, res, next) => {
     try {
         if (!req.admin) throw new createError.Unauthorized();
         next();
-    } catch {
+    } catch (err) {
         errHandler(err, req, res, next);
     }
 }
