@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../serverfuncs/db");
-const admin = require("../middleware/admin");
+const db = require("../../serverfuncs/db");
+const admin = require("../../middleware/admin");
 const createError = require("http-errors");
 
-router.get("/users/:userid/inbox", [admin], async (req, res, next) => {
+// gets all mail in a users inbox
+router.get("/:userid/inbox", [admin], async (req, res, next) => {
     let userID = req.params.userid;
 
     let messageQ = `
@@ -33,7 +34,8 @@ router.get("/users/:userid/inbox", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/users/:userid/outbox", [admin], async (req, res, next) => {
+// sends mail. Takes a subject, recipient ID, card ID, and a body
+router.post("/:userid/outbox", [admin], async (req, res, next) => {
     let senderID = req.params.userid;
     let recipientID = req.body.recipientid;
     let cardID = req.body.cardid;
@@ -45,6 +47,7 @@ router.post("/users/:userid/outbox", [admin], async (req, res, next) => {
     let cardQ = `SELECT * FROM card WHERE card_id = ?`;
 
     try {
+        // business rules
         if (!parseInt(senderID) || !parseInt(recipientID) || !parseInt(cardID) || !subject || !body || body.trim().length === 0 || subject.trim().length === 0 || body.length > 200 || subject.length > 100) throw new createError.BadRequest();
 
         let sender = await db.promise().query(userQ, [senderID]);
@@ -67,7 +70,8 @@ router.post("/users/:userid/outbox", [admin], async (req, res, next) => {
     }
 });
 
-router.get("/users/:userid/outbox", async (req, res, next) => {
+// gets a users outbox
+router.get("/:userid/outbox", async (req, res, next) => {
     let userID = req.params.userid;
 
     let messageQ = `

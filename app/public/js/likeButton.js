@@ -1,3 +1,4 @@
+// edits the like button on hover
 let likeButton = document.getElementById("likebutton");
 let likeValue;
 let src;

@@ -17,7 +17,7 @@ const slicer = async (list) => {
     return sliced;
 }
 
-// custom error
+// custom error to improve error message display
 // https://stackoverflow.com/questions/38504780/how-can-i-identify-custom-error
 function SystemError(message = "") {
     this.message = message;
@@ -34,6 +34,7 @@ const errorHandler = (err, res) => {
     });     
 };
 
+// abstraction of method to improve code reuse
 const renderAccountMessage = (res, userData, message) => {
     res.render("account", {
         email: userData.email_address,

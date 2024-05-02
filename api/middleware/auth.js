@@ -4,6 +4,7 @@ const db = require("../serverfuncs/db");
 const errHandler = require("./err");
 const createError = require("http-errors");
 
+// middleware to validate user key
 /* https://www.youtube.com/watch?v=Tw5LupcpKS4 */
 const auth = async (req, res, next) => {
     let apiKey = req.header("x-api-key");

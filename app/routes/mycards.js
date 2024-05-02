@@ -4,7 +4,7 @@ const axios = require("axios");
 const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
-// mycards
+// get the mycards dashboard
 router.get("/mycards", [auth], (req, res, next) => {
     try {
         res.render("mycards");
@@ -13,6 +13,7 @@ router.get("/mycards", [auth], (req, res, next) => {
     }
 });
 
+// get my collections
 router.get("/mycollections", [auth], async (req, res, next) => {
     let userID = req.session.userid;
         
@@ -35,6 +36,7 @@ router.get("/mycollections", [auth], async (req, res, next) => {
     }
 });
 
+// get my liked cards
 router.get("/likedcards", [auth], async (req, res, next) => {
     let userID = req.session.userid;
     try {

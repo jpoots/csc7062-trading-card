@@ -5,6 +5,7 @@ const querystring = require('querystring');
 const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
+// get a users inbox
 router.get("/inbox", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -23,6 +24,7 @@ router.get("/inbox", [auth], async (req, res, next) => {
     }
 });
 
+// get a users outbox
 router.get("/outbox", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -41,6 +43,7 @@ router.get("/outbox", [auth], async (req, res, next) => {
     }
 });
 
+// get the send message page
 router.get("/sendmessage", [auth], async (req, res, next) => {
     try {
         let recipient = await axios.get(`${util.apiAdd}/users/${req.query.recipientid}`);
@@ -60,6 +63,7 @@ router.get("/sendmessage", [auth], async (req, res, next) => {
     }
 });
 
+// send a message
 router.post("/sendmessage", [auth], async (req, res, next) => {
     let senderID = req.session.userid;
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require("../serverfuncs/db");
 const createError = require("http-errors");
 
+// gets all expansions
 router.get("/expansions", async (req, res, next) => {
     let expansionQ;
     let params = [];
@@ -43,6 +44,7 @@ router.get("/expansions", async (req, res, next) => {
     }
 });
 
+// gets all types
 router.get("/types", async (req, res, next) => {
     let allTypeQ = 
     `SELECT type_id, type_name FROM type
@@ -62,6 +64,7 @@ router.get("/types", async (req, res, next) => {
     }
 });
 
+// gets all illustrators
 router.get("/illustrators", async (req, res, next) => {
     let allIllQ = 
     `SELECT * FROM illustrator

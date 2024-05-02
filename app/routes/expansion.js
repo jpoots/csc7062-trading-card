@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const util = require("../serverfuncs/utility");
 
+// get the cards in a specific expansion
 router.get("/expansions/:expansionid", async (req, res, next) => {
     let expansionID = req.params.expansionid;
 
@@ -17,6 +18,7 @@ router.get("/expansions/:expansionid", async (req, res, next) => {
     }
 });
 
+// get all expansion
 router.get("/expansions", async (req, res, next) => {
     let endPoint = `${util.apiAdd}/expansions`;
 

@@ -5,7 +5,7 @@ const querystring = require('querystring');
 const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
-// browse
+// get main browse page with all cards
 router.get("/browse", async (req, res, next) => {
     try {
         let endPoint = `${util.apiAdd}/cards`;
@@ -25,7 +25,7 @@ router.get("/browse", async (req, res, next) => {
     }
 });
 
-// card
+// get a specific card
 router.get("/card/:cardid", async (req, res, next) => {
     // get card id from the req
     let userID = req.session.userid;
@@ -62,6 +62,7 @@ router.get("/card/:cardid", async (req, res, next) => {
 
 });
 
+// like a card
 router.post("/likecard", [auth], async (req, res, next) => {
     let body = {
         userid: req.session.userid
@@ -103,6 +104,7 @@ router.post("/likecardjs", [auth], async (req, res, next) => {
 });
 */
 
+// unlike a card
 router.post("/unlikecard", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -117,6 +119,7 @@ router.post("/unlikecard", [auth], async (req, res, next) => {
     }
 });
 
+// get the filter page
 router.get("/filter", async (req, res, next) => {
     try {
         let expansions = await axios.get(util.apiAdd + "/expansions");
@@ -138,7 +141,8 @@ router.get("/filter", async (req, res, next) => {
     }
 });
 
-router.get("/compare", async (req, res) => {
+// get a comparison page between two cards
+router.get("/compare", async (req, res, next) => {
     let cards = await axios.get(`${util.apiAdd}/cards`)
     let cardOneID = req.query.cardoneid;
     let cardTwoID = req.query.cardtwoid;

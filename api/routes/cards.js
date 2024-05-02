@@ -5,8 +5,8 @@ const createError = require("http-errors");
 const db = require("../serverfuncs/db");
 const admin = require("../middleware/admin");
 
-// getting a card or subset of cards
-router.get("/cards", async (req, res, next) => {
+// getting cards. minhp, maxhp, illid, minlikes, maxlikes, weaknessid, typeid and search are all accepted as features. Returns a list of cards if successful 
+router.get("/", async (req, res, next) => {
     let minHP = req.query.minhp;
     let maxHP = req.query.maxhp;
     let expansionID = req.query.expid;
@@ -130,40 +130,8 @@ router.get("/cards", async (req, res, next) => {
     }
 });
 
-router.get("/users/:userid/likedcards", async (req, res, next) => {
-    let userID = req.params.userid;
-    let userQ = `SELECT * FROM user WHERE user_id = ?`;
-
-    let cardQ =
-    `SELECT card.*, COUNT(card_like.card_like_id) as "like_count" FROM card_like
-    INNER JOIN card 
-    ON card.card_id = card_like.card_id
-    WHERE user_id = ?
-    GROUP BY card.card_id
-    ORDER BY name`;
-
-
-    try {
-        if (!parseInt(userID)) throw new createError.BadRequest();
-
-        let user = await db.promise().query(userQ, [userID]);
-        if (user[0].length === 0) throw new createError.NotFound();
-
-        let cards = await db.promise().query(cardQ, [userID]);
-
-        res.json({
-            status: 200,
-            message: "success",
-            response: cards[0]
-        });
-
-    } catch (err) {
-        next (err);
-    }
-})
-
-// getting an individual card
-router.get("/cards/:cardid", async (req, res, next) => {
+// gets an indiviudal card and returns its details. A user ID is accepted to get a like status.
+router.get("/:cardid", async (req, res, next) => {
     let cardID = req.params.cardid;
     let liked = false;
     let evolveFrom = "N/A";
@@ -310,8 +278,8 @@ router.get("/cards/:cardid", async (req, res, next) => {
     }
 });
 
-// liking a card
-router.post("/cards/:cardid/likes", [admin], async (req, res, next) => {
+// likes a card. Returns 200 if successful. User ID is required as input
+router.post("/:cardid/likes", [admin], async (req, res, next) => {
     let cardID = req.params.cardid;
     let userID = req.body.userid;
 
@@ -343,8 +311,8 @@ router.post("/cards/:cardid/likes", [admin], async (req, res, next) => {
     }
 });
 
-
-router.delete("/cards/:cardid/likes/:userid", async (req, res, next) => {
+// removes a like from a card
+router.delete("/:cardid/likes/:userid", async (req, res, next) => {
     let cardID = req.params.cardid;
     let userID = req.params.userid;
     

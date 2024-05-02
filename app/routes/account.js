@@ -6,6 +6,7 @@ const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 const unauth = require("../middleware/unauth");
 
+// get the login page
 router.get("/login", [unauth], (req, res, next) => {
     try {
         res.render("login");
@@ -42,11 +43,12 @@ router.post("/login", [unauth], async (req, res, next) => {
     }
 });
 
-// register
+// get the register page
 router.get("/register", [unauth], (req, res) => {
     res.render("register");
 });
 
+// register an account
 router.post("/register", [unauth], async (req, res, next) => {
     // https://www.npmjs.com/package/bcrypt?activeTab=readme
     const email = req.body.email;
@@ -87,6 +89,7 @@ router.get("/logout", (req, res) => {
     res.redirect("/");
 });
 
+// get an users account page
 router.get("/account", [auth], async (req, res, next) => {
     try {
         let accountResult = await axios.get(`${util.apiAdd}/users/${req.session.userid}`);
@@ -106,6 +109,7 @@ router.get("/account", [auth], async (req, res, next) => {
     }
 });
 
+// editting account details
 router.post("/account", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -132,6 +136,7 @@ router.post("/account", [auth], async (req, res, next) => {
     }
 });
 
+// changing a password
 router.post("/changepassword", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 

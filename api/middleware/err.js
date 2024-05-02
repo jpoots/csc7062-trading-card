@@ -1,5 +1,6 @@
 const createError = require("http-errors");
 
+// error handler
 const errHandler =  (err, req, res, nex) => {
     if (!(err instanceof createError.HttpError)) err = createError.InternalServerError();
         

@@ -5,6 +5,7 @@ const querystring = require('querystring');
 const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
+// get all collections
 router.get("/collections", async (req, res, next) => {
     try {
         let collectionQ = req.query.search ? `${util.apiAdd}/collections?search=${req.query.search}` : `${util.apiAdd}/collections`;
@@ -21,6 +22,7 @@ router.get("/collections", async (req, res, next) => {
     }
 });
 
+// get a specific collection
 router.get("/collections/:collid", async (req, res, next) => {
     try {
         let owner = [];
@@ -59,6 +61,7 @@ router.get("/collections/:collid", async (req, res, next) => {
     }
 });
 
+// create a collection
 router.post("/createcoll", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -77,6 +80,7 @@ router.post("/createcoll", [auth], async (req, res, next) => {
     }
 });
 
+// delete a collection
 router.post("/deletecoll", [auth], async (req, res, next) => {
     try {
         let deleteResult = await axios.delete(`${util.apiAdd}/users/${req.session.userid}/collections/${req.body.collid}`);
@@ -88,6 +92,7 @@ router.post("/deletecoll", [auth], async (req, res, next) => {
     }
 });
 
+// add a card to a collection
 router.post("/addcard", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -112,6 +117,7 @@ router.post("/addcard", [auth], async (req, res, next) => {
     }
 });
 
+// remove a card from a collection
 router.post("/removecard", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -127,6 +133,7 @@ router.post("/removecard", [auth], async (req, res, next) => {
     }
 });
 
+// rate a collection
 router.post("/ratecollection", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -147,6 +154,7 @@ router.post("/ratecollection", [auth], async (req, res, next) => {
     }
 });
 
+// unrate a collection
 router.post("/unratecollection", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
@@ -160,6 +168,7 @@ router.post("/unratecollection", [auth], async (req, res, next) => {
     }
 });
 
+// comment on a collection
 router.post("/commentcollection", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 

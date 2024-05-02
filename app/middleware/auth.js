@@ -1,3 +1,4 @@
+// authenticates a user is logged in
 const auth = (req, res, next) => {
     if (req.session.userid) {
         next();

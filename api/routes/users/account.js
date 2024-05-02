@@ -2,14 +2,15 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const validator = require("email-validator"); // https://www.npmjs.com/package/email-validator
-const db = require("../serverfuncs/db");
-const admin = require("../middleware/admin");
+const db = require("../../serverfuncs/db");
+const admin = require("../../middleware/admin");
 const createError = require("http-errors");
 const dotenv = require("dotenv");
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "../../.env" });
 
-router.post("/users/authenticate", [admin], async (req, res, next) => {
+// this route accepts an email and password and returns 200 if authenticated otherwise 401
+router.post("/authenticate", [admin], async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.pass;
     const loginQ = `SELECT * FROM user WHERE email_address = ?`;
@@ -40,7 +41,8 @@ router.post("/users/authenticate", [admin], async (req, res, next) => {
     }
 });
 
-router.post("/users", [admin] , async (req, res, next) => {
+// registers a new user accepting an email, display name and two matching passwords. Returns 200 if successful.
+router.post("/", [admin] , async (req, res, next) => {
     const saltRounds = parseInt(process.env.SALT_ROUNDS);
 
     let email = req.body.email;
@@ -53,6 +55,7 @@ router.post("/users", [admin] , async (req, res, next) => {
     const avatarURL = `https://ui-avatars.com/api/?name=${display}`;
 
     try {
+        // business logic
         if (!display || !email || !password || !confirmPassword || 
             display.trim().length === 0 || email.trim().length === 0 || password.trim().length === 0 || confirmPassword.trim().length === 0) throw new createError(400, "Enter all fields");
 
@@ -94,7 +97,8 @@ router.post("/users", [admin] , async (req, res, next) => {
 
 });
 
-router.get("/users/:userid", [admin], async (req, res, next) => {
+// returns a users details based on the given ID
+router.get("/:userid", [admin], async (req, res, next) => {
     let userID = req.params.userid;
 
     const accountQ = "SELECT * FROM user WHERE user_id = ?";
@@ -116,7 +120,8 @@ router.get("/users/:userid", [admin], async (req, res, next) => {
     }
 });
 
-router.put("/users/:userid/details", async (req, res, next) => {
+// edits the users email and display name, returning 200 if successful
+router.put("/:userid/details", async (req, res, next) => {
     let userID = req.params.userid;
     let email = req.body.email;
     let display = req.body.displayname;
@@ -126,6 +131,7 @@ router.put("/users/:userid/details", async (req, res, next) => {
     let userQ = `SELECT * FROM user WHERE user_id = ?`;
 
     try {
+        // business logic
         if (!parseInt(userID)) throw new createError.BadRequest();
         let user = await db.promise().query(userQ, [userID]);
         if (user[0].length === 0) throw new createError.NotFound();
@@ -158,13 +164,13 @@ router.put("/users/:userid/details", async (req, res, next) => {
         });
         
     } catch (err) {
-        console.log(err)
         next(err);
     }
 
 });
 
-router.put("/users/:userid/password", async (req, res, next) => {
+// updates a users password accepting a password and confirmation password. 200 if successful
+router.put("/:userid/password", async (req, res, next) => {
     let password = req.body.password;
     let confirmPassword = req.body.confirmpassword;
     let userID = req.params.userid;

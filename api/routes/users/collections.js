@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../serverfuncs/db");
-const admin = require("../middleware/admin");
+const db = require("../../serverfuncs/db");
+const admin = require("../../middleware/admin");
 const createError = require("http-errors");
 
-router.get("/users/:userid/collections", async (req, res, next) => {
+// gets a users collections
+router.get("/:userid/collections", async (req, res, next) => {
     let userID = req.params.userid;
     let collectionQ = `SELECT * FROM collection WHERE user_id = ?;`;
     let userQ = 'SELECT * FROM user WHERE user_id = ?';
@@ -26,7 +27,8 @@ router.get("/users/:userid/collections", async (req, res, next) => {
     }
 });
 
-router.post("/users/:userid/collections", [admin], async (req, res, next) => {
+// creates a user collection. Takes a collection name
+router.post("/:userid/collections", [admin], async (req, res, next) => {
     let userID = req.params.userid;
     let collName = req.body.collname;
 
@@ -49,7 +51,8 @@ router.post("/users/:userid/collections", [admin], async (req, res, next) => {
     }
 })
 
-router.delete("/users/:userid/collections/:collid", [admin], async (req, res, next) => {
+// deletes a user collection
+router.delete("/:userid/collections/:collid", [admin], async (req, res, next) => {
     let collID = req.params.collid;
     let userID = req.params.userid;
 
@@ -73,7 +76,8 @@ router.delete("/users/:userid/collections/:collid", [admin], async (req, res, ne
     }
 });
 
-router.post("/users/:userid/collections/:collid", [admin], async (req, res, next) => {
+// adds a card to a user collection. Takes a card ID
+router.post("/:userid/collections/:collid", [admin], async (req, res, next) => {
     let cardID = req.body.cardid;
     let collID = req.params.collid;
     let userID = req.params.userid;
@@ -102,7 +106,8 @@ router.post("/users/:userid/collections/:collid", [admin], async (req, res, next
     }
 });
 
-router.delete("/users/:userid/collections/:collid/card/:cardid", [admin], async (req, res, next) => {
+// removes a card from a users collection
+router.delete("/:userid/collections/:collid/card/:cardid", [admin], async (req, res, next) => {
     let collID = req.params.collid;
     let cardID = req.params.cardid;
     let userID = req.params.userid;
