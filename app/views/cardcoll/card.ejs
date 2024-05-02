@@ -43,7 +43,7 @@
                     <form action="/likecard" method="post" class="dflex alitemscenter colgap5 likeform">
                         <a href="<%= card.priceURL %>" class="button bluebutton mb0">€<%= card.price %></a>
                         <input type="hidden" name="cardid" value="<%= card.id %>">
-                        <input type="image" src="/images/like.png" class="mb0" height=30 value="like">
+                        <input id="likebutton" type="image" src="/images/like.png" class="mb0" height=30 value="1">
                         <div><%= card.likeCount %></div>
                     </form>
 
@@ -55,7 +55,7 @@
                     <form action="/unlikecard" method="post" class="dflex alitemscenter colgap5">
                         <a href="<%= card.priceURL %>" class="button bluebutton mb0">€<%= card.price %></a>
                         <input type="hidden" name="cardid" value="<%= card.id %>">
-                        <input type="image" src="/images/liked.png" class="mb0" height=30 value="unlike">
+                        <input id="likebutton" type="image" src="/images/liked.png" class="mb0" height=30 value="0">
                         <div><%= card.likeCount %></div>
                     </form>
                 <% } %>
@@ -185,5 +185,7 @@
         like()
     </script>
     -->
+
+    <script src="/js/likeButton.js"></script>
 </body>
 </html>

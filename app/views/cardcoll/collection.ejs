@@ -60,6 +60,19 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="column dflex colgap5 alitemscenter mt10 mb10">
+                        <h4 class="mb0">Rating:</h4>
+                        <% if (collection.rating) { %>
+                            <% for(let star = 0; star < collection.rating; star++ ) { %>
+                                <img src="/images/star_full.png" alt="" height="30">
+                            <% } %>
+                        <% } else { %>
+                            <h4 class="mb0">Unrated</h4>
+                        <% } %>
+                    </div>
+                </div>
+
             <% } %>
         </div>
             
