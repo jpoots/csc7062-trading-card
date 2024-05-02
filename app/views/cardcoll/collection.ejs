@@ -158,16 +158,6 @@
 
     <%- include("partials/footer") %>
 
-    <script>
-        /* https://stackoverflow.com/questions/14086398/count-textarea-characters */
-        const textarea = document.getElementById("textarea");
-        const charCount = document.getElementById("charcount");
-
-        textarea.addEventListener("input", () => {
-            const target = event.currentTarget;
-            const max = target.getAttribute("maxlength");
-            charCount.innerHTML = max - target.value.length;
-        });
-    </script>
+    <script src="/js/charCounter.js"></script>
 </body>
 </html>

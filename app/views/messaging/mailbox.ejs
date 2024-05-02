@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include("partials/head") %>
+</head>
+<body>
+    <%- include("partials/navbar") %>
+    <div class="container">
+        <div class="row message">
+            <div class="column dflex colgap10 alitemscenter pb10">
+                <% if (inbox) { %>
+                    <a href="/outbox" class="button button-primary redbutton textwhite mb0">Outbox</a>
+                    <h4 class="mb0">Inbox</h4>
+                <% } else { %>
+                    <a href="/inbox" class="button button-primary bluebutton textwhite mb0">Inbox</a>
+                    <h4 class="mb0">Outbox</h4>
+                <% }%>
+            </div>
+        </div>
+
+        <% if (messages.length > 0) { %>
+            <% messages.forEach(message => { %>
+                <div class="row mb20 message">
+                    <div class="column column-75">
+                        <p class="breakword bold"> Subject : <%= message.subject %></p>
+                        <p class="breakword"><%= message.body %></p>
+                    </div>
+        
+                    <div class="column column-25 messageinfo dflex fdcol rowgap5">
+                        <div>
+                            <span class="bold">
+                                <% if (inbox) { %>
+                                    <%= message.sender %>
+                                <% } else { %>
+                                    <%= message.recipient %>
+                                <% } %>
+                            </span> 
+                            <span>AT: <%= message.time %> <%= message.date %></span>
+                        </div>
+                        
+                        <% if (inbox) { %>
+                            <form action="/sendmessage" method="get" class="mb0">
+                                <input type="hidden" name="recipientid" value="<%= message.sender_id %>">
+                                <input type="hidden" name="cardid" value="<%= message.card_id  %>">
+                                <input class="button button-primary bluebutton textwhite mb5" type="submit" value="Reply">
+                            </form>
+                        <% }%>
+                    </div>
+                </div>
+                <% }) %>
+        <% } else { %>
+            <div class="row">
+                <div class="column">
+                    <h4 class="centertext mt10"> Nothing to display. Wow such empty!</h4>
+                </div>
+            </div>
+        <% } %> 
+
+
+    </div>
+    <%- include("partials/footer")  %>
+</body>
+</html>

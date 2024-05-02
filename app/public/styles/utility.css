@@ -37,6 +37,10 @@
     margin-left: 10px;
 }
 
+.pb10 {
+    padding-bottom: 10px !important;
+}
+
 /* flex settings */
 .dflex{
     display: flex !important;

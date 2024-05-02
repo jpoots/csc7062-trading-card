@@ -5,16 +5,37 @@ const querystring = require('querystring');
 const util = require("../serverfuncs/utility");
 const auth = require("../middleware/auth");
 
-router.get("/messages", [auth], async (req, res, next) => {
+router.get("/inbox", [auth], async (req, res, next) => {
     let userID = req.session.userid;
 
     try {
-        let messages = await axios.get(`${util.apiAdd}/users/${userID}messages`);
+        let messages = await axios.get(`${util.apiAdd}/users/${userID}/inbox`);
         if (messages.data.status != 200) throw new util.SystemError(`${messages.data.status} ${messages.data.message}`);
 
         messages = messages.data.response;
 
-        res.render("inbox", {messages: messages}); 
+        res.render("mailbox", {
+            messages: messages,
+            inbox: true
+        }); 
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get("/outbox", [auth], async (req, res, next) => {
+    let userID = req.session.userid;
+
+    try {
+        let messages = await axios.get(`${util.apiAdd}/users/${userID}/outbox`);
+        if (messages.data.status != 200) throw new util.SystemError(`${messages.data.status} ${messages.data.message}`);
+
+        messages = messages.data.response;
+
+        res.render("mailbox", {
+            messages: messages,
+            inbox: false
+        }); 
     } catch (err) {
         next(err);
     }
@@ -49,7 +70,6 @@ router.post("/sendmessage", [auth], async (req, res, next) => {
         subject = `Trading for ${card.data.response.name}`;
 
         let body = {
-            senderid: senderID,
             recipientid: req.body.recipientid,
             cardid: req.body.cardid,
             subject: req.body.subject,
@@ -57,10 +77,10 @@ router.post("/sendmessage", [auth], async (req, res, next) => {
         };
 
         body = querystring.stringify(body);
-        let messageResult = await axios.post(`${util.apiAdd}/messages`, body);
+        let messageResult = await axios.post(`${util.apiAdd}/users/${senderID}/outbox`, body);
 
         if (messageResult.data.status !== 200) throw new util.SystemError(`${messageResult.data.status} ${messageResult.data.message}`);
-        res.redirect("/");
+        res.redirect("/outbox");
     } catch (err) {
         next(err);
     }

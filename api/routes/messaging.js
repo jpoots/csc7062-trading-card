@@ -4,9 +4,37 @@ const db = require("../serverfuncs/db");
 const admin = require("../middleware/admin");
 const createError = require("http-errors");
 
+router.get("/users/:userid/inbox", [admin], async (req, res, next) => {
+    let userID = req.params.userid;
 
-router.post("/messages", [admin], async (req, res, next) => {
-    let senderID = req.body.senderid;
+    let messageQ = `
+    SELECT send.display_name as "sender", rec.display_name as "recipient", subject, body, DATE_FORMAT(time_sent, '%d/%m/%Y') as "date", TIME_FORMAT(time_sent, '%H:%i:%s') as "time", sender_id, recipient_id, card_id
+    FROM message
+    INNER JOIN user rec
+    ON rec.user_id = message.recipient_id
+    INNER JOIN user send
+    ON send.user_id = message.sender_id
+    WHERE recipient_id = ?
+    ORDER BY time_sent DESC;`;
+
+    try {
+        if (!parseInt(userID)) throw createError.BadRequest();
+
+        let messages = await db.promise().query(messageQ, [userID]);
+        messages = messages[0];
+    
+        res.json({
+            status: 200,
+            message: "success",
+            response: messages
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post("/users/:userid/outbox", [admin], async (req, res, next) => {
+    let senderID = req.params.userid;
     let recipientID = req.body.recipientid;
     let cardID = req.body.cardid;
     let subject = req.body.subject;
@@ -39,7 +67,7 @@ router.post("/messages", [admin], async (req, res, next) => {
     }
 });
 
-router.get("/users/:userid/messages", [admin], async (req, res, next) => {
+router.get("/users/:userid/outbox", async (req, res, next) => {
     let userID = req.params.userid;
 
     let messageQ = `
@@ -49,7 +77,7 @@ router.get("/users/:userid/messages", [admin], async (req, res, next) => {
     ON rec.user_id = message.recipient_id
     INNER JOIN user send
     ON send.user_id = message.sender_id
-    WHERE recipient_id = ?
+    WHERE sender_id = ?
     ORDER BY time_sent DESC;`;
 
     try {
@@ -66,6 +94,6 @@ router.get("/users/:userid/messages", [admin], async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-});
+})
 
 module.exports = router;
