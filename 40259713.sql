@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: May 02, 2024 at 10:18 PM
+-- Generation Time: May 03, 2024 at 06:58 AM
 -- Server version: 5.7.39
 -- PHP Version: 7.4.33
 
@@ -44,7 +44,8 @@ INSERT INTO `ability` (`ability_id`, `ability_variant_id`, `ability_name`, `desc
 (2, 2, 'Slow Start', 'Regigigas can\'t attack until your opponent has 3 or less Prize cards left.', 40),
 (3, 2, 'Dark Aura', 'All Energy attached to Tyranitar is Dark instead of its usual type.', 62),
 (4, 1, 'Harvest Bounty', 'Once during your turn (before you attack), If you attach an Energy card from your hand to your Active Pokémon as part of your turn, you may attach an additional Energy card to that Pokémon at the same time. This power can\'t be used if Venusaur is affected by a Special Condition.', 63),
-(5, 3, 'Steam Up', 'Once during your turn (before your attack), you may discard a Fire Energy card from your hand. If you do, during this turn, your Basic Fire Pokémon\'s attacks do 30 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance).', 66);
+(5, 3, 'Steam Up', 'Once during your turn (before your attack), you may discard a Fire Energy card from your hand. If you do, during this turn, your Basic Fire Pokémon\'s attacks do 30 more damage to your opponent\'s Active Pokémon (before applying Weakness and Resistance).', 66),
+(6, 1, 'Baby Evolution', 'Once during your turn (before your attack), you may put Pikachu from your hand onto Pichu (this counts as evolving Pichu) and remove all damage counters from Pichu.', 31);
 
 -- --------------------------------------------------------
 
@@ -86,7 +87,11 @@ INSERT INTO `api_user` (`api_user_id`, `api_key`, `admin`) VALUES
 (5, '$2b$05$kqoCwqNi61HGb.XBt2izaeXz4usov7TBYNV4MY39YKq8DBb.XYgA.', 1),
 (6, '$2b$05$7kAHoQ4/g1RLm3IYPDSNpeP/OZyQ8cjcNp6lgbqVz4hDLY7SFd/aK', 1),
 (7, '$2b$05$UnwY1cYNPAf9bZc/ZddI7OkkTI0.jkpX0nzUt.8Uf0ws9Z7hZfQxS', 1),
-(8, '$2b$05$sshKldXKr5..mSs.Zu47UuznyhnYSmNijUVPSFh6pQQcf.GDA6Pma', 1);
+(8, '$2b$05$sshKldXKr5..mSs.Zu47UuznyhnYSmNijUVPSFh6pQQcf.GDA6Pma', 1),
+(9, '$2b$05$HROpXUUqoIKjLdxxBDJeXuvmEdHyOV3Dbhi91rC0RAeLUYPrvjCta', 1),
+(10, '$2b$05$ROhZ5ydqkEXz2UE/KdL3TuOsG7Vd2toRgi2KnQFNV5X6cY5tzhx/G', 0),
+(11, '$2b$05$4l57xE834ARREIn0bsW15.mmI8UzZQ92nQfrpgIJ/uzeF8Bkx/4jS', 1),
+(12, '$2b$05$35pOR0dsUv9dpxtC1zwHKe5yg9SdofFbWLcfyP7zpe6hoaI4CAxyO', 0);
 
 -- --------------------------------------------------------
 
@@ -115,13 +120,13 @@ INSERT INTO `attack` (`attack_id`, `attack_name`, `effect`, `damage`, `card_id`)
 (7, 'Gnaw', '', '10', 19),
 (8, 'Thunder Jolt', 'Flip a coin. If tails, Pikachu does 10 damage to itself.', '30', 19),
 (9, 'Flail', 'Does 10 damage times number of damage counters on Magikarp.', '10x', 20),
-(10, 'Tackle', '', '10', 35),
+(10, 'Tackle', '', '20', 35),
 (11, 'Special Rend', 'Search your deck for a Stadium card, show it to your opponent, and put it into your hand. Shuffle your deck afterward. If there is any Stadium card in play, discard it.', '10', 21),
 (12, 'Transback', 'You may flip a coin. If heads, discard all Energy attached to Palkia and put the Defending Pokémon and all cards attached to it on top of your opponent\'s deck. Your opponent shuffles his or her deck afterward.', '40', 21),
 (13, 'Time Bellow', 'Draw a card.', '10', 22),
 (14, 'Flash Cannon', 'You may return all Energy cards attached to Dialga to your hand. If you do, remove the highest Stage Evolution card from the Defending Pokémon and shuffle that card into your opponent\'s deck.', '40', 22),
 (15, 'Razor Leaf', '', '20', 23),
-(16, 'Over Slash', 'This attack does 10 damage to each of your opponent\'s Pokémon. (Don\'t apply Weakness and Resistance for Benched Pokémon.', '20', 24),
+(16, 'Over Slash', 'This attack does 10 damage to each of your opponent\'s Pokémon. (Don\'t apply Weakness and Resistance for Benched Pokémon.', '', 24),
 (17, 'Dark Wing Flaps', 'Choose 1 card from your opponent\'s hand without looking. Look at the card you chose, then have your opponent shuffle that card into his or her deck.', '20', 24),
 (18, 'Wrack Down', '', '60', 24),
 (19, 'Flame Burst', 'Does 20 damage to 2 of your opponent\'s Benched Pokémon. (Don\'t apply Weakness and Resistance for Benched Pokémon.', '20', 25),
@@ -245,14 +250,13 @@ INSERT INTO `attack_type` (`attack_type_id`, `attack_id`, `type_id`, `multiplier
 (40, 33, 4, 1),
 (41, 34, 7, 1),
 (42, 34, 5, 1),
-(43, 35, 7, 3),
+(43, 35, 7, 1),
 (44, 36, 5, 2),
 (45, 37, 4, 2),
 (46, 37, 5, 1),
 (47, 38, 7, 1),
 (48, 38, 8, 1),
 (49, 38, 4, 1),
-(50, 40, 5, 2),
 (51, 39, 9, 1),
 (52, 39, 5, 2),
 (53, 41, 5, 2),
@@ -297,7 +301,6 @@ INSERT INTO `attack_type` (`attack_type_id`, `attack_id`, `type_id`, `multiplier
 (92, 67, 4, 1),
 (93, 67, 5, 1),
 (94, 68, 12, 1),
-(95, 68, 12, 1),
 (96, 69, 12, 1),
 (97, 69, 5, 2),
 (98, 70, 5, 1),
@@ -312,9 +315,13 @@ INSERT INTO `attack_type` (`attack_type_id`, `attack_id`, `type_id`, `multiplier
 (107, 77, 5, 1),
 (108, 78, 5, 1),
 (109, 79, 4, 1),
-(110, 80, 5, 1),
-(111, 81, 5, 1),
-(112, 81, 12, 2);
+(110, 80, 5, 2),
+(112, 81, 12, 2),
+(113, 81, 5, 1),
+(114, 35, 5, 3),
+(115, 23, 5, 3),
+(116, 24, 5, 2),
+(117, 24, 6, 2);
 
 -- --------------------------------------------------------
 
@@ -470,7 +477,8 @@ INSERT INTO `collection` (`collection_id`, `collection_name`, `user_id`) VALUES
 (45, 'Mag\'s Marvels', 25),
 (46, 'Aidan\'s Arsenal', 25),
 (47, 'Leo\'s Lineup', 26),
-(48, 'Leo\'s Legion', 26);
+(48, 'Leo\'s Legion', 26),
+(51, 'a new col', 28);
 
 -- --------------------------------------------------------
 
@@ -532,7 +540,8 @@ INSERT INTO `collection_card` (`collection_card_id`, `collection_id`, `card_id`)
 (65, 48, 64),
 (66, 48, 62),
 (67, 48, 23),
-(68, 47, 62);
+(68, 47, 62),
+(69, 51, 36);
 
 -- --------------------------------------------------------
 
@@ -558,7 +567,8 @@ INSERT INTO `collection_comment` (`collection_comment_id`, `comment_text`, `coll
 (33, 'Why would you pick the weird ones with abilities?', 42, 24, '2024-04-29 22:05:12'),
 (34, 'There\'s no way you have 3 legendary pokemon Chris...', 44, 25, '2024-04-30 09:10:27'),
 (35, 'Spicy!', 39, 26, '2024-04-30 09:31:36'),
-(36, 'Probably because the developer wants to show that they included abilities in the database Chris.', 42, 26, '2024-04-30 09:32:41');
+(36, 'Probably because the developer wants to show that they included abilities in the database Chris.', 42, 26, '2024-04-30 09:32:41'),
+(38, 'testing test', 44, 28, '2024-05-02 22:21:08');
 
 -- --------------------------------------------------------
 
@@ -695,7 +705,8 @@ INSERT INTO `message` (`message_id`, `sender_id`, `recipient_id`, `card_id`, `su
 (12, 24, 22, 47, 'Trading For Arcanine', 'Palkia for Arcanine?', '2024-04-30 09:58:12'),
 (13, 25, 23, 24, 'Trading For Giratina', 'Trade you Dragonite?', '2024-04-30 09:59:28'),
 (14, 23, 25, 24, 'Trading For Giratina', 'Ok. Meet you on the first floor lab?', '2024-04-30 10:00:41'),
-(15, 23, 22, 66, 'Trading For Volcanion EX', 'Aidan\'s trading me an Arcanine. What about that for Volcanion?', '2024-04-30 10:01:22');
+(15, 23, 22, 66, 'Trading For Volcanion EX', 'Aidan\'s trading me an Arcanine. What about that for Volcanion?', '2024-04-30 10:01:22'),
+(16, 28, 24, 39, 'Trading For Mewtwo', 'trade you chris', '2024-05-02 22:21:25');
 
 -- --------------------------------------------------------
 
@@ -803,7 +814,6 @@ INSERT INTO `type_card` (`type_card_id`, `type_id`, `card_id`) VALUES
 (19, 4, 31),
 (20, 7, 32),
 (21, 4, 33),
-(22, 5, 26),
 (23, 9, 35),
 (24, 7, 36),
 (25, 6, 37),
@@ -859,7 +869,8 @@ INSERT INTO `user` (`user_id`, `email_address`, `password_hash`, `display_name`,
 (24, 'csmith@qub.ac.uk', '$2b$05$yrAsvR0yyFFlSUwGduTPTumIGW6qfHrpjR6Day6ExVYToK166oWgq', 'csmith', 'https://ui-avatars.com/api/?name=csmith'),
 (25, 'amcgowan@qub.ac.uk', '$2b$05$0TtBXmFu/sgbN9GAXIhcOelqMyoPRJGSFz460hkcq9TUphIzUpigS', 'amcgowan', 'https://ui-avatars.com/api/?name=amcgowan'),
 (26, 'lgalway@qub.ac.uk', '$2b$05$uF/WGlO38tAtIu5AjKwFC.BKnI3cl.lmyyMm2vwst4F6.Ej.fP336', 'lgalway', 'https://ui-avatars.com/api/?name=lgalway'),
-(27, 'admin@admin.com', '$2b$05$x7q2EWd4ip7Zqpb7WYhua..jZ3cqsCArqsrzyPb2cIykc1NOkTq.q', 'admin', 'https://ui-avatars.com/api/?name=admin');
+(27, 'admin@admin.com', '$2b$05$x7q2EWd4ip7Zqpb7WYhua..jZ3cqsCArqsrzyPb2cIykc1NOkTq.q', 'admin', 'https://ui-avatars.com/api/?name=admin'),
+(28, 'email@email.com', '$2b$05$9FKcEMuwHqFqSNIl7WIRtukY1p.xuOojJUwnSmut9m3lqJoho2UsC', 'email', 'https://ui-avatars.com/api/?name=email');
 
 -- --------------------------------------------------------
 
@@ -870,7 +881,7 @@ INSERT INTO `user` (`user_id`, `email_address`, `password_hash`, `display_name`,
 CREATE TABLE `weakness_card` (
   `weakness_card_id` int(11) NOT NULL,
   `type_id` int(11) NOT NULL,
-  `multiplier` varchar(3) NOT NULL,
+  `multiplier` varchar(3) DEFAULT NULL,
   `card_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -879,27 +890,27 @@ CREATE TABLE `weakness_card` (
 --
 
 INSERT INTO `weakness_card` (`weakness_card_id`, `type_id`, `multiplier`, `card_id`) VALUES
-(4, 3, 'x2', 16),
-(5, 6, 'x2', 17),
-(6, 8, 'x2', 18),
-(7, 6, 'x2', 19),
-(8, 4, 'x2', 20),
+(4, 3, NULL, 16),
+(5, 6, NULL, 17),
+(6, 8, NULL, 18),
+(7, 6, NULL, 19),
+(8, 4, NULL, 20),
 (9, 4, '+20', 21),
-(10, 3, '+20', 22),
+(10, 7, '+20', 22),
 (11, 7, '+10', 23),
 (12, 11, 'x2', 24),
-(13, 8, '2', 25),
+(13, 8, 'x2', 25),
 (14, 4, 'x2', 26),
 (15, 3, 'x2', 27),
 (16, 9, 'x2', 29),
 (17, 7, 'x2', 30),
-(18, 6, 'x2', 31),
-(19, 6, 'x2', 33),
-(20, 8, 'x2', 32),
-(21, 3, 'x2', 34),
-(22, 7, 'x2', 35),
-(23, 8, 'x2', 36),
-(24, 10, 'x2', 37),
+(18, 6, NULL, 31),
+(19, 6, NULL, 33),
+(20, 8, NULL, 32),
+(21, 3, NULL, 34),
+(22, 7, NULL, 35),
+(23, 8, NULL, 36),
+(24, 10, NULL, 37),
 (25, 9, '+40', 38),
 (26, 3, '+20', 39),
 (27, 6, 'x2', 40),
@@ -914,13 +925,14 @@ INSERT INTO `weakness_card` (`weakness_card_id`, `type_id`, `multiplier`, `card_
 (36, 6, 'x2', 59),
 (37, 12, 'x2', 60),
 (38, 9, 'x2', 61),
-(39, 6, '1', 62),
-(40, 7, '1', 63),
+(39, 6, NULL, 62),
+(40, 7, NULL, 63),
 (41, 7, 'x2', 64),
 (42, 7, 'x2', 65),
 (43, 8, 'x2', 66),
 (44, 6, 'x2', 67),
-(45, 9, 'x2', 68);
+(45, 9, 'x2', 68),
+(46, 4, 'x2', 28);
 
 --
 -- Indexes for dumped tables
@@ -1081,7 +1093,7 @@ ALTER TABLE `weakness_card`
 -- AUTO_INCREMENT for table `ability`
 --
 ALTER TABLE `ability`
-  MODIFY `ability_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `ability_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `ability_variant`
@@ -1093,7 +1105,7 @@ ALTER TABLE `ability_variant`
 -- AUTO_INCREMENT for table `api_user`
 --
 ALTER TABLE `api_user`
-  MODIFY `api_user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `api_user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `attack`
@@ -1105,7 +1117,7 @@ ALTER TABLE `attack`
 -- AUTO_INCREMENT for table `attack_type`
 --
 ALTER TABLE `attack_type`
-  MODIFY `attack_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
+  MODIFY `attack_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
 
 --
 -- AUTO_INCREMENT for table `card`
@@ -1117,25 +1129,25 @@ ALTER TABLE `card`
 -- AUTO_INCREMENT for table `card_like`
 --
 ALTER TABLE `card_like`
-  MODIFY `card_like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `card_like_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
 -- AUTO_INCREMENT for table `collection`
 --
 ALTER TABLE `collection`
-  MODIFY `collection_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `collection_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `collection_card`
 --
 ALTER TABLE `collection_card`
-  MODIFY `collection_card_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `collection_card_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT for table `collection_comment`
 --
 ALTER TABLE `collection_comment`
-  MODIFY `collection_comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `collection_comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `collection_rating`
@@ -1159,7 +1171,7 @@ ALTER TABLE `illustrator`
 -- AUTO_INCREMENT for table `message`
 --
 ALTER TABLE `message`
-  MODIFY `message_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `message_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `rarity`
@@ -1189,13 +1201,13 @@ ALTER TABLE `type_card`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `weakness_card`
 --
 ALTER TABLE `weakness_card`
-  MODIFY `weakness_card_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `weakness_card_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- Constraints for dumped tables

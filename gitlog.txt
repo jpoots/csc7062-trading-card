@@ -1,0 +1,916 @@
+commit d5d5ac2d25485b9bec24f87812f24331809197c7
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-05-03T01:15:39+01:00
+
+    Update README.md
+
+2	2	README.md
+
+commit a0436b698e1bfb969818ae101f337e2df1c1519f
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-05-03T00:49:15+01:00
+
+    Final adjustment to documentation, adding sql database and .env files, fixing api key generation and admin authentication, adding responsive burger menu
+
+0	7	.gitignore
+1292	0	40259713.sql
+4	3	README.md
+7	0	api/.env
+1	1	api/middleware/admin.js
+1	1	api/serverfuncs/generateKey.js
+4	0	app/.env
+-	-	app/public/images/burger-bar.png
+8	0	app/public/js/navbar.js
+14	0	app/public/styles/responsive.css
+90	0	app/views/cardcoll/createcard.ejs
+2	0	app/views/partials/head.ejs
+6	4	app/views/partials/navbar.ejs
+
+commit 0db741b8ff4b3e3534730f059c2d9b4f2e7be863
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-05-02T20:00:05+01:00
+
+    improved code documentation, improved API file structure
+
+5	5	README.md
+1	0	api/middleware/admin.js
+1	0	api/middleware/auth.js
+1	0	api/middleware/err.js
+8	40	api/routes/{card.js => cards.js}
+11	132	api/routes/{collection.js => collections.js}
+3	0	api/routes/misc.js
+15	9	api/routes/{ => users}/account.js
+39	0	api/routes/users/cards.js
+13	8	api/routes/users/collections.js
+9	5	api/routes/{ => users}/messaging.js
+17	8	api/serverfuncs/routes.js
+1	0	app/middleware/auth.js
+1	0	app/middleware/unauth.js
+1	0	app/middleware/userid.js
+1	0	app/public/js/charCounter.js
+1	0	app/public/js/likeButton.js
+6	1	app/routes/account.js
+7	3	app/routes/card.js
+9	0	app/routes/collection.js
+2	0	app/routes/expansion.js
+4	0	app/routes/messaging.js
+3	1	app/routes/mycards.js
+2	1	app/serverfuncs/utility.js
+
+commit 6cc13c552430628b1666aee7c27e07ee77c759ea
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-05-02T14:05:57+01:00
+
+    added interactivty to card like page and improved owned collection page
+
+134	0	api/routes/users/collections.js
+17	0	app/public/js/likeButton.js
+4	0	app/public/styles/utility.css
+4	2	app/views/cardcoll/card.ejs
+13	0	app/views/cardcoll/collection.ejs
+
+commit f11801de5b50a755d4b997eac36cd6f37eea8366
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-05-02T11:53:32+01:00
+
+    modularising JS, implemented different mailboxes
+
+33	5	api/routes/messaging.js
+9	0	app/public/js/charCounter.js
+4	0	app/public/styles/utility.css
+26	6	app/routes/messaging.js
+1	11	app/views/cardcoll/collection.ejs
+0	48	app/views/messaging/inbox.ejs
+63	0	app/views/messaging/mailbox.ejs
+1	11	app/views/messaging/sendmessage.ejs
+1	1	app/views/mycards/mycards.ejs
+
+commit a34ca065593dc99b7d2d77c1537841698ac6844c
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-05-01T23:47:38+01:00
+
+    improved error handling, improved API endpoints, bug fixes
+
+0	1	api/routes/{user.js => account.js}
+1	2	api/routes/card.js
+24	10	api/routes/collection.js
+1	1	api/routes/messaging.js
+2	2	api/serverfuncs/routes.js
+0	10	api/serverfuncs/utility.js
+12	4	app/middleware/err.js
+7	0	app/middleware/userid.js
+-	-	app/public/images/trading_game.png
+6	2	app/routes/{user.js => account.js}
+5	2	app/routes/card.js
+7	10	app/routes/collection.js
+4	4	app/routes/expansion.js
+1	1	app/routes/messaging.js
+14	6	app/routes/misc.js
+7	3	app/routes/mycards.js
+3	5	app/serverfuncs/app.js
+2	3	app/serverfuncs/routes.js
+0	1	app/views/cardcoll/browse.ejs
+10	4	app/views/cardcoll/card.ejs
+
+commit 03f89d61eff10c6a6b091578c7254a22a65380e4
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-30T18:09:02+01:00
+
+    restructuring views
+
+1	1	app/routes/card.js
+8	1	app/serverfuncs/app.js
+0	0	app/views/{ => cardcoll}/browse.ejs
+0	0	app/views/{ => cardcoll}/card.ejs
+0	0	app/views/{ => cardcoll}/collection.ejs
+0	0	app/views/{ => cardcoll}/collections.ejs
+0	0	app/views/{ => cardcoll}/compare.ejs
+0	0	app/views/{ => cardcoll}/comparison.ejs
+0	0	app/views/{ => cardcoll}/filter.ejs
+0	0	app/views/{ => messaging}/inbox.ejs
+0	0	app/views/{ => messaging}/sendmessage.ejs
+0	0	app/views/{ => misc}/error.ejs
+0	0	app/views/{ => misc}/expansions.ejs
+0	0	app/views/{ => misc}/index.ejs
+0	0	app/views/{ => mycards}/mycards.ejs
+0	0	app/views/{ => mycards}/mycollections.ejs
+0	0	app/views/{ => user}/account.ejs
+0	0	app/views/{ => user}/login.ejs
+0	0	app/views/{ => user}/register.ejs
+
+commit b61e41db495b79964afedf3396e2dcee0b4c34f4
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-30T17:54:58+01:00
+
+    adjustments to CSS, improved error handling, bug fixes, renaming
+
+1	1	README.md
+0	27	api/generateKey.js
+4	2	api/routes/card.js
+7	6	api/routes/collection.js
+4	0	api/routes/messaging.js
+7	5	api/routes/user.js
+31	0	api/serverfuncs/generateKey.js
+0	10	app/public/styles/buttons.css
+0	3	app/public/styles/comparison.css
+1	1	app/public/styles/main.css
+15	0	app/public/styles/message.css
+6	20	app/public/styles/misc.css
+7	19	app/public/styles/responsive.css
+8	14	app/public/styles/utility.css
+3	2	app/routes/card.js
+0	1	app/routes/collection.js
+12	43	app/routes/user.js
+11	1	app/serverfuncs/utility.js
+3	4	app/views/collection.ejs
+2	2	app/views/inbox.ejs
+1	1	app/views/partials/cards.ejs
+1	1	app/views/partials/collectionCards.ejs
+1	1	app/views/partials/head.ejs
+
+commit 58ffa1ed0f91b91f291f37a36fe4de93c728f640
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-30T12:50:12+01:00
+
+    fix to delete collection, adding a README.md, fixes to messaging, updates to styling and adjusting HTML and CSS
+
+40	0	README.md
+1	1	api/routes/card.js
+0	14	app/public/styles/browse.css
+22	0	app/public/styles/buttons.css
+0	16	app/public/styles/card.css
+39	0	app/public/styles/collection.css
+0	23	app/public/styles/home.css
+1	0	app/public/styles/main.css
+9	40	app/public/styles/misc.css
+12	0	app/public/styles/responsive.css
+1	1	app/routes/collection.js
+2	2	app/routes/messaging.js
+22	26	app/views/account.ejs
+7	36	app/views/browse.ejs
+21	27	app/views/card.ejs
+1	2	app/views/collection.ejs
+5	8	app/views/collections.ejs
+3	3	app/views/compare.ejs
+4	10	app/views/expansions.ejs
+26	17	app/views/inbox.ejs
+1	1	app/views/index.ejs
+12	13	app/views/login.ejs
+1	4	app/views/mycards.ejs
+5	9	app/views/mycollections.ejs
+1	1	app/views/partials/collectionCards.ejs
+23	24	app/views/register.ejs
+7	7	app/views/sendmessage.ejs
+
+commit 7f7a5d9777efa54906dc069d6cacc8b143e61a2e
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-29T22:32:26+01:00
+
+    registration and account editing input limits, rename user API endpoint, updating project structure, changing card and comparison page
+
+22	10	api/routes/card.js
+3	3	app/public/styles/card.css
+1	1	app/routes/expansion.js
+23	10	app/views/card.ejs
+8	6	app/views/comparison.ejs
+
+commit f33c7c7224e4a75ec19be0dedc5e3a3690f76317
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-29T11:17:42+01:00
+
+    registration and account editing input limits, rename user API endpoint, updating project structure
+
+1	3	api/middleware/auth.js
+2	2	api/routes/card.js
+1	1	api/routes/collection.js
+1	1	api/routes/messaging.js
+1	1	api/routes/misc.js
+45	39	api/routes/user.js
+1	1	api/{ => serverfuncs}/db.js
+5	15	api/{ => serverfuncs}/index.js
+17	0	api/serverfuncs/routes.js
+0	0	api/{ => serverfuncs}/utility.js
+1	1	app/middleware/err.js
+2	3	app/routes/card.js
+2	2	app/routes/collection.js
+1	1	app/routes/expansion.js
+2	2	app/routes/messaging.js
+1	1	app/routes/mycards.js
+6	6	app/routes/user.js
+13	31	app/{ => serverfuncs}/app.js
+24	0	app/serverfuncs/routes.js
+1	1	app/{ => serverfuncs}/utility.js
+5	5	app/views/account.ejs
+4	4	app/views/register.ejs
+
+commit 1cd9ac061dc1626b522deff15e07d9848365c11e
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-28T22:11:11+01:00
+
+    adding required to some fields, auth and unauth middleware for app, protecting messaging, adding limits to text inputs, added password validation
+
+2	2	api/routes/collection.js
+1	1	api/routes/messaging.js
+10	7	api/routes/user.js
+9	0	app/middleware/auth.js
+9	0	app/middleware/unauth.js
+11	2	app/public/styles/responsive.css
+45	28	app/routes/card.js
+77	106	app/routes/collection.js
+38	48	app/routes/messaging.js
+30	43	app/routes/mycards.js
+138	165	app/routes/user.js
+1	1	app/views/browse.ejs
+24	3	app/views/card.ejs
+24	11	app/views/collection.ejs
+1	1	app/views/collections.ejs
+1	1	app/views/expansions.ejs
+3	1	app/views/inbox.ejs
+1	1	app/views/index.ejs
+2	2	app/views/login.ejs
+1	1	app/views/mycards.ejs
+1	1	app/views/partials/footer.ejs
+1	1	app/views/partials/navbar.ejs
+5	6	app/views/register.ejs
+14	1	app/views/sendmessage.ejs
+
+commit e8d9a242795e665b653460e2dc0b0de9b1a5affc
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-27T19:45:06+01:00
+
+    added liked cards, fixed some url naming, advancements to UI, added owner to collections page
+
+2	6	api/routes/card.js
+0	3	api/routes/collection.js
+4	0	app/public/styles/buttons.css
+2	6	app/public/styles/card.css
+1	1	app/public/styles/home.css
+1	0	app/public/styles/main.css
+39	6	app/public/styles/responsive.css
+22	4	app/public/styles/utility.css
+6	22	app/routes/card.js
+10	2	app/routes/collection.js
+24	1	app/routes/mycards.js
+69	52	app/routes/user.js
+34	7	app/views/browse.ejs
+48	48	app/views/card.ejs
+69	58	app/views/collection.ejs
+3	3	app/views/collections.ejs
+2	2	app/views/compare.ejs
+1	2	app/views/comparison.ejs
+1	1	app/views/filter.ejs
+32	12	app/views/index.ejs
+31	9	app/views/mycards.ejs
+1	1	app/views/partials/cards.ejs
+1	1	app/views/partials/collectionCards.ejs
+2	2	app/views/partials/footer.ejs
+2	2	app/views/partials/navbar.ejs
+
+commit ab4b6990351753a72d592bbb8ceac9f5ff613bdd
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-26T21:46:03+01:00
+
+    finalising additional request methods, added API protections, made endpoints follow convention, consolidating endpoints
+
+159	165	api/routes/card.js
+61	79	api/routes/collection.js
+10	4	api/routes/messaging.js
+37	38	api/routes/user.js
+6	6	app/routes/card.js
+27	17	app/routes/collection.js
+0	8	app/routes/mycards.js
+16	21	app/routes/user.js
+1	2	app/views/card.ejs
+2	4	app/views/collection.ejs
+
+commit 24b5338e8a1a25392f6dd079aea7055854e82b77
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-26T17:11:19+01:00
+
+    adding more request methods to the API and modularising routes
+
+12	16	api/routes/card.js
+10	7	api/routes/collection.js
+0	2	api/routes/user.js
+35	1	app/public/styles/misc.css
+20	2	app/routes/card.js
+37	25	app/routes/collection.js
+3	4	app/routes/user.js
+16	8	app/views/card.ejs
+11	13	app/views/collection.ejs
+1	4	app/views/partials/collectionCards.ejs
+
+commit 783ded149cdae0ae80ba4127659cce48f30a3dd3
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-26T14:54:59+01:00
+
+    error handling middleware API and app, unified middleware error handling,  added layered filtering, modularised some API functionality
+
+4	0	api/index.js
+7	6	api/middleware/admin.js
+8	17	api/middleware/auth.js
+12	0	api/middleware/err.js
+133	110	api/routes/card.js
+86	23	api/routes/collection.js
+4	10	api/routes/messaging.js
+6	8	api/routes/misc.js
+10	12	api/routes/user.js
+5	9	api/utility.js
+3	0	app/app.js
+13	0	app/middleware/err.js
+19	30	app/routes/card.js
+4	3	app/routes/collection.js
+6	4	app/views/card.ejs
+4	2	app/views/collection.ejs
+24	65	app/views/filter.ejs
+1	0	app/views/partials/collectionCards.ejs
+
+commit 55e6ad71b9d4f88dbc1abeb67d3a34f45c6b684b
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-26T09:45:37+01:00
+
+    added more filters, card updates, added comparison, changes to account updating, squashing bugs
+
+61	1	api/routes/card.js
+1	0	api/routes/collection.js
+47	5	api/routes/misc.js
+80	2	api/routes/user.js
+3	0	app/public/styles/comparison.css
+1	0	app/public/styles/main.css
+39	7	app/routes/card.js
+4	1	app/routes/expansion.js
+118	9	app/routes/user.js
+27	10	app/views/account.ejs
+2	0	app/views/browse.ejs
+7	15	app/views/card.ejs
+42	0	app/views/compare.ejs
+77	0	app/views/comparison.ejs
+14	0	app/views/expansions.ejs
+29	0	app/views/filter.ejs
+
+commit ba7a6b57e899885bab9ed9fca75e4cf223ccd85e
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-25T15:15:33+01:00
+
+    modularised css, changes to card sql querying, adding elements to card page, changed like button and browse, changed rating buttons, squashing bugs
+
+25	0	api/package-lock.json
+4	0	api/package.json
+37	13	api/routes/card.js
+12	10	api/routes/collection.js
+-	-	app/public/images/like.png
+-	-	app/public/images/liked.png
+-	-	app/public/images/star_empty.png
+-	-	app/public/images/star_full.png
+38	0	app/public/styles/browse.css
+42	0	app/public/styles/buttons.css
+47	0	app/public/styles/card.css
+34	0	app/public/styles/footer.css
+58	0	app/public/styles/home.css
+21	0	app/public/styles/loginsignup.css
+13	0	app/public/styles/main.css
+45	0	app/public/styles/misc.css
+0	484	app/public/styles/mystyles.css
+30	0	app/public/styles/navbar.css
+55	0	app/public/styles/responsive.css
+123	0	app/public/styles/utility.css
+10	5	app/routes/card.js
+2	2	app/routes/collection.js
+47	30	app/views/card.ejs
+83	67	app/views/collection.ejs
+17	2	app/views/collections.ejs
+4	2	app/views/expansions.ejs
+2	2	app/views/filter.ejs
+2	2	app/views/mycollections.ejs
+10	2	app/views/partials/cards.ejs
+1	3	app/views/partials/head.ejs
+
+commit 5fca1c797e0097c24a3ddf20a2f30d7e3246e77e
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-24T18:46:38+01:00
+
+    squashing bugs, modularised API error handler
+
+14	26	api/routes/card.js
+71	80	api/routes/collection.js
+2	6	api/routes/messaging.js
+2	12	api/routes/misc.js
+39	56	api/routes/user.js
+14	0	api/utility.js
+3	2	app/routes/collection.js
+1	1	app/routes/user.js
+
+commit 289f882215d93aa354c5cc04325707121346e14a
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-23T18:48:29+01:00
+
+    API error handling, app error handling, edit key generation, added api add to utility
+
+1	2	api/generateKey.js
+1	1	api/middleware/auth.js
+1	0	api/package-lock.json
+1	0	api/package.json
+145	118	api/routes/card.js
+59	40	api/routes/collection.js
+17	7	api/routes/messaging.js
+14	8	api/routes/misc.js
+19	19	api/routes/user.js
+33	33	app/routes/card.js
+48	38	app/routes/collection.js
+11	16	app/routes/expansion.js
+17	19	app/routes/messaging.js
+3	6	app/routes/misc.js
+10	9	app/routes/mycards.js
+20	18	app/routes/user.js
+30	1	app/utility.js
+1	0	app/views/error.ejs
+1	1	app/views/partials/cards.ejs
+
+commit e1f0e3dbccc2c4d1d3a7b5a4ef0173559d958a8e
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-23T10:46:19+01:00
+
+    Modularised app,  adjustments to global axios vars, adjustment to api addressing, made auth middleware universal
+
+2	0	api/index.js
+24	15	api/middleware/auth.js
+3	3	api/routes/card.js
+8	8	api/routes/collection.js
+2	2	api/routes/messaging.js
+3	3	api/routes/misc.js
+4	5	api/routes/user.js
+33	11	app/app.js
+125	0	app/routes/card.js
+173	0	app/routes/collection.js
+39	0	app/routes/expansion.js
+81	0	app/routes/messaging.js
+19	0	app/routes/misc.js
+48	0	app/routes/mycards.js
+0	583	app/routes/routes.js
+108	0	app/routes/user.js
+13	0	app/utility.js
+
+commit bcae891c7217d689d358245b0f81aa76fb3e989c
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-22T17:35:07+01:00
+
+    created middleware to authenticate and API key generator
+
+28	0	api/generateKey.js
+12	0	api/middleware/admin.js
+31	6	api/middleware/auth.js
+0	0	api/middleware/roles.js
+5	3	api/routes/card.js
+8	41	api/routes/collection.js
+4	2	api/routes/messaging.js
+5	4	api/routes/misc.js
+5	3	api/routes/user.js
+2	1	app/routes/routes.js
+
+commit d83b07dc642c0241b58884e001142d5d4c32386a
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-22T15:43:22+01:00
+
+    completed APIs, modularisation of API, begun auth middleware
+
+25	0	api/db.js
+11	2	api/index.js
+12	0	api/middleware/auth.js
+0	0	api/middleware/roles.js
+248	0	api/routes/card.js
+342	0	api/routes/collection.js
+59	0	api/routes/messaging.js
+57	0	api/routes/misc.js
+0	830	api/routes/routes.js
+131	0	api/routes/user.js
+3	20	app/routes/routes.js
+4	4	app/views/partials/collectionCards.ejs
+
+commit cef5926f39689eb1b3295d37b8501d1f0e7996aa
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-22T12:59:25+01:00
+
+    delete collection API, get collection API
+
+190	1	api/routes/routes.js
+53	202	app/routes/routes.js
+11	11	app/views/collection.ejs
+
+commit c0b0a371c416dc19c8bb09d118d68819b19180e3
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-20T14:08:37+01:00
+
+    Added user API, send message APIs, messages API, create collection API, fixed duplicate card in collection bug
+
+104	2	api/routes/routes.js
+55	77	app/routes/routes.js
+1	1	app/views/card.ejs
+2	2	app/views/collection.ejs
+2	2	app/views/sendmessage.ejs
+
+commit bca52db6f5ed9b94c88e0f6806df2e7e2a148d8a
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-19T17:17:32+01:00
+
+    Added rate collection API, comment collection API, expansions API,  add/remove card API, collapsed add/remove, edits to collection page
+
+140	2	api/routes/routes.js
+114	100	app/routes/routes.js
+6	1	app/views/card.ejs
+14	1	app/views/collection.ejs
+1	1	app/views/expansions.ejs
+4	3	app/views/partials/collectionCards.ejs
+
+commit 0530c2c254af53a1764a8e8a67ed0a8d99ca8342
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-19T13:56:01+01:00
+
+    Finished login API, added registration API, added login API, added card API, added like API, edited error page
+
+4	2	api/index.js
+47	1	api/package-lock.json
+3	1	api/package.json
+257	14	api/routes/routes.js
+3	5	app/app.js
+49	557	app/package-lock.json
+2	3	app/package.json
+-	-	app/public/images/confused_pikachu.png
+96	235	app/routes/routes.js
+3	3	app/views/card.ejs
+2	1	app/views/error.ejs
+8	0	app/views/login.ejs
+1	1	app/views/partials/navbar.ejs
+6	6	app/views/register.ejs
+
+commit 577aa9c1ceae0162bb5f1cb2173186f3fa4a056f
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-19T09:11:48+01:00
+
+    began API development
+
+22	0	api/index.js
+1375	0	api/package-lock.json
+17	0	api/package.json
+158	0	api/routes/routes.js
+0	0	app.js => app/app.js
+0	0	package-lock.json => app/package-lock.json
+0	0	package.json => app/package.json
+-	-	{public => app/public}/images/cards.png
+-	-	{public => app/public}/images/favicon.png
+-	-	{public => app/public}/images/homebackground.jpg
+-	-	{public => app/public}/images/mycardsbackground.jpg
+-	-	{public => app/public}/images/pokeball_sideways.png
+-	-	{public => app/public}/images/pokeball_straight.png
+-	-	{public => app/public}/images/pokeball_white.png
+-	-	{public => app/public}/images/trading_game.png
+15	0	{public => app/public}/styles/mystyles.css
+150	88	{routes => app/routes}/routes.js
+0	0	{views => app/views}/account.ejs
+2	3	{views => app/views}/browse.ejs
+0	0	{views => app/views}/card.ejs
+2	2	{views => app/views}/collection.ejs
+1	1	{views => app/views}/collections.ejs
+0	0	{views => app/views}/error.ejs
+0	0	{views => app/views}/expansions.ejs
+0	0	{views => app/views}/filter.ejs
+7	3	{views => app/views}/inbox.ejs
+0	0	{views => app/views}/index.ejs
+0	8	{views => app/views}/login.ejs
+3	2	{views => app/views}/mycards.ejs
+0	0	{views => app/views}/mycollections.ejs
+0	0	{views => app/views}/partials/cards.ejs
+38	0	app/views/partials/collectionCards.ejs
+0	0	{views => app/views}/partials/footer.ejs
+0	0	{views => app/views}/partials/head.ejs
+0	0	{views => app/views}/partials/navbar.ejs
+0	0	{views => app/views}/register.ejs
+42	0	app/views/sendmessage.ejs
+-	-	public/.DS_Store
+-	-	views/.DS_Store
+-	-	views/partials/.DS_Store
+0	29	views/partials/collectionCards.ejs
+0	0	views/sendmessage.ejs
+
+commit a25c471123284dbdd4db52cafe4cdc12128d0cde
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-18T14:34:12+01:00
+
+    Finishing commenting functionality, added filtering, began messaging functionality
+
+-	-	public/.DS_Store
+29	14	public/styles/mystyles.css
+163	9	routes/routes.js
+3	11	views/browse.ejs
+1	1	views/card.ejs
+11	23	views/collection.ejs
+2	2	views/collections.ejs
+74	0	views/filter.ejs
+33	0	views/inbox.ejs
+1	0	views/partials/cards.ejs
+0	0	views/sendmessage.ejs
+
+commit 27fae626c221c6983ffdc8e8f6f4f902439f6b52
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-17T12:42:07+01:00
+
+    Advances to card page, added collection commenting, added patches, added collection rating
+
+-	-	public/.DS_Store
+-	-	public/images/homebackground.jpg
+24	2	public/styles/mystyles.css
+145	30	routes/routes.js
+4	2	views/card.ejs
+73	19	views/collection.ejs
+1	1	views/expansions.ejs
+
+commit a088c3e972216b9d878c26a2ff9e59e684d7ec15
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-16T16:33:57+01:00
+
+    Increasing generalisation of card page
+
+4	0	public/styles/mystyles.css
+67	50	routes/routes.js
+5	5	views/card.ejs
+
+commit 3271ea8d0b47306f4918456d73caa7e35e4e7397
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-16T15:00:05+01:00
+
+    Upgrade to like functionality, adding background images, dividing my cards into liked and collections
+
+-	-	public/.DS_Store
+-	-	public/images/homebackground.jpg
+-	-	public/images/mycardsbackground.jpg
+8	1	public/styles/mystyles.css
+48	14	routes/routes.js
+1	1	views/card.ejs
+15	20	views/mycards.ejs
+30	0	views/mycollections.ejs
+1	0	views/partials/collectionCards.ejs
+
+commit 51a35378ae3ebbe03e3eee61f9a2568d78974885
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-16T12:43:19+01:00
+
+    Advancements to collections - adding and removing cards, deleting collections, removed mycards route complexity and replaced with collection, updates to styling, basic like functionality added, 404 page added
+
+-	-	public/.DS_Store
+22	2	public/styles/mystyles.css
+131	56	routes/routes.js
+12	5	views/card.ejs
+10	3	views/collection.ejs
+13	0	views/error.ejs
+1	16	views/mycards.ejs
+3	2	views/partials/collectionCards.ejs
+
+commit aac3558770ffecd1398cccc1b74384da0b7a267f
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-04-15T21:52:41+01:00
+
+    searching colelctions and advancmentss to collections
+
+-	-	public/.DS_Store
+23	2	public/styles/mystyles.css
+127	19	routes/routes.js
+4	17	views/browse.ejs
+35	1	views/card.ejs
+75	0	views/collection.ejs
+44	0	views/collections.ejs
+2	2	views/expansions.ejs
+27	13	views/mycards.ejs
+19	13	views/partials/cards.ejs
+27	0	views/partials/collectionCards.ejs
+4	3	views/partials/navbar.ejs
+
+commit 35b6a98df091e88919ba02f58731113a413aa9bb
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-03-19T16:46:47+00:00
+
+    Advancements on authentication, making my cards specific to user, adding account page
+
+9	0	app.js
+21	0	package-lock.json
+1	0	package.json
+5	0	public/styles/mystyles.css
+99	47	routes/routes.js
+68	0	views/account.ejs
+1	1	views/expansions.ejs
+8	0	views/login.ejs
+11	4	views/partials/navbar.ejs
+8	1	views/register.ejs
+
+commit 86d882fdb9b4f5ec44ceeb09c5d9d8f433be5bb9
+Author: 40259713 <jpoots04@qub.ac.uk>
+Date:   2024-03-15T14:58:28+00:00
+
+    Added basic login checking, added register functionality, chnaging from single db connection to pool
+
+1	1	app.js
+543	0	package-lock.json
+1	0	package.json
+9	4	public/styles/mystyles.css
+83	17	routes/routes.js
+4	4	views/login.ejs
+15	12	views/register.ejs
+
+commit fd88dbe0f1f61b1da5cdc8f2a4259033412d1590
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-26T14:02:59+00:00
+
+    parameterised db queries, UI adjustment for browse, session middleware added, expansions added
+
+15	0	app.js
+59	0	package-lock.json
+1	0	package.json
+16	1	public/styles/mystyles.css
+34	26	routes/routes.js
+13	9	views/browse.ejs
+28	0	views/expansions.ejs
+1	2	views/index.ejs
+1	1	views/login.ejs
+2	2	views/mycards.ejs
+1	0	views/partials/navbar.ejs
+
+commit 68a1bdff108160b60df55a06e96ce2a2d7976a74
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-22T12:05:28+00:00
+
+    refactoring css, added filter bar
+
+60	121	public/styles/mystyles.css
+5	3	routes/routes.js
+38	8	views/browse.ejs
+9	9	views/card.ejs
+4	4	views/index.ejs
+6	6	views/login.ejs
+4	4	views/mycards.ejs
+4	4	views/partials/cards.ejs
+6	6	views/partials/footer.ejs
+9	10	views/partials/navbar.ejs
+5	5	views/register.ejs
+
+commit ce3b2a08210e5f49d155e06f3c3cbd0bf21f3729
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-21T19:15:49+00:00
+
+    changed DB name, search now ordrered, modularised slicing and query
+
+79	57	routes/routes.js
+6	4	views/mycards.ejs
+
+commit 07f7462ae204c738f1bc8bba40e861b4b2c7cab2
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-19T12:51:10+00:00
+
+    Moving dotenv config, adding router, adding search
+
+4	162	app.js
+180	0	routes/routes.js
+2	2	views/browse.ejs
+3	3	views/mycards.ejs
+1	0	views/partials/navbar.ejs
+
+commit dd33aa88a6d418df4e0dfd0d8cab2ad85707c406
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-19T10:37:22+00:00
+
+    my cards added, introduced pokemonTCG SDK, introduced dotenv for API key
+
+1	0	.gitignore
+69	6	app.js
+12	0	package-lock.json
+1	0	package.json
+20	3	public/styles/mystyles.css
+9	22	views/browse.ejs
+29	0	views/mycards.ejs
+16	0	views/partials/cards.ejs
+1	1	views/partials/navbar.ejs
+
+commit 61acb074717b38ecca805abea1e1ec8ad409dfa4
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-13T18:13:35+00:00
+
+    Updates to card page, more db work, search bar added, added price API call
+
+61	33	app.js
+38	1	package-lock.json
+2	1	package.json
+112	0	public/styles/mystyles.css
+10	2	views/browse.ejs
+68	7	views/card.ejs
+2	2	views/index.ejs
+4	4	views/partials/footer.ejs
+3	3	views/partials/head.ejs
+4	4	views/partials/navbar.ejs
+
+commit 6e0e3861bc1cc63458fa8b55654e2f9cf8126f41
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-12T22:14:53+00:00
+
+    card page, data rendering and db connection
+
+52	1	app.js
+97	1	package-lock.json
+2	1	package.json
+20	2	public/styles/mystyles.css
+13	45	views/browse.ejs
+28	0	views/card.ejs
+6	0	views/partials/footer.ejs
+6	0	views/register.ejs
+
+commit 54525e10c9d87e994c953ee6cdfd7aa2a336ba78
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-12T15:59:11+00:00
+
+    footer, login, register, browse
+
+15	0	app.js
+149	1	public/styles/mystyles.css
+59	0	views/browse.ejs
+3	1	views/index.ejs
+45	0	views/login.ejs
+19	0	views/partials/footer.ejs
+1	0	views/partials/head.ejs
+52	0	views/register.ejs
+
+commit c1d7cc3daa26c364e86899d4c5a1527386c617f3
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-12T14:17:44+00:00
+
+    initial homepage, changes to .gitignore
+
+2	0	.gitignore
+68	1	public/styles/mystyles.css
+35	1	views/index.ejs
+
+commit 7b167fd412ff702573b1a74ddb95b789e5ba7a58
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-12T13:53:41+00:00
+
+    initial node, express setup, navbar built
+
+19	0	app.js
+1161	0	package-lock.json
+16	0	package.json
+-	-	public/.DS_Store
+-	-	public/images/cards.png
+-	-	public/images/favicon.png
+-	-	public/images/pokeball_sideways.png
+-	-	public/images/pokeball_straight.png
+-	-	public/images/pokeball_white.png
+-	-	public/images/trading_game.png
+54	0	public/styles/mystyles.css
+-	-	views/.DS_Store
+10	0	views/index.ejs
+-	-	views/partials/.DS_Store
+19	0	views/partials/head.ejs
+24	0	views/partials/navbar.ejs
+
+commit c346aca9d3532a2ae25038fc516f2dccb9dcec32
+Author: jpoots <90725697+jpoots@users.noreply.github.com>
+Date:   2024-02-12T13:51:45+00:00
+
+    Initial commit
+
+130	0	.gitignore
