@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: May 03, 2024 at 06:58 AM
+-- Generation Time: May 03, 2024 at 07:03 AM
 -- Server version: 5.7.39
 -- PHP Version: 7.4.33
 
@@ -477,8 +477,7 @@ INSERT INTO `collection` (`collection_id`, `collection_name`, `user_id`) VALUES
 (45, 'Mag\'s Marvels', 25),
 (46, 'Aidan\'s Arsenal', 25),
 (47, 'Leo\'s Lineup', 26),
-(48, 'Leo\'s Legion', 26),
-(51, 'a new col', 28);
+(48, 'Leo\'s Legion', 26);
 
 -- --------------------------------------------------------
 
@@ -540,8 +539,7 @@ INSERT INTO `collection_card` (`collection_card_id`, `collection_id`, `card_id`)
 (65, 48, 64),
 (66, 48, 62),
 (67, 48, 23),
-(68, 47, 62),
-(69, 51, 36);
+(68, 47, 62);
 
 -- --------------------------------------------------------
 
@@ -567,8 +565,7 @@ INSERT INTO `collection_comment` (`collection_comment_id`, `comment_text`, `coll
 (33, 'Why would you pick the weird ones with abilities?', 42, 24, '2024-04-29 22:05:12'),
 (34, 'There\'s no way you have 3 legendary pokemon Chris...', 44, 25, '2024-04-30 09:10:27'),
 (35, 'Spicy!', 39, 26, '2024-04-30 09:31:36'),
-(36, 'Probably because the developer wants to show that they included abilities in the database Chris.', 42, 26, '2024-04-30 09:32:41'),
-(38, 'testing test', 44, 28, '2024-05-02 22:21:08');
+(36, 'Probably because the developer wants to show that they included abilities in the database Chris.', 42, 26, '2024-04-30 09:32:41');
 
 -- --------------------------------------------------------
 
@@ -604,7 +601,6 @@ INSERT INTO `collection_rating` (`collection_rating_id`, `collection_id`, `user_
 (53, 45, 26, 3),
 (54, 46, 26, 4),
 (55, 47, 24, 3),
-(57, 38, 27, 3),
 (58, 39, 26, 3);
 
 -- --------------------------------------------------------
@@ -705,8 +701,7 @@ INSERT INTO `message` (`message_id`, `sender_id`, `recipient_id`, `card_id`, `su
 (12, 24, 22, 47, 'Trading For Arcanine', 'Palkia for Arcanine?', '2024-04-30 09:58:12'),
 (13, 25, 23, 24, 'Trading For Giratina', 'Trade you Dragonite?', '2024-04-30 09:59:28'),
 (14, 23, 25, 24, 'Trading For Giratina', 'Ok. Meet you on the first floor lab?', '2024-04-30 10:00:41'),
-(15, 23, 22, 66, 'Trading For Volcanion EX', 'Aidan\'s trading me an Arcanine. What about that for Volcanion?', '2024-04-30 10:01:22'),
-(16, 28, 24, 39, 'Trading For Mewtwo', 'trade you chris', '2024-05-02 22:21:25');
+(15, 23, 22, 66, 'Trading For Volcanion EX', 'Aidan\'s trading me an Arcanine. What about that for Volcanion?', '2024-04-30 10:01:22');
 
 -- --------------------------------------------------------
 
@@ -868,9 +863,7 @@ INSERT INTO `user` (`user_id`, `email_address`, `password_hash`, `display_name`,
 (23, 'nanderson@qub.ac.uk', '$2b$05$6sJJIPHyf7ADXlVyfUbSl.kT2OVL/qezZCFSAt7QKAv6xawtkqloy', 'nanderson', 'https://ui-avatars.com/api/?name=nanderson'),
 (24, 'csmith@qub.ac.uk', '$2b$05$yrAsvR0yyFFlSUwGduTPTumIGW6qfHrpjR6Day6ExVYToK166oWgq', 'csmith', 'https://ui-avatars.com/api/?name=csmith'),
 (25, 'amcgowan@qub.ac.uk', '$2b$05$0TtBXmFu/sgbN9GAXIhcOelqMyoPRJGSFz460hkcq9TUphIzUpigS', 'amcgowan', 'https://ui-avatars.com/api/?name=amcgowan'),
-(26, 'lgalway@qub.ac.uk', '$2b$05$uF/WGlO38tAtIu5AjKwFC.BKnI3cl.lmyyMm2vwst4F6.Ej.fP336', 'lgalway', 'https://ui-avatars.com/api/?name=lgalway'),
-(27, 'admin@admin.com', '$2b$05$x7q2EWd4ip7Zqpb7WYhua..jZ3cqsCArqsrzyPb2cIykc1NOkTq.q', 'admin', 'https://ui-avatars.com/api/?name=admin'),
-(28, 'email@email.com', '$2b$05$9FKcEMuwHqFqSNIl7WIRtukY1p.xuOojJUwnSmut9m3lqJoho2UsC', 'email', 'https://ui-avatars.com/api/?name=email');
+(26, 'lgalway@qub.ac.uk', '$2b$05$uF/WGlO38tAtIu5AjKwFC.BKnI3cl.lmyyMm2vwst4F6.Ej.fP336', 'lgalway', 'https://ui-avatars.com/api/?name=lgalway');
 
 -- --------------------------------------------------------
 
